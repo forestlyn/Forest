@@ -1,7 +1,8 @@
 #pragma once
 #include "Core.h"
 #include "spdlog/spdlog.h"
-#include <memory>
+#include "Engine/pcheader.h"
+
 namespace Engine::Core
 {
 	class FOREST_API Log

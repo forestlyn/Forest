@@ -1,8 +1,7 @@
 #pragma once
 #include "..\Core\Core.h"
-#include <string>
-#include <functional>
-#include <sstream>
+#include "Engine/pcheader.h"
+
 namespace Engine::Event
 {
     enum class EventType

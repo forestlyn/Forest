@@ -24,6 +24,10 @@ target_compile_definitions(Engine
     PUBLIC FOREST_PLATFORM_WINDOWS
 )
 
+target_precompile_headers(
+    Engine PRIVATE "src/Engine/pcheader.h"
+)
+
 # 设置库的输出名称
 set_target_properties(Engine PROPERTIES
     OUTPUT_NAME "Engine"
