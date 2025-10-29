@@ -11,7 +11,7 @@ add_library(Engine SHARED ${ENGINE_SOURCES} ${ENGINE_HEADERS})
 target_include_directories(Engine
     PUBLIC 
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/ThirdParty/spdlog/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/spdlog/include>
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
