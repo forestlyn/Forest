@@ -1,6 +1,6 @@
 #include "Engine.h"
 
-class ForestApp: public Engine::Application
+class ForestApp : public Engine::Core::Application
 {
 public:
 	ForestApp()
@@ -9,9 +9,9 @@ public:
 	~ForestApp()
 	{
 	}
-
 };
 
-Engine::Application* Engine::CreateApplication() {
+Engine::Core::Application *Engine::Core::CreateApplication()
+{
 	return new ForestApp();
 }

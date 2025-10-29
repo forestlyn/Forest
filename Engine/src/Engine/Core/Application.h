@@ -1,6 +1,7 @@
 #pragma once
 #include "Core.h"
-namespace Engine {
+namespace Engine::Core
+{
 	class FOREST_API Application
 	{
 	public:
@@ -10,7 +11,5 @@ namespace Engine {
 		void Run();
 	};
 
-	Application* CreateApplication();
+	Application *CreateApplication();
 }
-
-

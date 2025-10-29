@@ -1,11 +1,8 @@
 # Engine动态库配置
 project(Engine)
 
-# 设置源文件
-file(GLOB ENGINE_SOURCES "src/*.cpp" "src/**/*.cpp")
-
-# 设置头文件目录
-file(GLOB ENGINE_HEADERS "include/*.h" "include/**/*.h")
+file(GLOB ENGINE_SOURCES "src/Engine/*.cpp" "src/Engine/**/*.cpp")
+file(GLOB ENGINE_HEADERS "src/Engine/*.h" "src/Engine/**/*.h")
 
 # 创建动态库
 add_library(Engine SHARED ${ENGINE_SOURCES} ${ENGINE_HEADERS})
