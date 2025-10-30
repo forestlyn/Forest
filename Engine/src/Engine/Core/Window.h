@@ -2,7 +2,9 @@
 
 #include "Engine/pcheader.h"
 #include "Core.h"
-#include "Engine/Events/Event.h"
+#include "Engine/Events/KeyEvent.h"
+#include "Engine/Events/MouseEvent.h"
+#include "Engine/Events/WindowEvent.h"
 
 namespace Engine::Core
 {

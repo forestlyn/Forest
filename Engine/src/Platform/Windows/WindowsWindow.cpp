@@ -1,5 +1,6 @@
 #include "WindowsWindow.h"
 
+#ifdef FOREST_PLATFORM_WINDOWS
 namespace Engine::Core
 {
     Window *Window::Create(const WindowProps &props)
@@ -7,6 +8,7 @@ namespace Engine::Core
         return new Engine::Platform::Windows::WindowsWindow(props);
     }
 }
+#endif
 
 namespace Engine::Platform::Windows
 {
@@ -41,6 +43,82 @@ namespace Engine::Platform::Windows
         glfwMakeContextCurrent(m_Window);
         glfwSetWindowUserPointer(m_Window, &m_Data);
         SetVSync(true);
+
+        // Set GLFW callbacks
+
+        // window events
+        glfwSetWindowSizeCallback(m_Window, [](GLFWwindow *window, int width, int height)
+                                  {
+            WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
+            data.Width = width;
+            data.Height = height;
+
+            Engine::Event::WindowResizeEvent event(width, height);
+            data.EventCallback(event); });
+
+        glfwSetWindowCloseCallback(m_Window, [](GLFWwindow *window)
+                                   {
+            WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
+            Engine::Event::WindowCloseEvent event;
+            data.EventCallback(event); });
+
+        // key events
+        glfwSetKeyCallback(m_Window, [](GLFWwindow *window, int key, int scancode, int action, int mods)
+                           {
+            WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
+
+            switch (action)
+            {
+            case GLFW_PRESS:
+            {
+                Engine::Event::KeyPressedEvent event(key, false);
+                data.EventCallback(event);
+                break;
+            }
+            case GLFW_RELEASE:
+            {
+                Engine::Event::KeyReleasedEvent event(key);
+                data.EventCallback(event);
+                break;
+            }
+            case GLFW_REPEAT:
+            {
+                Engine::Event::KeyPressedEvent event(key, true);
+                data.EventCallback(event);
+                break;
+            }
+            } });
+
+        // mouse events
+        glfwSetMouseButtonCallback(m_Window, [](GLFWwindow *window, int button, int action, int mods)
+                                   {
+            WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
+            switch (action)
+            {
+            case GLFW_PRESS:
+            {
+                Engine::Event::MouseButtonPressedEvent event(button);
+                data.EventCallback(event);
+                break;
+            }
+            case GLFW_RELEASE:
+            {
+                Engine::Event::MouseButtonReleasedEvent event(button);
+                data.EventCallback(event);
+                break;
+            }
+            } });
+
+        glfwSetScrollCallback(m_Window, [](GLFWwindow *window, double xoffset, double yoffset)
+                              {
+            WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
+            Engine::Event::MouseScrolledEvent event((float)xoffset, (float)yoffset);
+            data.EventCallback(event); });
+        glfwSetCursorPosCallback(m_Window, [](GLFWwindow *window, double xpos, double ypos)
+                                 {
+            WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
+            Engine::Event::MouseMovedEvent event((float)xpos, (float)ypos);
+            data.EventCallback(event); });
     }
 
     void WindowsWindow::Shutdown()
