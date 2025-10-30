@@ -11,3 +11,25 @@
 #endif
 
 #define BIT(x) (1 << x)
+
+#ifdef FOREST_ENABLE_ASSERTS
+#define ENGINE_ASSERT(x, ...)                                   \
+    {                                                           \
+        if (!(x))                                               \
+        {                                                       \
+            ENGINE_ERROR("Assertion Failed: {0}", __VA_ARGS__); \
+            __debugbreak();                                     \
+        }                                                       \
+    }
+#define ASSERT(x, ...)                                       \
+    {                                                        \
+        if (!(x))                                            \
+        {                                                    \
+            LOG_ERROR("Assertion Failed: {0}", __VA_ARGS__); \
+            __debugbreak();                                  \
+        }                                                    \
+    }
+#else
+#define ENGINE_ASSERT(x, ...)
+#define ASSERT(x, ...)
+#endif
