@@ -22,6 +22,8 @@ namespace Engine::Core
 		{
 			glClearColor(1.0f, 0.1f, 0.1f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT);
+			for (auto layer : m_LayerStack)
+				layer->OnUpdate();
 			m_Window->OnUpdate();
 		}
 	}
@@ -31,6 +33,13 @@ namespace Engine::Core
 		Event::EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<Event::WindowCloseEvent>(BIND_EVENT_FN(OnWindowClose));
 
+		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
+		{
+			(*--it)->OnEvent(e);
+			if (e.Handled)
+				break;
+		}
+
 		ENGINE_TRACE("{0}", e.ToString());
 		return false;
 	}
@@ -39,5 +48,17 @@ namespace Engine::Core
 	{
 		m_Running = false;
 		return true;
+	}
+
+	void Application::PushLayer(Layer *layer)
+	{
+		m_LayerStack.PushLayer(layer);
+		layer->OnAttach();
+	}
+
+	void Application::PushOverlay(Layer *overlay)
+	{
+		m_LayerStack.PushOverlay(overlay);
+		overlay->OnAttach();
 	}
 }
