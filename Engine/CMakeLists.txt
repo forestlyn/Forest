@@ -6,6 +6,7 @@ file(GLOB ENGINE_HEADERS "src/Engine/*.h" "src/Engine/**/*.h" "src/Platform/**/*
 
 
 add_subdirectory("ThirdParty/glfw")
+add_subdirectory("ThirdParty/glad")
 
 # 创建动态库
 add_library(Engine SHARED ${ENGINE_SOURCES} ${ENGINE_HEADERS})
@@ -16,11 +17,12 @@ target_include_directories(Engine
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/spdlog/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glfw/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glad/include>
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(Engine PUBLIC glfw opengl32)
+target_link_libraries(Engine PUBLIC glfw glad opengl32)
 
 # 设置编译器特性
 target_compile_features(Engine PUBLIC cxx_std_17)
@@ -30,6 +32,7 @@ target_compile_definitions(Engine
     PRIVATE FOREST_BUILD_DLL
     PUBLIC FOREST_PLATFORM_WINDOWS
     FOREST_ENABLE_ASSERTS
+    GLFW_INCLUDE_NONE
 )
 
 target_precompile_headers(

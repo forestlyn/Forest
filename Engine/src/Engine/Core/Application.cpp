@@ -2,6 +2,7 @@
 #include "Engine/pcheader.h"
 #include "Engine/Events/Event.h"
 #include <glfw/glfw3.h>
+#include <glad/glad.h>
 namespace Engine::Core
 {
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)

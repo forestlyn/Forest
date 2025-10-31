@@ -2,8 +2,7 @@
 #include "Engine/pcheader.h"
 #include "Engine/Core/Window.h"
 #include "Engine/Core/Core.h"
-#include <glfw/glfw3.h>
-
+struct GLFWwindow;
 namespace Engine::Platform::Windows
 {
     class WindowsWindow : public Core::Window
