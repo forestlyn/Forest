@@ -7,6 +7,7 @@
 #include "Engine/Events/WindowEvent.h"
 namespace Engine::Core
 {
+
 	class FOREST_API Application
 	{
 	public:
@@ -18,6 +19,12 @@ namespace Engine::Core
 		void PushLayer(Layer *layer);
 		void PushOverlay(Layer *overlay);
 
+		static Application &Get() { return *s_Instance; }
+
+		Window &GetWindow() { return *m_Window; }
+		int GetWindowWidth() const { return m_Window->GetWidth(); }
+		int GetWindowHeight() const { return m_Window->GetHeight(); }
+
 	private:
 		bool m_Running = true;
 		std::unique_ptr<Window> m_Window;
@@ -26,7 +33,7 @@ namespace Engine::Core
 		bool OnWindowClose(Event::WindowCloseEvent &e);
 
 		LayerStack m_LayerStack;
+		static Application *s_Instance;
 	};
-
 	Application *CreateApplication();
 }

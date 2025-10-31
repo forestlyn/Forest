@@ -1,5 +1,4 @@
 #include "Engine.h"
-
 class ExampleLayer : public Engine::Core::Layer
 {
 public:
@@ -22,7 +21,6 @@ public:
 
 	bool OnEvent(Engine::Event::Event &event) override
 	{
-		LOG_INFO("ExampleLayer::OnEvent: {0}", event.ToString());
 		return false;
 	}
 };
@@ -35,6 +33,7 @@ public:
 		LOG_INFO("ForestApp created!");
 
 		PushLayer(new ExampleLayer());
+		PushOverlay(new Engine::MyImGui::ImGuiLayer());
 	}
 	~ForestApp()
 	{

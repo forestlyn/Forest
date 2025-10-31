@@ -15,10 +15,10 @@ target_include_directories(Forest
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/../Engine/src
         ${CMAKE_CURRENT_SOURCE_DIR}/../Engine/src/ThirdParty/spdlog/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
 # 链接Engine库
-target_include_directories(Forest PRIVATE src)
 target_link_libraries(Forest PRIVATE Engine)
 
 # 设置可执行文件的输出名称

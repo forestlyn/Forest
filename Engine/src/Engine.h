@@ -16,6 +16,8 @@
 #include "Engine/Events/WindowEvent.h"
 //-----------------------
 
+#include "Engine/ImGui/ImGuiLayer.h"
+
 //--------entry point-------------
 #include "Engine/Core/EntryPoint.h"
 //-------------------------------

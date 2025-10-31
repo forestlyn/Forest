@@ -7,6 +7,7 @@ file(GLOB ENGINE_HEADERS "src/Engine/*.h" "src/Engine/**/*.h" "src/Platform/**/*
 
 add_subdirectory("ThirdParty/glfw")
 add_subdirectory("ThirdParty/glad")
+add_subdirectory("ThirdParty/imgui")
 
 # 创建动态库
 add_library(Engine SHARED ${ENGINE_SOURCES} ${ENGINE_HEADERS})
@@ -18,11 +19,12 @@ target_include_directories(Engine
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/spdlog/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glfw/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glad/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imgui>
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(Engine PUBLIC glfw glad opengl32)
+target_link_libraries(Engine PUBLIC glfw glad opengl32 imgui)
 
 # 设置编译器特性
 target_compile_features(Engine PUBLIC cxx_std_17)
