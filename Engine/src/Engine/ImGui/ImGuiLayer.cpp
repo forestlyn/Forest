@@ -1,5 +1,4 @@
 #include "ImGuiLayer.h"
-// #include <imgui.h>
 #include "Engine/Core/Application.h"
 #include "Platform/OpenGL/imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
@@ -21,7 +20,6 @@ namespace Engine::MyImGui
         ImGuiIO &io = ImGui::GetIO();
         io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
         io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
-
         ImGui_ImplOpenGL3_Init("#version 410 core");
     }
 
@@ -50,7 +48,26 @@ namespace Engine::MyImGui
 
     bool ImGuiLayer::OnEvent(Engine::Event::Event &event)
     {
-        // Handle events if necessary
+        ImGuiIO &io = ImGui::GetIO();
+
+        switch (event.GetEventType())
+        {
+        case Engine::Event::EventType::MouseButtonPressed:
+            io.AddMouseButtonEvent(0, true);
+            break;
+        case Engine::Event::EventType::MouseButtonReleased:
+            io.AddMouseButtonEvent(0, false);
+            break;
+        case Engine::Event::EventType::MouseMoved:
+        {
+            auto &e = static_cast<Engine::Event::MouseMovedEvent &>(event);
+            io.AddMousePosEvent(e.GetX(), e.GetY());
+            break;
+        }
+        default:
+            break;
+        }
         return false;
     }
+
 }
