@@ -11,6 +11,7 @@
 #endif
 
 #define BIT(x) (1 << x)
+#define BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1)
 
 #ifdef FOREST_ENABLE_ASSERTS
 #define ENGINE_ASSERT(x, ...)                                   \

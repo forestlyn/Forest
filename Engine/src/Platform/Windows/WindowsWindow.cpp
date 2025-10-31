@@ -92,6 +92,12 @@ namespace Engine::Platform::Windows
             }
             } });
 
+        glfwSetCharCallback(m_Window, [](GLFWwindow *window, unsigned int keycode)
+                            {
+            WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
+            Engine::Event::KeyTypedEvent event(keycode);
+            data.EventCallback(event); });
+
         // mouse events
         glfwSetMouseButtonCallback(m_Window, [](GLFWwindow *window, int button, int action, int mods)
                                    {
