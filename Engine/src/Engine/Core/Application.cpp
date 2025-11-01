@@ -50,7 +50,6 @@ namespace Engine::Core
 				break;
 		}
 
-		ENGINE_TRACE("{0}", e.ToString());
 		return false;
 	}
 

@@ -1,7 +1,9 @@
 #include "ImGuiLayer.h"
+#include "KeyMap.h"
 #include "Engine/Core/Application.h"
 #include "Platform/OpenGL/imgui_impl_opengl3.h"
 #include <glad/glad.h>
+
 namespace Engine::MyImGui
 {
     ImGuiLayer::~ImGuiLayer()
@@ -20,6 +22,7 @@ namespace Engine::MyImGui
         ImGuiIO &io = ImGui::GetIO();
         io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
         io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
+
         ImGui_ImplOpenGL3_Init("#version 410 core");
     }
 
@@ -63,14 +66,14 @@ namespace Engine::MyImGui
     bool ImGuiLayer::OnMouseButtonPressed(Engine::Event::MouseButtonPressedEvent &event)
     {
         ImGuiIO &io = ImGui::GetIO();
-        io.MouseDown[event.GetMouseButton()] = true;
+        io.AddMouseButtonEvent(event.GetMouseButton(), true);
         return false;
     }
 
     bool ImGuiLayer::OnMouseButtonReleased(Engine::Event::MouseButtonReleasedEvent &event)
     {
         ImGuiIO &io = ImGui::GetIO();
-        io.MouseDown[event.GetMouseButton()] = false;
+        io.AddMouseButtonEvent(event.GetMouseButton(), false);
         return false;
     }
 
@@ -91,15 +94,15 @@ namespace Engine::MyImGui
 
     bool ImGuiLayer::OnKeyPressed(Engine::Event::KeyPressedEvent &event)
     {
-        // ImGuiIO &io = ImGui::GetIO();
-        // io.AddKeyEvent(event.GetKeyCode(), true);
+        ImGuiIO &io = ImGui::GetIO();
+        io.AddKeyEvent(KeyCodeToImGuiKey(event.GetKeyCode()), true);
         return false;
     }
 
     bool ImGuiLayer::OnKeyReleased(Engine::Event::KeyReleasedEvent &event)
     {
-        // ImGuiIO &io = ImGui::GetIO();
-        // io.AddKeyEvent(event.GetKeyCode(), false);
+        ImGuiIO &io = ImGui::GetIO();
+        io.AddKeyEvent(KeyCodeToImGuiKey(event.GetKeyCode()), false);
         return false;
     }
 
