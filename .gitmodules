@@ -7,3 +7,6 @@
 [submodule "Engine/ThirdParty/imgui"]
 	path = Engine/ThirdParty/imgui
 	url = git@github.com:forestlyn/imgui.git
+[submodule "Engine/ThirdParty/glm"]
+	path = Engine/ThirdParty/glm
+	url = https://github.com/g-truc/glm.git
