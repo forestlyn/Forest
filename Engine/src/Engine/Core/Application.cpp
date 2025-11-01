@@ -2,7 +2,7 @@
 #include "Engine/pcheader.h"
 #include "Engine/Events/Event.h"
 #include "Engine/Core/Input.h"
-#include <glfw/glfw3.h>
+#include "Engine/Core/KeyCode.h"
 #include <glad/glad.h>
 namespace Engine::Core
 {
@@ -31,7 +31,7 @@ namespace Engine::Core
 			for (auto layer : m_LayerStack)
 				layer->OnUpdate();
 
-			if (Input::IsKeyPressed(GLFW_KEY_ESCAPE))
+			if (Input::IsKeyPressed(FOREST_KEY_ESCAPE))
 				m_Running = false;
 
 			m_Window->OnUpdate();

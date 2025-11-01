@@ -5,7 +5,9 @@
 #include "Engine/Core/Application.h"
 #include "Engine/Core/Layer.h"
 #include "Engine/Core/LayerStack.h"
-
+#include "Engine/Core/Input.h"
+#include "Engine/Core/KeyCode.h"
+#include "Engine/Core/MouseCode.h"
 //-----------------------
 
 //------event system------

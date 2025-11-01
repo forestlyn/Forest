@@ -1,7 +1,6 @@
 #include "ImGuiLayer.h"
 #include "Engine/Core/Application.h"
 #include "Platform/OpenGL/imgui_impl_opengl3.h"
-#include <GLFW/glfw3.h>
 #include <glad/glad.h>
 namespace Engine::MyImGui
 {
