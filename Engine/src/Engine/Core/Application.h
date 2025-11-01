@@ -24,6 +24,7 @@ namespace Engine::Core
 		Window &GetWindow() { return *m_Window; }
 		int GetWindowWidth() const { return m_Window->GetWidth(); }
 		int GetWindowHeight() const { return m_Window->GetHeight(); }
+		void *GetNativeWindow() const { return m_Window->GetNativeWindow(); }
 
 	private:
 		bool m_Running = true;

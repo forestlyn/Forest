@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "Engine/pcheader.h"
 #include "Engine/Events/Event.h"
+#include "Engine/Core/Input.h"
 #include <glfw/glfw3.h>
 #include <glad/glad.h>
 namespace Engine::Core
@@ -29,6 +30,10 @@ namespace Engine::Core
 			glClear(GL_COLOR_BUFFER_BIT);
 			for (auto layer : m_LayerStack)
 				layer->OnUpdate();
+
+			if (Input::IsKeyPressed(GLFW_KEY_ESCAPE))
+				m_Running = false;
+
 			m_Window->OnUpdate();
 		}
 	}

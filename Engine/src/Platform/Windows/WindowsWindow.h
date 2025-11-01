@@ -21,6 +21,8 @@ namespace Engine::Platform::Windows
         void SetVSync(bool enabled) override;
         bool IsVSync() const override;
 
+        void *GetNativeWindow() const override { return m_Window; }
+
     private:
         virtual void Init(const Core::WindowProps &props);
         virtual void Shutdown();
