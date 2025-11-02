@@ -1,7 +1,6 @@
 #pragma once
 #include "Engine/Core/Core.h"
 #include "Engine/pcheader.h"
-#include "Engine/Math/Vector2.h"
 namespace Engine::Core
 {
     class FOREST_API Input
@@ -17,7 +16,7 @@ namespace Engine::Core
             ENGINE_ASSERT(s_Instance, "Input instance not set!");
             return s_Instance->IsMouseButtonPressedImpl(button);
         }
-        static Engine::Math::Vector2 GetMousePosition()
+        static std::pair<float, float> GetMousePosition()
         {
             ENGINE_ASSERT(s_Instance, "Input instance not set!");
             return s_Instance->GetMousePositionImpl();
@@ -36,7 +35,7 @@ namespace Engine::Core
     protected:
         virtual bool IsKeyPressedImpl(int keycode) = 0;
         virtual bool IsMouseButtonPressedImpl(int button) = 0;
-        virtual Engine::Math::Vector2 GetMousePositionImpl() = 0;
+        virtual std::pair<float, float> GetMousePositionImpl() = 0;
         virtual float GetMouseXImpl() = 0;
         virtual float GetMouseYImpl() = 0;
 

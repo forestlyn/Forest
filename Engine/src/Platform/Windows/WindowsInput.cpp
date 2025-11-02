@@ -26,7 +26,7 @@ namespace Engine::Platform::Windows
         return state == GLFW_PRESS;
     }
 
-    Engine::Math::Vector2 WindowsInput::GetMousePositionImpl()
+    std::pair<float, float> WindowsInput::GetMousePositionImpl()
     {
         GLFWwindow *window = static_cast<GLFWwindow *>(Engine::Core::Application::Get().GetWindow().GetNativeWindow());
         double xpos, ypos;
@@ -36,11 +36,11 @@ namespace Engine::Platform::Windows
 
     float WindowsInput::GetMouseXImpl()
     {
-        return GetMousePositionImpl().x;
+        return GetMousePositionImpl().first;
     }
 
     float WindowsInput::GetMouseYImpl()
     {
-        return GetMousePositionImpl().y;
+        return GetMousePositionImpl().second;
     }
 }

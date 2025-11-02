@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "Engine/Math/Math.h"
 class ExampleLayer : public Engine::Core::Layer
 {
 public:
