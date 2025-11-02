@@ -8,7 +8,7 @@ namespace Engine::Platform::Windows
     protected:
         bool IsKeyPressedImpl(int keycode) override;
         bool IsMouseButtonPressedImpl(int button) override;
-        std::pair<float, float> GetMousePositionImpl() override;
+        Engine::Math::Vector2 GetMousePositionImpl() override;
         float GetMouseXImpl() override;
         float GetMouseYImpl() override;
     };
