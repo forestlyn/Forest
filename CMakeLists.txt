@@ -17,5 +17,5 @@ if(CMAKE_CONFIGURATION_TYPES)
 endif()
 
 # 添加子目录
-add_subdirectory(Forest)
 add_subdirectory(Engine)
+add_subdirectory(Forest)

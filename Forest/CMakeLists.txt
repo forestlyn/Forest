@@ -20,7 +20,6 @@ target_include_directories(Forest
 
 # 链接Engine库
 target_link_libraries(Forest PRIVATE Engine)
-
 # 设置可执行文件的输出名称
 set_target_properties(Forest PROPERTIES
     OUTPUT_NAME "Forest"

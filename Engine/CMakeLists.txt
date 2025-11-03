@@ -1,4 +1,3 @@
-# Engine动态库配置
 project(Engine)
 
 file(GLOB ENGINE_SOURCES "src/Engine/*.cpp" "src/Engine/**/*.cpp" "src/Platform/**/*.cpp")
@@ -9,8 +8,7 @@ add_subdirectory("ThirdParty/glfw")
 add_subdirectory("ThirdParty/glad")
 add_subdirectory("ThirdParty/imgui")
 
-# 创建动态库
-add_library(Engine SHARED ${ENGINE_SOURCES} ${ENGINE_HEADERS})
+add_library(Engine STATIC ${ENGINE_SOURCES} ${ENGINE_HEADERS})
 
 # 设置包含目录
 target_include_directories(Engine
