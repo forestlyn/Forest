@@ -2,7 +2,7 @@
 #include "Core.h"
 #include "Window.h"
 #include "LayerStack.h"
-
+#include "Engine/ImGui/ImGuiLayer.h"
 #include "Engine/pcheader.h"
 #include "Engine/Events/WindowEvent.h"
 namespace Engine::Core
@@ -29,6 +29,7 @@ namespace Engine::Core
 	private:
 		bool m_Running = true;
 		std::unique_ptr<Window> m_Window;
+		std::unique_ptr<Engine::MyImGui::ImGuiLayer> m_ImGuiLayer;
 
 		bool OnEvent(Event::Event &e);
 		bool OnWindowClose(Event::WindowCloseEvent &e);

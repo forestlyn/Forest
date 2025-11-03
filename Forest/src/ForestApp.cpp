@@ -1,5 +1,5 @@
 #include "Engine.h"
-#include "Engine/Math/Math.h"
+#include "Imgui.h"
 class ExampleLayer : public Engine::Core::Layer
 {
 public:
@@ -24,6 +24,13 @@ public:
 	{
 		return false;
 	}
+
+	void OnImGuiRender() override
+	{
+		ImGui::Begin("Example Layer");
+		ImGui::Text("Hello from Example Layer!");
+		ImGui::End();
+	}
 };
 
 class ForestApp : public Engine::Core::Application
@@ -34,7 +41,6 @@ public:
 		LOG_INFO("ForestApp created!");
 
 		PushLayer(new ExampleLayer());
-		PushOverlay(new Engine::MyImGui::ImGuiLayer());
 	}
 	~ForestApp()
 	{

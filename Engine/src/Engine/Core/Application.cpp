@@ -4,6 +4,7 @@
 #include "Engine/Core/Input.h"
 #include "Engine/Core/KeyCode.h"
 #include <glad/glad.h>
+#include "imgui.h"
 namespace Engine::Core
 {
 
@@ -16,6 +17,10 @@ namespace Engine::Core
 
 		ENGINE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
+
+		// imgui init needs to be after window creation and s_Instance assignment
+		m_ImGuiLayer = std::make_unique<Engine::MyImGui::ImGuiLayer>();
+		PushOverlay(m_ImGuiLayer.get());
 	}
 
 	Application::~Application()
@@ -26,13 +31,16 @@ namespace Engine::Core
 	{
 		while (m_Running)
 		{
-			glClearColor(1.0f, 0.1f, 0.1f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT);
 			for (auto layer : m_LayerStack)
 				layer->OnUpdate();
 
-			if (Input::IsKeyPressed(FOREST_KEY_ESCAPE))
-				m_Running = false;
+			m_ImGuiLayer->Begin();
+			for (auto layer : m_LayerStack)
+			{
+				layer->OnImGuiRender();
+			}
+			m_ImGuiLayer->End();
 
 			m_Window->OnUpdate();
 		}
