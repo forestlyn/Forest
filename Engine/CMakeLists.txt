@@ -8,7 +8,7 @@ add_subdirectory("ThirdParty/glfw")
 add_subdirectory("ThirdParty/glad")
 add_subdirectory("ThirdParty/imgui")
 
-add_library(Engine SHARED ${ENGINE_SOURCES} ${ENGINE_HEADERS})
+add_library(Engine STATIC ${ENGINE_SOURCES} ${ENGINE_HEADERS})
 
 # 设置包含目录
 target_include_directories(Engine
