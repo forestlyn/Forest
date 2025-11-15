@@ -2,6 +2,7 @@
 #include "Engine/pcheader.h"
 #include "Engine/Core/Window.h"
 #include "Engine/Core/Core.h"
+#include "Engine/Renderer/RendererContext.h"
 struct GLFWwindow;
 namespace Engine::Platform::Windows
 {
@@ -28,6 +29,7 @@ namespace Engine::Platform::Windows
         virtual void Shutdown();
 
         GLFWwindow *m_Window;
+        Engine::Renderer::RendererContext *m_Context;
 
         struct WindowData
         {

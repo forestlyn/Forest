@@ -1,6 +1,6 @@
 #include "WindowsWindow.h"
-#include <glfw/glfw3.h>
-#include <glad/glad.h>
+#include "Platform/OpenGL/OpenGLContext.h"
+#include "glfw/glfw3.h"
 #ifdef FOREST_PLATFORM_WINDOWS
 namespace Engine::Core
 {
@@ -41,9 +41,9 @@ namespace Engine::Platform::Windows
         }
 
         m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
-        glfwMakeContextCurrent(m_Window);
-        int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-        ENGINE_ASSERT(status, "Failed to initialize Glad!");
+
+        m_Context = new OpenGL::OpenGLContext(m_Window);
+        m_Context->Init();
         glfwSetWindowUserPointer(m_Window, &m_Data);
         SetVSync(true);
 
@@ -138,7 +138,7 @@ namespace Engine::Platform::Windows
     void WindowsWindow::OnUpdate()
     {
         glfwPollEvents();
-        glfwSwapBuffers(m_Window);
+        m_Context->SwapBuffers();
     }
 
     void WindowsWindow::SetEventCallback(const EventCallbackFn &callback)
