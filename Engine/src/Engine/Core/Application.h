@@ -36,6 +36,10 @@ namespace Engine::Core
 
 		LayerStack m_LayerStack;
 		static Application *s_Instance;
+
+		unsigned int m_VertexArray = 0;
+		unsigned int m_VertexBuffer = 0;
+		unsigned int m_IndexBuffer = 0;
 	};
 	Application *CreateApplication();
 }
