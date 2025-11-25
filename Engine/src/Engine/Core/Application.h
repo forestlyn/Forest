@@ -5,6 +5,7 @@
 #include "Engine/ImGui/ImGuiLayer.h"
 #include "Engine/pcheader.h"
 #include "Engine/Events/WindowEvent.h"
+#include "Engine/Renderer/Shader.h"
 namespace Engine::Core
 {
 
@@ -40,6 +41,7 @@ namespace Engine::Core
 		unsigned int m_VertexArray = 0;
 		unsigned int m_VertexBuffer = 0;
 		unsigned int m_IndexBuffer = 0;
+		std::unique_ptr<Renderer::Shader> m_Shader;
 	};
 	Application *CreateApplication();
 }
