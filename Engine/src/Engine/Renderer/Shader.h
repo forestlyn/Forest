@@ -6,14 +6,11 @@ namespace Engine::Renderer
     class Shader
     {
     public:
-        Shader(const std::string &vertexSrc, const std::string &fragmentSrc);
-        virtual ~Shader() = default;
+        virtual ~Shader() {}
 
-        virtual void Bind();
-        virtual void Unbind();
-
-    private:
-        unsigned int m_RendererID = 0;
+        virtual void Bind() const = 0;
+        virtual void Unbind() const = 0;
+        static Shader *Create(const std::string &vertexSrc, const std::string &fragmentSrc);
     };
 
 } // namespace Engine::Renderer

@@ -6,6 +6,7 @@
 #include "Engine/pcheader.h"
 #include "Engine/Events/WindowEvent.h"
 #include "Engine/Renderer/Shader.h"
+#include "Engine/Renderer/Buffer.h"
 namespace Engine::Core
 {
 
@@ -39,8 +40,8 @@ namespace Engine::Core
 		static Application *s_Instance;
 
 		unsigned int m_VertexArray = 0;
-		unsigned int m_VertexBuffer = 0;
-		unsigned int m_IndexBuffer = 0;
+		std::unique_ptr<Renderer::VertexBuffer> m_VertexBuffer;
+		std::unique_ptr<Renderer::IndexBuffer> m_IndexBuffer;
 		std::unique_ptr<Renderer::Shader> m_Shader;
 	};
 	Application *CreateApplication();

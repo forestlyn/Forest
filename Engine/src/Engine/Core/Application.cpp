@@ -22,26 +22,27 @@ namespace Engine::Core
 		m_ImGuiLayer = std::make_unique<Engine::MyImGui::ImGuiLayer>();
 		PushOverlay(m_ImGuiLayer.get());
 
-		glGenVertexArrays(1, &m_VertexArray);
-		glBindVertexArray(m_VertexArray);
-
-		glGenBuffers(1, &m_VertexBuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
-
 		float vertices[4 * 3] = {
 			-0.5f, -0.5f, 0.0f,
 			0.5f, -0.5f, 0.0f,
 			0.0f, 0.5f, 0.0f,
 			0.0f, -1.0f, 0.0f};
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+		glGenVertexArrays(1, &m_VertexArray);
+		glBindVertexArray(m_VertexArray);
+
+		m_VertexBuffer = std::unique_ptr<Renderer::VertexBuffer>(
+			Renderer::VertexBuffer::Create(vertices, 4 * 3 * sizeof(float)));
+		m_VertexBuffer->Bind();
 
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (const void *)0);
 
-		glGenBuffers(1, &m_IndexBuffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IndexBuffer);
 		unsigned int indices[6] = {0, 1, 2, 0, 3, 1};
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+		m_IndexBuffer = std::unique_ptr<Renderer::IndexBuffer>(
+			Renderer::IndexBuffer::Create(indices, sizeof(indices) / sizeof(unsigned int)));
+
+		m_IndexBuffer->Bind();
 
 		std::string vertexSrc = R"(
 			#version 330 core
@@ -65,7 +66,8 @@ namespace Engine::Core
 				color = vec4(v_Position * 0.5 + 0.5, 1.0);
 			}
 		)";
-		m_Shader = std::make_unique<Renderer::Shader>(vertexSrc, fragmentSrc);
+		m_Shader = std::unique_ptr<Renderer::Shader>(
+			Renderer::Shader::Create(vertexSrc, fragmentSrc));
 	}
 
 	Application::~Application()
