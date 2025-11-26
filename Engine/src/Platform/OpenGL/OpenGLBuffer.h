@@ -7,28 +7,28 @@ namespace Platform::OpenGL
     class OpenGLVertexBuffer : public Engine::Renderer::VertexBuffer
     {
     public:
-        OpenGLVertexBuffer(float *vertices, unsigned int size);
+        OpenGLVertexBuffer(float *vertices, uint32_t size);
         virtual ~OpenGLVertexBuffer();
 
         virtual void Bind() const override;
         virtual void Unbind() const override;
 
     private:
-        unsigned int m_RendererID;
+        uint32_t m_RendererID;
     };
 
     class OpenGLIndexBuffer : public Engine::Renderer::IndexBuffer
     {
     public:
-        OpenGLIndexBuffer(unsigned int *indices, unsigned int count);
+        OpenGLIndexBuffer(uint32_t *indices, uint32_t count);
         virtual ~OpenGLIndexBuffer();
 
         virtual void Bind() const override;
         virtual void Unbind() const override;
-        virtual unsigned int GetCount() const override { return m_Count; }
+        virtual uint32_t GetCount() const override { return m_Count; }
 
     private:
-        unsigned int m_RendererID;
-        unsigned int m_Count;
+        uint32_t m_RendererID;
+        uint32_t m_Count;
     };
 } // namespace Platform::OpenGL

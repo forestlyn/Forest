@@ -31,7 +31,7 @@ namespace Engine::Core
 	private:
 		bool m_Running = true;
 		std::unique_ptr<Window> m_Window;
-		std::unique_ptr<Engine::MyImGui::ImGuiLayer> m_ImGuiLayer;
+		Engine::MyImGui::ImGuiLayer *m_ImGuiLayer;
 
 		bool OnEvent(Event::Event &e);
 		bool OnWindowClose(Event::WindowCloseEvent &e);
@@ -39,7 +39,7 @@ namespace Engine::Core
 		LayerStack m_LayerStack;
 		static Application *s_Instance;
 
-		unsigned int m_VertexArray = 0;
+		uint32_t m_VertexArray = 0;
 		std::unique_ptr<Renderer::VertexBuffer> m_VertexBuffer;
 		std::unique_ptr<Renderer::IndexBuffer> m_IndexBuffer;
 		std::unique_ptr<Renderer::Shader> m_Shader;

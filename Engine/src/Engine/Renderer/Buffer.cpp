@@ -5,7 +5,7 @@
 #include "Platform/OpenGL/OpenGLBuffer.h"
 namespace Engine::Renderer
 {
-    VertexBuffer *VertexBuffer::Create(float *vertices, unsigned int size)
+    VertexBuffer *VertexBuffer::Create(float *vertices, uint32_t size)
     {
         switch (Renderer::Renderer::GetAPI())
         {
@@ -19,7 +19,7 @@ namespace Engine::Renderer
         return nullptr; // Placeholder
     }
 
-    IndexBuffer *IndexBuffer::Create(unsigned int *indices, unsigned int count)
+    IndexBuffer *IndexBuffer::Create(uint32_t *indices, uint32_t count)
     {
         switch (Renderer::Renderer::GetAPI())
         {

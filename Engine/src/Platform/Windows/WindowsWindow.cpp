@@ -92,7 +92,7 @@ namespace Engine::Platform::Windows
             }
             } });
 
-        glfwSetCharCallback(m_Window, [](GLFWwindow *window, unsigned int keycode)
+        glfwSetCharCallback(m_Window, [](GLFWwindow *window, uint32_t keycode)
                             {
             WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
             Engine::Event::KeyTypedEvent event(keycode);
