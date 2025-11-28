@@ -15,7 +15,7 @@ namespace Engine::Renderer
         case RendererAPI::OpenGL:
             return new Platform::OpenGL::OpenGLVertexBuffer(vertices, size);
         }
-
+        ENGINE_ASSERT(false, "Unknown RendererAPI!");
         return nullptr; // Placeholder
     }
 
@@ -29,6 +29,7 @@ namespace Engine::Renderer
         case RendererAPI::OpenGL:
             return new Platform::OpenGL::OpenGLIndexBuffer(indices, count);
         }
+        ENGINE_ASSERT(false, "Unknown RendererAPI!");
         return nullptr; // Placeholder
     }
 } // namespace Engine::Renderer

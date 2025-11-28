@@ -7,6 +7,7 @@
 #include "Engine/Events/WindowEvent.h"
 #include "Engine/Renderer/Shader.h"
 #include "Engine/Renderer/Buffer.h"
+#include "Engine/Renderer/VertexArray.h"
 namespace Engine::Core
 {
 
@@ -39,10 +40,11 @@ namespace Engine::Core
 		LayerStack m_LayerStack;
 		static Application *s_Instance;
 
-		uint32_t m_VertexArray = 0;
-		std::unique_ptr<Renderer::VertexBuffer> m_VertexBuffer;
-		std::unique_ptr<Renderer::IndexBuffer> m_IndexBuffer;
+		std::shared_ptr<Renderer::VertexArray> m_VertexArray;
 		std::unique_ptr<Renderer::Shader> m_Shader;
+
+		std::shared_ptr<Renderer::VertexArray> m_VertexArray2;
+		std::unique_ptr<Renderer::Shader> m_Shader2;
 	};
 	Application *CreateApplication();
 }

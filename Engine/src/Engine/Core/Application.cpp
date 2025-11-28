@@ -5,30 +5,6 @@
 #include "Engine/Core/KeyCode.h"
 #include <glad/glad.h>
 
-GLenum GetGLenumFromShaderDataType(Engine::Renderer::ShaderDataType type)
-{
-	switch (type)
-	{
-	case Engine::Renderer::ShaderDataType::Float:
-	case Engine::Renderer::ShaderDataType::Float2:
-	case Engine::Renderer::ShaderDataType::Float3:
-	case Engine::Renderer::ShaderDataType::Float4:
-	case Engine::Renderer::ShaderDataType::Mat3:
-	case Engine::Renderer::ShaderDataType::Mat4:
-		return GL_FLOAT;
-	case Engine::Renderer::ShaderDataType::Int:
-	case Engine::Renderer::ShaderDataType::Int2:
-	case Engine::Renderer::ShaderDataType::Int3:
-	case Engine::Renderer::ShaderDataType::Int4:
-		return GL_INT;
-	case Engine::Renderer::ShaderDataType::Bool:
-		return GL_BOOL;
-	default:
-		ENGINE_ASSERT(false, "Unknown ShaderDataType!");
-		return 0;
-	}
-}
-
 namespace Engine::Core
 {
 
@@ -52,47 +28,22 @@ namespace Engine::Core
 			0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
 			0.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
 
-		// float vertices[4 * 3] = {
-		// 	-0.5f, -0.5f, 0.0f,
-		// 	0.5f, -0.5f, 0.0f,
-		// 	0.0f, 0.5f, 0.0f,
-		// 	0.0f, -1.0f, 0.0f};
-
 		Renderer::BufferLayout layout = {
 			{Renderer::ShaderDataType::Float3, "a_Position"},
 			{Renderer::ShaderDataType::Float4, "a_Color"},
 		};
 
-		glGenVertexArrays(1, &m_VertexArray);
-		glBindVertexArray(m_VertexArray);
-
-		m_VertexBuffer = std::unique_ptr<Renderer::VertexBuffer>(
-			Renderer::VertexBuffer::Create(vertices, sizeof(vertices)));
-		m_VertexBuffer->SetLayout(layout);
-		m_VertexBuffer->Bind();
-
-		int index = 0;
-		for (const auto &element : m_VertexBuffer->GetLayout())
-		{
-			ENGINE_TRACE("index:{0} Buffer Element: {1}, Type: {2}, Size: {3}, Offset: {4}",
-						 index, element.Name, static_cast<int>(element.Type), element.Size, element.Offset);
-			glEnableVertexAttribArray(index);
-			glVertexAttribPointer(index,
-								  element.GetComponentCount(),
-								  GetGLenumFromShaderDataType(element.Type),
-								  element.Normalized ? GL_TRUE : GL_FALSE,
-								  m_VertexBuffer->GetLayout().GetStride(),
-								  reinterpret_cast<const void *>(element.Offset));
-			index++;
-		}
-		// glEnableVertexAttribArray(0);
-		// glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (const void *)0);
+		m_VertexArray.reset(Renderer::VertexArray::Create());
+		std::shared_ptr<Renderer::VertexBuffer> vertexBuffer;
+		vertexBuffer.reset(Renderer::VertexBuffer::Create(vertices, sizeof(vertices)));
+		vertexBuffer->SetLayout(layout);
+		m_VertexArray->AddVertexBuffer(vertexBuffer);
 
 		uint32_t indices[6] = {0, 1, 2, 0, 3, 1};
-		m_IndexBuffer = std::unique_ptr<Renderer::IndexBuffer>(
-			Renderer::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
-
-		m_IndexBuffer->Bind();
+		std::shared_ptr<Renderer::IndexBuffer> indexBuffer =
+			std::shared_ptr<Renderer::IndexBuffer>(
+				Renderer::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
+		m_VertexArray->SetIndexBuffer(indexBuffer);
 
 		std::string vertexSrc = R"(
 			#version 330 core
@@ -122,6 +73,51 @@ namespace Engine::Core
 		)";
 		m_Shader = std::unique_ptr<Renderer::Shader>(
 			Renderer::Shader::Create(vertexSrc, fragmentSrc));
+
+		float vertices2[4 * 3] = {
+			-0.5f, -0.5f, 0.0f,
+			0.5f, -0.5f, 0.0f,
+			0.5f, 0.5f, 0.0f,
+			-0.5f, 0.5f, 0.0f};
+		Renderer::BufferLayout layout2 = {
+			{Renderer::ShaderDataType::Float3, "a_Position"},
+		};
+
+		m_VertexArray2.reset(Renderer::VertexArray::Create());
+		std::shared_ptr<Renderer::VertexBuffer> vertexBuffer2;
+		vertexBuffer2.reset(Renderer::VertexBuffer::Create(vertices2, sizeof(vertices2)));
+		vertexBuffer2->SetLayout(layout2);
+		m_VertexArray2->AddVertexBuffer(vertexBuffer2);
+
+		std::shared_ptr<Renderer::IndexBuffer> indexBuffer2 =
+			std::shared_ptr<Renderer::IndexBuffer>(
+				Renderer::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
+		m_VertexArray2->SetIndexBuffer(indexBuffer2);
+
+		std::string vertexSrc2 = R"(
+			#version 330 core
+			
+			layout(location = 0) in vec3 a_Position;
+			out vec3 v_Position;
+			void main()
+			{
+				v_Position = a_Position;
+				gl_Position = vec4(a_Position, 1.0);
+			}
+		)";
+		std::string fragmentSrc2 = R"(
+			#version 330 core
+			
+			layout(location = 0) out vec4 color;
+			in vec3 v_Position;
+			void main()
+			{
+				color = vec4(v_Position * 0.5 + 0.5, 1.0);
+			}
+		)";
+
+		m_Shader2 = std::unique_ptr<Renderer::Shader>(
+			Renderer::Shader::Create(vertexSrc2, fragmentSrc2));
 	}
 
 	Application::~Application()
@@ -134,9 +130,14 @@ namespace Engine::Core
 		{
 			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT);
+
+			m_Shader2->Bind();
+			m_VertexArray2->Bind();
+			glDrawElements(GL_TRIANGLES, m_VertexArray2->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+
 			m_Shader->Bind();
-			glBindVertexArray(m_VertexArray);
-			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+			m_VertexArray->Bind();
+			glDrawElements(GL_TRIANGLES, m_VertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
 
 			for (auto layer : m_LayerStack)
 				layer->OnUpdate();
