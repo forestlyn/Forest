@@ -135,6 +135,7 @@ namespace Engine::Core
 			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT);
 			m_Shader->Bind();
+			glBindVertexArray(m_VertexArray);
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 			for (auto layer : m_LayerStack)
