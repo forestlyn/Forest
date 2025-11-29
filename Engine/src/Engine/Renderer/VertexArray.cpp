@@ -13,10 +13,10 @@ namespace Engine::Renderer
     {
         switch (Renderer::Renderer::GetAPI())
         {
-        case RendererAPI::None:
+        case RendererAPI::API::None:
             ENGINE_ASSERT(false, "RendererAPI::None is currently not supported!");
             return nullptr;
-        case RendererAPI::OpenGL:
+        case RendererAPI::API::OpenGL:
             return new Platform::OpenGL::OpenGLVertexArray();
         }
         ENGINE_ASSERT(false, "Unknown RendererAPI!");

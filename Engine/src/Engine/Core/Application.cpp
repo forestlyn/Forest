@@ -3,7 +3,7 @@
 #include "Engine/Events/Event.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Core/KeyCode.h"
-#include <glad/glad.h>
+#include "Engine/Renderer/RenderCommand.h"
 
 namespace Engine::Core
 {
@@ -128,16 +128,14 @@ namespace Engine::Core
 	{
 		while (m_Running)
 		{
-			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
+			Renderer::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
+			Renderer::RenderCommand::Clear();
 
 			m_Shader2->Bind();
-			m_VertexArray2->Bind();
-			glDrawElements(GL_TRIANGLES, m_VertexArray2->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+			Renderer::RenderCommand::Submit(m_VertexArray2);
 
 			m_Shader->Bind();
-			m_VertexArray->Bind();
-			glDrawElements(GL_TRIANGLES, m_VertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+			Renderer::RenderCommand::Submit(m_VertexArray);
 
 			for (auto layer : m_LayerStack)
 				layer->OnUpdate();
