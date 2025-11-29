@@ -3,7 +3,7 @@
 
 struct GLFWwindow;
 
-namespace Engine::Platform::OpenGL
+namespace Platform::OpenGL
 {
     class OpenGLContext : public Engine::Renderer::RendererContext
     {

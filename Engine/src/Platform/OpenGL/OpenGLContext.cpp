@@ -2,7 +2,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "Engine/pcheader.h"
-namespace Engine::Platform::OpenGL
+namespace Platform::OpenGL
 {
     OpenGLContext::OpenGLContext(GLFWwindow *windowHandle)
         : m_WindowHandle(windowHandle)

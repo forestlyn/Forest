@@ -4,12 +4,12 @@
 #include "Engine/Core/Core.h"
 #include "Engine/Renderer/RendererContext.h"
 struct GLFWwindow;
-namespace Engine::Platform::Windows
+namespace Platform::Windows
 {
-    class WindowsWindow : public Core::Window
+    class WindowsWindow : public Engine::Core::Window
     {
     public:
-        WindowsWindow(const Core::WindowProps &props);
+        WindowsWindow(const Engine::Core::WindowProps &props);
         virtual ~WindowsWindow();
 
         void OnUpdate() override;
@@ -25,7 +25,7 @@ namespace Engine::Platform::Windows
         void *GetNativeWindow() const override { return m_Window; }
 
     private:
-        virtual void Init(const Core::WindowProps &props);
+        virtual void Init(const Engine::Core::WindowProps &props);
         virtual void Shutdown();
 
         GLFWwindow *m_Window;

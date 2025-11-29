@@ -6,16 +6,16 @@ namespace Engine::Core
 {
     Window *Window::Create(const WindowProps &props)
     {
-        return new Engine::Platform::Windows::WindowsWindow(props);
+        return new Platform::Windows::WindowsWindow(props);
     }
 }
 #endif
 
-namespace Engine::Platform::Windows
+namespace Platform::Windows
 {
     static bool s_GLFWInitialized = false;
 
-    WindowsWindow::WindowsWindow(const Core::WindowProps &props)
+    WindowsWindow::WindowsWindow(const Engine::Core::WindowProps &props)
     {
         Init(props);
     }
@@ -25,7 +25,7 @@ namespace Engine::Platform::Windows
         Shutdown();
     }
 
-    void WindowsWindow::Init(const Core::WindowProps &props)
+    void WindowsWindow::Init(const Engine::Core::WindowProps &props)
     {
         m_Data.Title = props.Title;
         m_Data.Width = props.Width;
