@@ -4,6 +4,7 @@
 #include "Engine/Core/Input.h"
 #include "Engine/Core/KeyCode.h"
 #include "Engine/Renderer/RenderCommand.h"
+#include "Engine/Renderer/Renderer.h"
 
 namespace Engine::Core
 {
@@ -131,11 +132,14 @@ namespace Engine::Core
 			Renderer::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
 			Renderer::RenderCommand::Clear();
 
-			m_Shader2->Bind();
-			Renderer::RenderCommand::Submit(m_VertexArray2);
+			Renderer::Renderer::BeginScene();
 
+			m_Shader2->Bind();
+			Renderer::Renderer::Submit(m_VertexArray2);
 			m_Shader->Bind();
-			Renderer::RenderCommand::Submit(m_VertexArray);
+			Renderer::Renderer::Submit(m_VertexArray);
+
+			Renderer::Renderer::EndScene();
 
 			for (auto layer : m_LayerStack)
 				layer->OnUpdate();

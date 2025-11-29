@@ -12,7 +12,8 @@ namespace Engine::Renderer
 
     void Renderer::Submit(std::shared_ptr<VertexArray> &vertexArray)
     {
-        RenderCommand::Submit(vertexArray);
+        vertexArray->Bind();
+        RenderCommand::DrawIndexed(vertexArray);
     }
 
 } // namespace Engine::Renderer

@@ -17,9 +17,9 @@ namespace Engine::Renderer
             CurrentRendererAPI->Clear();
         }
 
-        static void Submit(std::shared_ptr<VertexArray> &vertexArray)
+        static void DrawIndexed(std::shared_ptr<VertexArray> &vertexArray)
         {
-            CurrentRendererAPI->Submit(vertexArray);
+            CurrentRendererAPI->DrawIndexed(vertexArray);
         }
 
     private:
