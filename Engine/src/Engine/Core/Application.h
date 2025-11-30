@@ -39,12 +39,6 @@ namespace Engine::Core
 
 		LayerStack m_LayerStack;
 		static Application *s_Instance;
-
-		std::shared_ptr<Renderer::VertexArray> m_VertexArray;
-		std::unique_ptr<Renderer::Shader> m_Shader;
-
-		std::shared_ptr<Renderer::VertexArray> m_VertexArray2;
-		std::unique_ptr<Renderer::Shader> m_Shader2;
 	};
 	Application *CreateApplication();
 }

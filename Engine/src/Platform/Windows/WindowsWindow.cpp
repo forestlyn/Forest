@@ -133,6 +133,7 @@ namespace Platform::Windows
     void WindowsWindow::Shutdown()
     {
         glfwDestroyWindow(m_Window);
+        m_Context->Cleanup();
     }
 
     void WindowsWindow::OnUpdate()
@@ -148,11 +149,7 @@ namespace Platform::Windows
 
     void WindowsWindow::SetVSync(bool enabled)
     {
-        if (enabled)
-            glfwSwapInterval(1);
-        else
-            glfwSwapInterval(0);
-
+        m_Context->SetVSync(enabled);
         m_Data.VSync = enabled;
     }
 

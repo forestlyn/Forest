@@ -26,4 +26,17 @@ namespace Platform::OpenGL
     {
         glfwSwapBuffers(m_WindowHandle);
     }
-} // namespace Engine::Platform::OpenGL
+
+    void OpenGLContext::SetVSync(bool enabled)
+    {
+        if (enabled)
+            glfwSwapInterval(1);
+        else
+            glfwSwapInterval(0);
+    }
+
+    void OpenGLContext::Cleanup()
+    {
+        // OpenGL specific cleanup code can be added here if needed
+    }
+} // namespace Platform::OpenGL

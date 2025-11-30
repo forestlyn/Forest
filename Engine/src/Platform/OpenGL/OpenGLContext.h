@@ -12,6 +12,8 @@ namespace Platform::OpenGL
 
         virtual void Init() override;
         virtual void SwapBuffers() override;
+        virtual void Cleanup() override;
+        virtual void SetVSync(bool enabled) override;
 
     private:
         GLFWwindow *m_WindowHandle;
