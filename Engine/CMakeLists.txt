@@ -7,6 +7,7 @@ file(GLOB ENGINE_HEADERS "src/Engine/*.h" "src/Engine/**/*.h" "src/Platform/**/*
 add_subdirectory("ThirdParty/glfw")
 add_subdirectory("ThirdParty/glad")
 add_subdirectory("ThirdParty/imgui")
+add_subdirectory("ThirdParty/DirectX-Headers")
 
 add_library(Engine STATIC ${ENGINE_SOURCES} ${ENGINE_HEADERS})
 
