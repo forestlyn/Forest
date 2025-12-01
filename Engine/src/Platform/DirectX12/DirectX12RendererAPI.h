@@ -3,10 +3,10 @@
 
 namespace Platform::DirectX12
 {
-    class DirectX12RenderAPI : public Engine::Renderer::RendererAPI
+    class DirectX12RendererAPI : public Engine::Renderer::RendererAPI
     {
     public:
-        DirectX12RenderAPI() = default;
+        DirectX12RendererAPI() = default;
 
         virtual void SetClearColor(const glm::vec4 &color) override;
         virtual void Clear() override;

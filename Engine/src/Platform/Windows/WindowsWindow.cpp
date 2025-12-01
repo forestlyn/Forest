@@ -1,6 +1,15 @@
 #include "WindowsWindow.h"
-#include "Platform/OpenGL/OpenGLContext.h"
 #include "glfw/glfw3.h"
+#include "Engine/pcheader.h"
+
+#if defined(FOREST_PLATFORM_WINDOWS) && defined(FOREST_PLATFORM_DIRECTX12)
+#include "Platform/DirectX12/DirectX12Context.h"
+#endif
+
+#if defined(FOREST_PLATFORM_WINDOWS) && defined(FOREST_PLATFORM_OPENGL)
+#include "Platform/OpenGL/OpenGLContext.h"
+#endif
+
 #ifdef FOREST_PLATFORM_WINDOWS
 namespace Engine::Core
 {
@@ -40,9 +49,18 @@ namespace Platform::Windows
             s_GLFWInitialized = true;
         }
 
+#if defined(FOREST_PLATFORM_WINDOWS)
+#if defined(FOREST_PLATFORM_OPENGL)
         m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
-
         m_Context = new OpenGL::OpenGLContext(m_Window);
+#elif defined(FOREST_PLATFORM_DIRECTX12)
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+        m_Context = new DirectX12::DirectX12Context(m_Window);
+#endif
+#elif
+        ENGINE_ASSERT(false, "ERROR");
+#endif
         m_Context->Init();
         glfwSetWindowUserPointer(m_Window, &m_Data);
         SetVSync(true);

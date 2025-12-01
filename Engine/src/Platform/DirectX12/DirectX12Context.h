@@ -3,6 +3,7 @@
 
 struct GLFWwindow;
 struct ID3D12Device;
+struct ID3D12CommandAllocator;
 struct ID3D12CommandQueue;
 struct ID3D12GraphicsCommandList;
 struct IDXGISwapChain3;
@@ -30,6 +31,7 @@ namespace Platform::DirectX12
     private:
         bool CreateDevice();
         bool CreateCommandQueue();
+        bool CreateCommandAllocator();
         bool CreateCommandList();
         bool CreateSwapChain();
         bool CreateRenderTargetView();
@@ -42,6 +44,7 @@ namespace Platform::DirectX12
 
         // DirectX 12 specific members
         ID3D12Device *m_Device = nullptr;
+        ID3D12CommandAllocator *m_CommandAllocator = nullptr;
         ID3D12CommandQueue *m_CommandQueue = nullptr;
         ID3D12GraphicsCommandList *m_CommandList = nullptr;
         IDXGISwapChain3 *m_SwapChain = nullptr;

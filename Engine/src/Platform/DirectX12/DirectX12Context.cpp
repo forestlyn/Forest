@@ -7,12 +7,13 @@
 #include <dxgi1_4.h>
 namespace Platform::DirectX12
 {
+    DirectX12Context *DirectX12Context::s_Instance = nullptr;
+
     DirectX12Context::DirectX12Context(GLFWwindow *windowHandle)
         : m_WindowHandle(windowHandle)
     {
         ENGINE_ASSERT(!s_Instance, "DirectX12Context instance already exists!");
         s_Instance = this;
-
         ENGINE_ASSERT(windowHandle, "Window handle is null!");
         int width, height;
         glfwGetWindowSize(windowHandle, &width, &height);
@@ -29,6 +30,7 @@ namespace Platform::DirectX12
         // 初始化DX12
         ENGINE_ASSERT(CreateDevice(), "Failed to create D3D12 device!");
         ENGINE_ASSERT(CreateCommandQueue(), "Failed to create command queue!");
+        ENGINE_ASSERT(CreateCommandAllocator(), "Failed to create command allocator!");
         ENGINE_ASSERT(CreateCommandList(), "Failed to create command list!");
         ENGINE_ASSERT(CreateSwapChain(), "Failed to create swap chain!");
         ENGINE_ASSERT(CreateRenderTargetView(), "Failed to create render target view!");
@@ -130,12 +132,27 @@ namespace Platform::DirectX12
         return SUCCEEDED(hr);
     }
 
+    bool DirectX12Context::CreateCommandAllocator()
+    {
+        HRESULT hr = m_Device->CreateCommandAllocator(
+            D3D12_COMMAND_LIST_TYPE_DIRECT, // 与命令列表类型一致
+            IID_PPV_ARGS(&m_CommandAllocator));
+
+        if (FAILED(hr))
+        {
+            OutputDebugStringA("Failed to create command allocator!");
+            return false;
+        }
+
+        return true;
+    }
+
     bool DirectX12Context::CreateCommandList()
     {
         HRESULT hr = m_Device->CreateCommandList(
             0,
             D3D12_COMMAND_LIST_TYPE_DIRECT,
-            /* Command Allocator */ nullptr,
+            /* Command Allocator */ m_CommandAllocator,
             /* Initial Pipeline State */ nullptr,
             IID_PPV_ARGS(&m_CommandList));
 
@@ -149,6 +166,12 @@ namespace Platform::DirectX12
 
     bool DirectX12Context::CreateSwapChain()
     {
+        ENGINE_ASSERT(!m_SwapChain, "m_SwapChain has created");
+        ENGINE_ASSERT(m_Device, "Device not created!");
+        ENGINE_ASSERT(m_CommandQueue, "Command Queue not created!");
+        ENGINE_ASSERT(m_WindowHandle, "Window handle is invalid!");
+        ENGINE_ASSERT(m_Width > 0 && m_Height > 0, "Window size is zero!");
+
         IDXGIFactory4 *factory;
         CreateDXGIFactory1(IID_PPV_ARGS(&factory));
 
@@ -162,6 +185,7 @@ namespace Platform::DirectX12
         swapChainDesc.SampleDesc.Count = 1;
 
         HWND hwnd = glfwGetWin32Window(m_WindowHandle);
+        ENGINE_ASSERT(hwnd, "Failed to get HWND from GLFW window! (forgot GLFW_EXPOSE_NATIVE_WIN32?)");
         IDXGISwapChain1 *tempSwapChain;
         HRESULT hr = factory->CreateSwapChainForHwnd(
             m_CommandQueue,
@@ -170,11 +194,12 @@ namespace Platform::DirectX12
             nullptr,
             nullptr,
             &tempSwapChain);
-
+        ENGINE_ASSERT(SUCCEEDED(hr), "CreateSwapChainForHwnd fail!");
         if (SUCCEEDED(hr))
         {
             m_SwapChain = static_cast<IDXGISwapChain3 *>(tempSwapChain);
             m_FrameIndex = m_SwapChain->GetCurrentBackBufferIndex();
+            ENGINE_INFO("m_SwapChain set");
         }
 
         return SUCCEEDED(hr);

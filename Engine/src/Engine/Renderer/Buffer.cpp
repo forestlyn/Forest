@@ -3,6 +3,7 @@
 #include "Renderer.h"
 
 #include "Platform/OpenGL/OpenGLBuffer.h"
+#include "Platform/DirectX12/DirectX12Buffer.h"
 namespace Engine::Renderer
 {
     VertexBuffer *VertexBuffer::Create(float *vertices, uint32_t size)
@@ -14,6 +15,8 @@ namespace Engine::Renderer
             return nullptr;
         case RendererAPI::API::OpenGL:
             return new Platform::OpenGL::OpenGLVertexBuffer(vertices, size);
+        case RendererAPI::API::DirectX12:
+            return new Platform::DirectX12::DirectX12VertexBuffer(vertices, size);
         }
         ENGINE_ASSERT(false, "Unknown RendererAPI!");
         return nullptr; // Placeholder
@@ -28,6 +31,8 @@ namespace Engine::Renderer
             return nullptr;
         case RendererAPI::API::OpenGL:
             return new Platform::OpenGL::OpenGLIndexBuffer(indices, count);
+        case RendererAPI::API::DirectX12:
+            return new Platform::DirectX12::DirectX12IndexBuffer(indices, count);
         }
         ENGINE_ASSERT(false, "Unknown RendererAPI!");
         return nullptr; // Placeholder

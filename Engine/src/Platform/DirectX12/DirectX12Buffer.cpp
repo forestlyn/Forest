@@ -108,6 +108,9 @@ namespace Platform::DirectX12
         auto device = DirectX12Context::GetDevice();
         auto commandList = DirectX12Context::GetCommandList();
 
+        ENGINE_ASSERT(device, "DirectX12 device is not initialized!");
+        ENGINE_ASSERT(commandList, "DirectX12 command list is not initialized!");
+
         // 创建默认堆资源 - 简化版本
         ENGINE_ASSERT(device->CreateCommittedResource(
                           &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),

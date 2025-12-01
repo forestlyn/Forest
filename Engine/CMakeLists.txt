@@ -27,6 +27,17 @@ target_include_directories(Engine
 
 target_link_libraries(Engine PUBLIC glfw glad opengl32 imgui)
 
+
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    d3d12.lib        # 核心库（包含辅助类的实现）
+    dxgi.lib         # DXGI 交换链库
+    d3dcompiler.lib  # HLSL 着色器编译库
+    user32.lib       # Windows 窗口基础库
+    gdi32.lib        # 图形设备接口库
+    shell32.lib      # 系统外壳库
+)
+
+
 # 设置编译器特性
 target_compile_features(Engine PUBLIC cxx_std_17)
 
@@ -34,6 +45,8 @@ target_compile_features(Engine PUBLIC cxx_std_17)
 target_compile_definitions(Engine
     PRIVATE FOREST_BUILD_DLL
     PUBLIC FOREST_PLATFORM_WINDOWS
+    # PUBLIC FOREST_PLATFORM_OPENGL
+    PUBLIC FOREST_PLATFORM_DIRECTX12
     FOREST_ENABLE_ASSERTS
     GLFW_INCLUDE_NONE
 )

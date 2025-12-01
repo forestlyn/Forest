@@ -3,7 +3,9 @@
 #include "Engine/Core/Application.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
+#include "backends/imgui_impl_dx12.h"
 #include <GLFW/glfw3.h>
+#include <backends/imgui_impl_win32.h>
 namespace Engine::MyImGui
 {
     ImGuiLayer::~ImGuiLayer()
@@ -40,15 +42,25 @@ namespace Engine::MyImGui
         GLFWwindow *window = static_cast<GLFWwindow *>(app.GetNativeWindow());
         ENGINE_ASSERT(window, "GLFWwindow is null in ImGuiLayer::OnAttach()");
 
+#ifdef FOREST_PLATFORM_DIRECTX12
+        ImGui_ImplDX12_InitInfo init_info = {};
+#endif
+#ifdef FOREST_PLATFORM_OPENGL
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 410 core");
+#endif
     }
 
     void ImGuiLayer::OnDetach()
     {
         ENGINE_INFO("ImGuiLayer detached");
-        // Cleanup ImGui context here if needed
+// Cleanup ImGui context here if needed
+#ifdef FOREST_PLATFORM_DIRECTX12
+        ImGui_ImplDX12_Shutdown();
+#endif
+#ifdef FOREST_PLATFORM_OPENGL
         ImGui_ImplOpenGL3_Shutdown();
+#endif
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
     }
@@ -61,7 +73,12 @@ namespace Engine::MyImGui
 
     void ImGuiLayer::Begin()
     {
+#ifdef FOREST_PLATFORM_DIRECTX12
+        ImGui_ImplDX12_NewFrame();
+#endif
+#ifdef FOREST_PLATFORM_OPENGL
         ImGui_ImplOpenGL3_NewFrame();
+#endif
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
     }
@@ -74,7 +91,12 @@ namespace Engine::MyImGui
                                 (float)Engine::Core::Application::Get().GetWindowHeight());
 
         ImGui::Render();
+#ifdef FOREST_PLATFORM_DIRECTX12
+        ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), DirectX12Context::GetCommandList());
+#endif
+#ifdef FOREST_PLATFORM_OPENGL
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#endif
 
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {

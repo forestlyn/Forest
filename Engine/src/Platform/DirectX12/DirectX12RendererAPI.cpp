@@ -1,4 +1,4 @@
-#include "DirectX12RenderAPI.h"
+#include "DirectX12RendererAPI.h"
 #include "DirectX12Context.h"
 #include "Engine/pcheader.h"
 #include <directx/d3d12.h>
@@ -7,14 +7,14 @@
 
 namespace Platform::DirectX12
 {
-    void DirectX12RenderAPI::SetClearColor(const glm::vec4 &color)
+    void DirectX12RendererAPI::SetClearColor(const glm::vec4 &color)
     {
         // DirectX 12 specific clear color setting would go here
         // Typically, this would involve storing the clear color for use during the Clear operation
         m_ClearColor = color;
     }
 
-    void DirectX12RenderAPI::Clear()
+    void DirectX12RendererAPI::Clear()
     {
         // DirectX 12 specific clear operation would go here
         ID3D12GraphicsCommandList *commandList = DirectX12Context::GetCommandList();
@@ -28,7 +28,7 @@ namespace Platform::DirectX12
         commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
     }
 
-    void DirectX12RenderAPI::DrawIndexed(std::shared_ptr<Engine::Renderer::VertexArray> &vertexArray)
+    void DirectX12RendererAPI::DrawIndexed(std::shared_ptr<Engine::Renderer::VertexArray> &vertexArray)
     {
         // DirectX 12 specific draw indexed operation would go here
         ID3D12GraphicsCommandList *commandList = DirectX12Context::GetCommandList();

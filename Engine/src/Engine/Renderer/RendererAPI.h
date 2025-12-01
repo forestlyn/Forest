@@ -11,6 +11,7 @@ namespace Engine::Renderer
         {
             None = 0,
             OpenGL = 1,
+            DirectX12 = 2
         };
 
     public:
