@@ -1,9 +1,9 @@
 #pragma once
-#include "Engine/Renderer/RenderAPI.h"
+#include "Engine/Renderer/RendererAPI.h"
 
 namespace Platform::DirectX12
 {
-    class DirectX12RenderAPI : public Engine::Renderer::RenderAPI
+    class DirectX12RenderAPI : public Engine::Renderer::RendererAPI
     {
     public:
         DirectX12RenderAPI() = default;

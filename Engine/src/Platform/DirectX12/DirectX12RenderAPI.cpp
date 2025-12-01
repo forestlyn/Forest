@@ -3,6 +3,8 @@
 #include "Engine/pcheader.h"
 #include <directx/d3d12.h>
 #include <directx/d3dx12.h>
+#include <dxgi1_4.h>
+
 namespace Platform::DirectX12
 {
     void DirectX12RenderAPI::SetClearColor(const glm::vec4 &color)
