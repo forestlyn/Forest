@@ -11,7 +11,7 @@ namespace Engine::Core
 
 	Application *Application::s_Instance = nullptr;
 
-	Application::Application()
+	Application::Application() : m_Camera(new Engine::Renderer::OrthographicCamera(-3.2f, 3.2f, -1.8f, 1.8f))
 	{
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));

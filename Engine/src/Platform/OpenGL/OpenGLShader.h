@@ -1,7 +1,7 @@
 #pragma once
 #include "Engine/Renderer/Shader.h"
 #include "Engine/pcheader.h"
-
+#include <glm/glm.hpp>
 namespace Platform::OpenGL
 {
 
@@ -12,6 +12,7 @@ namespace Platform::OpenGL
         virtual ~OpenGLShader();
         virtual void Bind() const override;
         virtual void Unbind() const override;
+        virtual void UploadUniformMat4(const std::string &name, const glm::mat4 &matrix) override;
 
     private:
         uint32_t m_RendererID = 0;

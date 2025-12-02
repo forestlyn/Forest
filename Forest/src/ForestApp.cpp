@@ -5,7 +5,7 @@
 #include "Engine/Renderer/Shader.h"
 #include "Engine/Renderer/Buffer.h"
 #include "Engine/Renderer/VertexArray.h"
-
+#include "Engine/Renderer/Camera/Camera.h"
 class ExampleLayer : public Engine::Core::Layer
 {
 public:
@@ -40,13 +40,14 @@ public:
 			
 			layout(location = 0) in vec3 a_Position;
 			layout(location = 1) in vec4 a_Color;
+			uniform mat4 u_ViewProjection;
 			out vec3 v_Position;
 			out vec4 v_Color;
 			void main()
 			{
 				v_Position = a_Position;
 				v_Color = a_Color;
-				gl_Position = vec4(a_Position, 1.0);
+				gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
 			}
 		)";
 
@@ -61,7 +62,7 @@ public:
 				color = v_Color;
 			}
 		)";
-		m_Shader = std::unique_ptr<Engine::Renderer::Shader>(
+		m_Shader = std::shared_ptr<Engine::Renderer::Shader>(
 			Engine::Renderer::Shader::Create(vertexSrc, fragmentSrc));
 
 		float vertices2[4 * 3] = {
@@ -89,10 +90,11 @@ public:
 			
 			layout(location = 0) in vec3 a_Position;
 			out vec3 v_Position;
+			uniform mat4 u_ViewProjection;
 			void main()
 			{
 				v_Position = a_Position;
-				gl_Position = vec4(a_Position, 1.0);
+				gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
 			}
 		)";
 		std::string fragmentSrc2 = R"(
@@ -106,7 +108,7 @@ public:
 			}
 		)";
 
-		m_Shader2 = std::unique_ptr<Engine::Renderer::Shader>(
+		m_Shader2 = std::shared_ptr<Engine::Renderer::Shader>(
 			Engine::Renderer::Shader::Create(vertexSrc2, fragmentSrc2));
 	}
 
@@ -122,13 +124,14 @@ public:
 	{
 		Engine::Renderer::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
 		Engine::Renderer::RenderCommand::Clear();
+		Engine::Renderer::Camera *camera = Engine::Core::Application::Get().GetCamera();
+		camera->SetPosition({0.5f, 0.0f, 0.0f});
+		camera->SetRotationDegrees({0.0f, 0.0f, 15.0f});
 
-		Engine::Renderer::Renderer::BeginScene();
+		Engine::Renderer::Renderer::BeginScene(*camera);
 
-		m_Shader2->Bind();
-		Engine::Renderer::Renderer::Submit(m_VertexArray2);
-		m_Shader->Bind();
-		Engine::Renderer::Renderer::Submit(m_VertexArray);
+		Engine::Renderer::Renderer::Submit(m_Shader2, m_VertexArray2);
+		Engine::Renderer::Renderer::Submit(m_Shader, m_VertexArray);
 
 		Engine::Renderer::Renderer::EndScene();
 	}
@@ -140,17 +143,14 @@ public:
 
 	void OnImGuiRender() override
 	{
-		ImGui::Begin("Example Layer");
-		ImGui::Text("Hello from Example Layer!");
-		ImGui::End();
 	}
 
 private:
 	std::shared_ptr<Engine::Renderer::VertexArray> m_VertexArray;
-	std::unique_ptr<Engine::Renderer::Shader> m_Shader;
+	std::shared_ptr<Engine::Renderer::Shader> m_Shader;
 
 	std::shared_ptr<Engine::Renderer::VertexArray> m_VertexArray2;
-	std::unique_ptr<Engine::Renderer::Shader> m_Shader2;
+	std::shared_ptr<Engine::Renderer::Shader> m_Shader2;
 };
 
 class ForestApp : public Engine::Core::Application

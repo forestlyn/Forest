@@ -1,7 +1,7 @@
 project(Engine)
 
-file(GLOB ENGINE_SOURCES "src/Engine/*.cpp" "src/Engine/**/*.cpp" "src/Platform/**/*.cpp")
-file(GLOB ENGINE_HEADERS "src/Engine/*.h" "src/Engine/**/*.h" "src/Platform/**/*.h")
+file(GLOB ENGINE_SOURCES "src/Engine/*.cpp" "src/Engine/**/*.cpp" "src/Engine/**/**/*.cpp" "src/Platform/**/*.cpp")
+file(GLOB ENGINE_HEADERS "src/Engine/*.h" "src/Engine/**/*.h" "src/Engine/**/**/*.h" "src/Platform/**/*.h")
 
 
 add_subdirectory("ThirdParty/glfw")
