@@ -3,16 +3,12 @@
 #include "Engine/Events/Event.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Core/KeyCode.h"
-#include "Engine/Renderer/RenderCommand.h"
-#include "Engine/Renderer/Renderer.h"
-#include "Engine/Renderer/Camera/OrthographicCamera.h"
-#include "Engine/Renderer/Camera/PerspectiveCamera.h"
 namespace Engine::Core
 {
 
 	Application *Application::s_Instance = nullptr;
 
-	Application::Application() : m_Camera(new Engine::Renderer::PerspectiveCamera(45.0f, 16.0f / 9.0f, 0.1f, 100.0f))
+	Application::Application()
 	{
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));

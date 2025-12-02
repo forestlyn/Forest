@@ -5,10 +5,6 @@
 #include "Engine/ImGui/ImGuiLayer.h"
 #include "Engine/pcheader.h"
 #include "Engine/Events/WindowEvent.h"
-#include "Engine/Renderer/Shader.h"
-#include "Engine/Renderer/Buffer.h"
-#include "Engine/Renderer/VertexArray.h"
-#include "Engine/Renderer/Camera/Camera.h"
 namespace Engine::Core
 {
 
@@ -30,8 +26,6 @@ namespace Engine::Core
 		int GetWindowHeight() const { return m_Window->GetHeight(); }
 		void *GetNativeWindow() const { return m_Window->GetNativeWindow(); }
 
-		Engine::Renderer::Camera *GetCamera() { return m_Camera; }
-
 	private:
 		bool m_Running = true;
 		std::unique_ptr<Window> m_Window;
@@ -42,8 +36,6 @@ namespace Engine::Core
 
 		LayerStack m_LayerStack;
 		static Application *s_Instance;
-
-		Engine::Renderer::Camera *m_Camera;
 	};
 	Application *CreateApplication();
 }

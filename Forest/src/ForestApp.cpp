@@ -6,11 +6,12 @@
 #include "Engine/Renderer/Buffer.h"
 #include "Engine/Renderer/VertexArray.h"
 #include "Engine/Renderer/Camera/Camera.h"
+
 class ExampleLayer : public Engine::Core::Layer
 {
 public:
 	ExampleLayer()
-		: Layer("Example")
+		: Layer("Example"), m_Camera(new Engine::Renderer::PerspectiveCamera(45.0f, 16.0f / 9.0f, 0.1f, 100.0f)), m_CameraPosition(0.0f, 0.0f, 0.0f), m_CameraRotation(0.0f, 0.0f, 0.0f)
 	{
 		float vertices[4 * 7] = {
 			-0.5f, -0.5f, -5.0f, 1.0f, 0.0f, 0.0f, 1.0f,
@@ -110,9 +111,6 @@ public:
 
 		m_Shader2 = std::shared_ptr<Engine::Renderer::Shader>(
 			Engine::Renderer::Shader::Create(vertexSrc2, fragmentSrc2));
-
-		Engine::Renderer::Camera *camera = Engine::Core::Application::Get().GetCamera();
-		camera->SetRotationDegrees({0.0f, 0.0f, 0.0f});
 	}
 
 	void OnAttach() override
@@ -125,13 +123,21 @@ public:
 
 	void OnUpdate() override
 	{
+		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_W))
+			m_CameraPosition.y -= m_CameraMoveSpeed;
+		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_S))
+			m_CameraPosition.y += m_CameraMoveSpeed;
+		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_A))
+			m_CameraPosition.x -= m_CameraMoveSpeed;
+		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_D))
+			m_CameraPosition.x += m_CameraMoveSpeed;
+
 		Engine::Renderer::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
 		Engine::Renderer::RenderCommand::Clear();
-		Engine::Renderer::Camera *camera = Engine::Core::Application::Get().GetCamera();
-		camera->SetPosition({0.0f, 0.0f, 0.0f});
-		camera->SetRotationDegrees({0.0f, 25.0f, 0.0f});
+		m_Camera->SetPosition(m_CameraPosition);
+		m_Camera->SetRotationDegrees(m_CameraRotation);
 
-		Engine::Renderer::Renderer::BeginScene(*camera);
+		Engine::Renderer::Renderer::BeginScene(*m_Camera);
 
 		Engine::Renderer::Renderer::Submit(m_Shader2, m_VertexArray2);
 		Engine::Renderer::Renderer::Submit(m_Shader, m_VertexArray);
@@ -146,9 +152,6 @@ public:
 
 	void OnImGuiRender() override
 	{
-		ImGui::Begin("Example");
-		ImGui::Text("Hello from ImGui!");
-		ImGui::End();
 	}
 
 private:
@@ -157,6 +160,13 @@ private:
 
 	std::shared_ptr<Engine::Renderer::VertexArray> m_VertexArray2;
 	std::shared_ptr<Engine::Renderer::Shader> m_Shader2;
+
+	Engine::Renderer::Camera *m_Camera;
+
+	glm::vec3 m_CameraPosition;
+	glm::vec3 m_CameraRotation;
+	float m_CameraMoveSpeed = 0.1f;
+	float m_CameraRotationSpeed = 2.0f;
 };
 
 class ForestApp : public Engine::Core::Application
