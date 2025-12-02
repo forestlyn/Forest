@@ -13,10 +13,10 @@ public:
 		: Layer("Example")
 	{
 		float vertices[4 * 7] = {
-			-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-			0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-			0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-			0.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
+			-0.5f, -0.5f, -5.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+			0.5f, -0.5f, -5.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+			0.0f, 0.5f, -5.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+			0.0f, -1.0f, -5.0f, 1.0f, 1.0f, 0.0f, 1.0f};
 
 		Engine::Renderer::BufferLayout layout = {
 			{Engine::Renderer::ShaderDataType::Float3, "a_Position"},
@@ -66,10 +66,10 @@ public:
 			Engine::Renderer::Shader::Create(vertexSrc, fragmentSrc));
 
 		float vertices2[4 * 3] = {
-			-0.5f, -0.5f, 0.0f,
-			0.5f, -0.5f, 0.0f,
-			0.5f, 0.5f, 0.0f,
-			-0.5f, 0.5f, 0.0f};
+			-0.5f, -0.0f, -1.0f,
+			0.5f, -0.5f, -1.0f,
+			0.5f, 0.5f, -1.0f,
+			-0.5f, 0.5f, -1.0f};
 		Engine::Renderer::BufferLayout layout2 = {
 			{Engine::Renderer::ShaderDataType::Float3, "a_Position"},
 		};
@@ -110,6 +110,9 @@ public:
 
 		m_Shader2 = std::shared_ptr<Engine::Renderer::Shader>(
 			Engine::Renderer::Shader::Create(vertexSrc2, fragmentSrc2));
+
+		Engine::Renderer::Camera *camera = Engine::Core::Application::Get().GetCamera();
+		camera->SetRotationDegrees({0.0f, 0.0f, 0.0f});
 	}
 
 	void OnAttach() override
@@ -125,8 +128,8 @@ public:
 		Engine::Renderer::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
 		Engine::Renderer::RenderCommand::Clear();
 		Engine::Renderer::Camera *camera = Engine::Core::Application::Get().GetCamera();
-		camera->SetPosition({0.5f, 0.0f, 0.0f});
-		camera->SetRotationDegrees({0.0f, 0.0f, 15.0f});
+		camera->SetPosition({0.0f, 0.0f, 0.0f});
+		camera->SetRotationDegrees({0.0f, 25.0f, 0.0f});
 
 		Engine::Renderer::Renderer::BeginScene(*camera);
 
@@ -143,6 +146,9 @@ public:
 
 	void OnImGuiRender() override
 	{
+		ImGui::Begin("Example");
+		ImGui::Text("Hello from ImGui!");
+		ImGui::End();
 	}
 
 private:

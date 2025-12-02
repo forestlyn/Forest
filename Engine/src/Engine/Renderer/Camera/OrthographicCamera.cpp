@@ -1,6 +1,6 @@
 #include "OrthographicCamera.h"
 #include <glm/gtc/matrix_transform.hpp>
-
+#include "Engine/pcheader.h"
 namespace Engine::Renderer
 {
     OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top)
@@ -19,6 +19,10 @@ namespace Engine::Renderer
     void OrthographicCamera::SetRotationDegrees(const glm::vec3 &rotation)
     {
         m_RotationDegrees = rotation;
+        if (m_RotationDegrees.x != 0.0f || m_RotationDegrees.y != 0.0f)
+        {
+            ENGINE_WARN("OrthographicCamera only supports rotation around Z axis. X and Y rotations will be ignored.");
+        }
         RecalculateViewMatrix();
     }
 
