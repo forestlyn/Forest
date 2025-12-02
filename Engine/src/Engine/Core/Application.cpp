@@ -3,6 +3,7 @@
 #include "Engine/Events/Event.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Core/KeyCode.h"
+#include "GLFW/glfw3.h"
 namespace Engine::Core
 {
 
@@ -29,9 +30,11 @@ namespace Engine::Core
 	{
 		while (m_Running)
 		{
+			Timestep time = glfwGetTime(); // Get time in seconds
+			float deltaTime = time - m_LastFrameTime;
+			m_LastFrameTime = time;
 			for (auto layer : m_LayerStack)
-				layer->OnUpdate();
-
+				layer->OnUpdate(deltaTime);
 			m_ImGuiLayer->Begin();
 			for (auto layer : m_LayerStack)
 			{

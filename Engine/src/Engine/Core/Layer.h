@@ -2,6 +2,7 @@
 #include "Core.h"
 #include "Engine/pcheader.h"
 #include "Engine/Events/Event.h"
+#include "Engine/Core/Timestep.h"
 namespace Engine::Core
 {
     class FOREST_API Layer
@@ -12,7 +13,7 @@ namespace Engine::Core
 
         virtual void OnAttach() {}
         virtual void OnDetach() {}
-        virtual void OnUpdate() {}
+        virtual void OnUpdate(Timestep timestep) {}
         virtual void OnImGuiRender() {}
         virtual bool OnEvent(Engine::Event::Event &event) { return false; }
         inline const std::string &GetName() const { return m_DebugName; }

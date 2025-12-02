@@ -28,6 +28,7 @@ namespace Engine::Core
 
 	private:
 		bool m_Running = true;
+		float m_LastFrameTime = 0.0f;
 		std::unique_ptr<Window> m_Window;
 		Engine::MyImGui::ImGuiLayer *m_ImGuiLayer;
 

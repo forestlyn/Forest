@@ -121,16 +121,16 @@ public:
 	{
 	}
 
-	void OnUpdate() override
+	void OnUpdate(Engine::Core::Timestep timestep) override
 	{
 		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_W))
-			m_CameraPosition.y -= m_CameraMoveSpeed;
+			m_CameraPosition.y -= m_CameraMoveSpeed * timestep;
 		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_S))
-			m_CameraPosition.y += m_CameraMoveSpeed;
+			m_CameraPosition.y += m_CameraMoveSpeed * timestep;
 		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_A))
-			m_CameraPosition.x -= m_CameraMoveSpeed;
+			m_CameraPosition.x -= m_CameraMoveSpeed * timestep;
 		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_D))
-			m_CameraPosition.x += m_CameraMoveSpeed;
+			m_CameraPosition.x += m_CameraMoveSpeed * timestep;
 
 		Engine::Renderer::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
 		Engine::Renderer::RenderCommand::Clear();
@@ -165,8 +165,8 @@ private:
 
 	glm::vec3 m_CameraPosition;
 	glm::vec3 m_CameraRotation;
-	float m_CameraMoveSpeed = 0.1f;
-	float m_CameraRotationSpeed = 2.0f;
+	float m_CameraMoveSpeed = 1.f;
+	float m_CameraRotationSpeed = 20.0f;
 };
 
 class ForestApp : public Engine::Core::Application
