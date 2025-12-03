@@ -3,6 +3,7 @@
 #include "Engine/Renderer/RenderCommand.h"
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Renderer/Shader.h"
+#include "Platform/OpenGL/OpenGLShader.h"
 #include "Engine/Renderer/Buffer.h"
 #include "Engine/Renderer/VertexArray.h"
 #include "Engine/Renderer/Camera/Camera.h"
@@ -19,9 +20,9 @@ public:
 	{
 		float vertices[4 * 7] = {
 			-0.5f, -0.5f, -5.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-			0.5f, -0.5f, -5.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-			0.0f, 0.5f, -5.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-			0.0f, -1.0f, -5.0f, 1.0f, 1.0f, 0.0f, 1.0f};
+			-0.5f, 0.5f, -5.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+			0.5f, 0.5f, -5.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+			0.5f, -0.5f, -5.0f, 1.0f, 1.0f, 0.0f, 1.0f};
 
 		Engine::Renderer::BufferLayout layout = {
 			{Engine::Renderer::ShaderDataType::Float3, "a_Position"},
@@ -34,7 +35,7 @@ public:
 		vertexBuffer->SetLayout(layout);
 		m_VertexArray->AddVertexBuffer(vertexBuffer);
 
-		uint32_t indices[6] = {0, 1, 2, 0, 3, 1};
+		uint32_t indices[6] = {0, 1, 2, 2, 3, 0};
 		std::shared_ptr<Engine::Renderer::IndexBuffer> indexBuffer =
 			std::shared_ptr<Engine::Renderer::IndexBuffer>(
 				Engine::Renderer::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
@@ -86,9 +87,10 @@ public:
 		vertexBuffer2->SetLayout(layout2);
 		m_VertexArray2->AddVertexBuffer(vertexBuffer2);
 
+		uint32_t indices2[6] = {0, 1, 2, 2, 3, 0};
 		std::shared_ptr<Engine::Renderer::IndexBuffer> indexBuffer2 =
 			std::shared_ptr<Engine::Renderer::IndexBuffer>(
-				Engine::Renderer::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
+				Engine::Renderer::IndexBuffer::Create(indices2, sizeof(indices2) / sizeof(uint32_t)));
 		m_VertexArray2->SetIndexBuffer(indexBuffer2);
 
 		std::string vertexSrc2 = R"(
@@ -152,11 +154,6 @@ public:
 		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_L))
 			m_QuadPosition.x += m_QuadMoveSpeed * timestep;
 
-		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_W))
-			m_QuadScale += glm::vec3(1.0f, 1.0f, 0.0f) * (m_QuadScaleSpeed * timestep);
-		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_S))
-			m_QuadScale -= glm::vec3(1.0f, 1.0f, 0.0f) * (m_QuadScaleSpeed * timestep);
-
 		Engine::Renderer::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
 		Engine::Renderer::RenderCommand::Clear();
 		m_Camera->SetPosition(m_CameraPosition);
@@ -196,9 +193,8 @@ private:
 	float m_CameraRotationSpeed = 20.0f;
 
 	glm::vec3 m_QuadPosition;
-	glm::vec3 m_QuadScale;
+	glm::vec3 m_QuadScale = glm::vec3(0.1f, 0.1f, 0.1f);
 	float m_QuadMoveSpeed = 1.0f;
-	float m_QuadScaleSpeed = 1.0f;
 };
 
 class ForestApp : public Engine::Core::Application
