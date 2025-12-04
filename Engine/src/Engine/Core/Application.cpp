@@ -4,6 +4,7 @@
 #include "Engine/Core/Input.h"
 #include "Engine/Core/KeyCode.h"
 #include "GLFW/glfw3.h"
+#include "Engine/Renderer/Renderer.h"
 namespace Engine::Core
 {
 
@@ -13,6 +14,8 @@ namespace Engine::Core
 	{
 		m_Window = Scope<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+
+		Renderer::Renderer::Init();
 
 		ENGINE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;

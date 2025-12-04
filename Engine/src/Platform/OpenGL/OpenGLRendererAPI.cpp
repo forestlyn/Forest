@@ -4,6 +4,13 @@
 
 namespace Engine::Platform::OpenGL
 {
+    void OpenGLRendererAPI::Init()
+    {
+        ENGINE_INFO("Initializing OpenGL Renderer API");
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+
     void OpenGLRendererAPI::SetClearColor(const glm::vec4 &color)
     {
         glClearColor(color.r, color.g, color.b, color.a);

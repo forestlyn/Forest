@@ -127,10 +127,12 @@ public:
 		m_Shader2 = Engine::Ref<Engine::Renderer::Shader>(
 			Engine::Renderer::Shader::Create(vertexSrc2, fragmentSrc2));
 
-		m_Texture = Engine::Ref<Engine::Renderer::Texture2D>(
+		m_CheckerBoardTexture = Engine::Ref<Engine::Renderer::Texture2D>(
 			Engine::Renderer::Texture2D::Create("assets/textures/Checkerboard.png"));
 
-		m_Texture->Bind();
+		m_LogoTexture = Engine::Ref<Engine::Renderer::Texture2D>(
+			Engine::Renderer::Texture2D::Create("assets/textures/ForestLogo.png"));
+
 		m_Shader->Bind();
 		dynamic_cast<Platform::OpenGL::OpenGLShader &>(*m_Shader).UploadUniformInt("u_Texture", 0);
 	}
@@ -190,7 +192,12 @@ public:
 													   glm::scale(glm::mat4(1.0f), m_QuadScale));
 			}
 		}
+		m_CheckerBoardTexture->Bind(0);
+		Engine::Renderer::Renderer::Submit(m_Shader, m_VertexArray,
+										   glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)) *
+											   glm::scale(glm::mat4(1.0f), glm::vec3(4.0f, 4.0f, 1.0f)));
 
+		m_LogoTexture->Bind(0);
 		Engine::Renderer::Renderer::Submit(m_Shader, m_VertexArray,
 										   glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)) *
 											   glm::scale(glm::mat4(1.0f), glm::vec3(4.0f, 4.0f, 1.0f)));
@@ -217,7 +224,7 @@ private:
 	Engine::Ref<Engine::Renderer::VertexArray> m_VertexArray2;
 	Engine::Ref<Engine::Renderer::Shader> m_Shader2;
 
-	Engine::Ref<Engine::Renderer::Texture2D> m_Texture;
+	Engine::Ref<Engine::Renderer::Texture2D> m_CheckerBoardTexture, m_LogoTexture;
 
 	Engine::Renderer::Camera *m_Camera;
 

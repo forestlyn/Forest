@@ -7,17 +7,22 @@ namespace Engine::Renderer
     class RenderCommand
     {
     public:
-        static void SetClearColor(const glm::vec4 &color)
+        inline static void Init()
+        {
+            CurrentRendererAPI->Init();
+        }
+
+        inline static void SetClearColor(const glm::vec4 &color)
         {
             CurrentRendererAPI->SetClearColor(color);
         }
 
-        static void Clear()
+        inline static void Clear()
         {
             CurrentRendererAPI->Clear();
         }
 
-        static void DrawIndexed(Ref<VertexArray> &vertexArray)
+        inline static void DrawIndexed(Ref<VertexArray> &vertexArray)
         {
             CurrentRendererAPI->DrawIndexed(vertexArray);
         }
