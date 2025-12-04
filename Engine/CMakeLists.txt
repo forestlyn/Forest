@@ -1,8 +1,17 @@
 project(Engine)
 
-file(GLOB ENGINE_SOURCES "src/Engine/*.cpp" "src/Engine/**/*.cpp" "src/Engine/**/**/*.cpp" "src/Platform/**/*.cpp")
-file(GLOB ENGINE_HEADERS "src/Engine/*.h" "src/Engine/**/*.h" "src/Engine/**/**/*.h" "src/Platform/**/*.h")
-
+file(GLOB ENGINE_SOURCES 
+    "src/Engine/*.cpp" 
+    "src/Engine/**/*.cpp"
+    "src/Engine/**/**/*.cpp"
+    "src/Platform/**/*.cpp"
+    "ThirdParty/stb_image/*.cpp")
+file(GLOB ENGINE_HEADERS 
+    "src/Engine/*.h" 
+    "src/Engine/**/*.h"
+    "src/Engine/**/**/*.h"
+    "src/Platform/**/*.h"
+    "ThirdParty/stb_image/*.h")
 
 add_subdirectory("ThirdParty/glfw")
 add_subdirectory("ThirdParty/glad")
@@ -21,6 +30,7 @@ target_include_directories(Engine
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glfw/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glad/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/stb_image>
 )
 
 target_link_libraries(Engine PUBLIC glfw glad opengl32 imgui)

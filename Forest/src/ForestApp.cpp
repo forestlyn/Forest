@@ -7,6 +7,7 @@
 #include "Engine/Renderer/Buffer.h"
 #include "Engine/Renderer/VertexArray.h"
 #include "Engine/Renderer/Camera/Camera.h"
+#include "Engine/Renderer/Texture.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -21,15 +22,15 @@ public:
 		  m_CameraPosition(0.0f, 0.0f, 0.0f), m_CameraRotation(0.0f, 0.0f, 0.0f),
 		  m_QuadPosition(0.0f, 0.0f, 0.0f), m_QuadScale(.1f, .1f, 1.f)
 	{
-		float vertices[4 * 7] = {
-			-0.5f, -0.5f, -5.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-			-0.5f, 0.5f, -5.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-			0.5f, 0.5f, -5.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-			0.5f, -0.5f, -5.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+		float vertices[4 * 5] = {
+			-0.5f, -0.5f, -5.0f, 0.0f, 0.0f,
+			-0.5f, 0.5f, -5.0f, 0.0f, 1.0f,
+			0.5f, 0.5f, -5.0f, 1.0f, 1.0f,
+			0.5f, -0.5f, -5.0f, 1.0f, 0.0f};
 
 		Engine::Renderer::BufferLayout layout = {
 			{Engine::Renderer::ShaderDataType::Float3, "a_Position"},
-			{Engine::Renderer::ShaderDataType::Float4, "a_Color"},
+			{Engine::Renderer::ShaderDataType::Float2, "a_TexCoord"},
 		};
 
 		m_VertexArray.reset(Engine::Renderer::VertexArray::Create());
@@ -48,15 +49,15 @@ public:
 			#version 330 core
 			
 			layout(location = 0) in vec3 a_Position;
-			layout(location = 1) in vec4 a_Color;
+			layout(location = 1) in vec2 a_TexCoord;
 			uniform mat4 u_ViewProjection;
 			uniform mat4 u_Transform;
 			out vec3 v_Position;
-			out vec4 v_Color;
+			out vec2 v_TexCoord;
 			void main()
 			{
 				v_Position = a_Position;
-				v_Color = a_Color;
+				v_TexCoord = a_TexCoord;
 				gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
 			}
 		)";
@@ -65,12 +66,13 @@ public:
 			#version 330 core
 			
 			layout(location = 0) out vec4 color;
+			uniform sampler2D u_Texture;
 			in vec3 v_Position;
-			in vec4 v_Color;
+			in vec2 v_TexCoord;
 			void main()
 			{
-				//color = vec4(0.2, 0.3, 0.8, 1.0); 
-				color = v_Color;
+				color = texture(u_Texture, v_TexCoord);
+				// color = vec4(0.2, 0.3, 0.8, 1.0); 
 			}
 		)";
 		m_Shader = Engine::Ref<Engine::Renderer::Shader>(
@@ -125,7 +127,12 @@ public:
 		m_Shader2 = Engine::Ref<Engine::Renderer::Shader>(
 			Engine::Renderer::Shader::Create(vertexSrc2, fragmentSrc2));
 
-		// Engine::Core::Application::Get().GetWindow().SetVSync(false);
+		m_Texture = Engine::Ref<Engine::Renderer::Texture2D>(
+			Engine::Renderer::Texture2D::Create("assets/textures/Checkerboard.png"));
+
+		m_Texture->Bind();
+		m_Shader->Bind();
+		dynamic_cast<Platform::OpenGL::OpenGLShader &>(*m_Shader).UploadUniformInt("u_Texture", 0);
 	}
 
 	void OnAttach() override
@@ -171,8 +178,6 @@ public:
 
 		Engine::Renderer::Renderer::BeginScene(*m_Camera);
 
-		Engine::Renderer::Renderer::Submit(m_Shader, m_VertexArray);
-
 		m_Shader2->Bind();
 		dynamic_cast<Platform::OpenGL::OpenGLShader &>(*m_Shader2).UploadUniformFloat3("u_Color", m_SquareColor);
 		float posdelta = 0.11f;
@@ -185,6 +190,10 @@ public:
 													   glm::scale(glm::mat4(1.0f), m_QuadScale));
 			}
 		}
+
+		Engine::Renderer::Renderer::Submit(m_Shader, m_VertexArray,
+										   glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)) *
+											   glm::scale(glm::mat4(1.0f), glm::vec3(4.0f, 4.0f, 1.0f)));
 
 		Engine::Renderer::Renderer::EndScene();
 	}
@@ -207,6 +216,8 @@ private:
 
 	Engine::Ref<Engine::Renderer::VertexArray> m_VertexArray2;
 	Engine::Ref<Engine::Renderer::Shader> m_Shader2;
+
+	Engine::Ref<Engine::Renderer::Texture2D> m_Texture;
 
 	Engine::Renderer::Camera *m_Camera;
 

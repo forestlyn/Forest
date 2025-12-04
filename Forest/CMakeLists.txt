@@ -36,6 +36,16 @@ if(WIN32)
     )
 endif()
 
+# 拷贝 assets 到可执行文件目录（在构建后执行）
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets")
+    add_custom_command(TARGET Forest POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/assets"
+            "$<TARGET_FILE_DIR:Forest>/assets"
+        COMMENT "Copying assets to runtime folder"
+    )
+endif()
+
 # 安装配置
 install(TARGETS Forest
     RUNTIME DESTINATION bin
