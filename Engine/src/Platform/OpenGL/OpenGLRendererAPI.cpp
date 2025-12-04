@@ -14,7 +14,7 @@ namespace Engine::Platform::OpenGL
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    void OpenGLRendererAPI::DrawIndexed(std::shared_ptr<Renderer::VertexArray> &vertexArray)
+    void OpenGLRendererAPI::DrawIndexed(Ref<Renderer::VertexArray> &vertexArray)
     {
         glDrawElements(GL_TRIANGLES, vertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
     }

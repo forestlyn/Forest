@@ -33,14 +33,14 @@ public:
 		};
 
 		m_VertexArray.reset(Engine::Renderer::VertexArray::Create());
-		std::shared_ptr<Engine::Renderer::VertexBuffer> vertexBuffer;
+		Engine::Ref<Engine::Renderer::VertexBuffer> vertexBuffer;
 		vertexBuffer.reset(Engine::Renderer::VertexBuffer::Create(vertices, sizeof(vertices)));
 		vertexBuffer->SetLayout(layout);
 		m_VertexArray->AddVertexBuffer(vertexBuffer);
 
 		uint32_t indices[6] = {0, 1, 2, 2, 3, 0};
-		std::shared_ptr<Engine::Renderer::IndexBuffer> indexBuffer =
-			std::shared_ptr<Engine::Renderer::IndexBuffer>(
+		Engine::Ref<Engine::Renderer::IndexBuffer> indexBuffer =
+			Engine::Ref<Engine::Renderer::IndexBuffer>(
 				Engine::Renderer::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 
@@ -73,7 +73,7 @@ public:
 				color = v_Color;
 			}
 		)";
-		m_Shader = std::shared_ptr<Engine::Renderer::Shader>(
+		m_Shader = Engine::Ref<Engine::Renderer::Shader>(
 			Engine::Renderer::Shader::Create(vertexSrc, fragmentSrc));
 
 		float vertices2[4 * 3] = {
@@ -86,14 +86,14 @@ public:
 		};
 
 		m_VertexArray2.reset(Engine::Renderer::VertexArray::Create());
-		std::shared_ptr<Engine::Renderer::VertexBuffer> vertexBuffer2;
+		Engine::Ref<Engine::Renderer::VertexBuffer> vertexBuffer2;
 		vertexBuffer2.reset(Engine::Renderer::VertexBuffer::Create(vertices2, sizeof(vertices2)));
 		vertexBuffer2->SetLayout(layout2);
 		m_VertexArray2->AddVertexBuffer(vertexBuffer2);
 
 		uint32_t indices2[6] = {0, 1, 2, 2, 3, 0};
-		std::shared_ptr<Engine::Renderer::IndexBuffer> indexBuffer2 =
-			std::shared_ptr<Engine::Renderer::IndexBuffer>(
+		Engine::Ref<Engine::Renderer::IndexBuffer> indexBuffer2 =
+			Engine::Ref<Engine::Renderer::IndexBuffer>(
 				Engine::Renderer::IndexBuffer::Create(indices2, sizeof(indices2) / sizeof(uint32_t)));
 		m_VertexArray2->SetIndexBuffer(indexBuffer2);
 
@@ -122,7 +122,7 @@ public:
 			}
 		)";
 
-		m_Shader2 = std::shared_ptr<Engine::Renderer::Shader>(
+		m_Shader2 = Engine::Ref<Engine::Renderer::Shader>(
 			Engine::Renderer::Shader::Create(vertexSrc2, fragmentSrc2));
 
 		// Engine::Core::Application::Get().GetWindow().SetVSync(false);
@@ -202,11 +202,11 @@ public:
 	}
 
 private:
-	std::shared_ptr<Engine::Renderer::VertexArray> m_VertexArray;
-	std::shared_ptr<Engine::Renderer::Shader> m_Shader;
+	Engine::Ref<Engine::Renderer::VertexArray> m_VertexArray;
+	Engine::Ref<Engine::Renderer::Shader> m_Shader;
 
-	std::shared_ptr<Engine::Renderer::VertexArray> m_VertexArray2;
-	std::shared_ptr<Engine::Renderer::Shader> m_Shader2;
+	Engine::Ref<Engine::Renderer::VertexArray> m_VertexArray2;
+	Engine::Ref<Engine::Renderer::Shader> m_Shader2;
 
 	Engine::Renderer::Camera *m_Camera;
 
@@ -219,7 +219,7 @@ private:
 	glm::vec3 m_QuadScale;
 	float m_QuadMoveSpeed = 1.0f;
 
-	glm::vec3 m_SquareColor;
+	glm::vec3 m_SquareColor = {0.2f, 0.3f, 0.8f};
 };
 
 class ForestApp : public Engine::Core::Application

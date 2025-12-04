@@ -12,11 +12,11 @@ namespace Engine::Renderer
         virtual void Bind() const = 0;
         virtual void Unbind() const = 0;
 
-        virtual void AddVertexBuffer(const std::shared_ptr<class VertexBuffer> &vertexBuffer) = 0;
-        virtual void SetIndexBuffer(const std::shared_ptr<class IndexBuffer> &indexBuffer) = 0;
+        virtual void AddVertexBuffer(const Ref<class VertexBuffer> &vertexBuffer) = 0;
+        virtual void SetIndexBuffer(const Ref<class IndexBuffer> &indexBuffer) = 0;
 
-        virtual const std::vector<std::shared_ptr<class VertexBuffer>> &GetVertexBuffers() const = 0;
-        virtual const std::shared_ptr<class IndexBuffer> &GetIndexBuffer() const = 0;
+        virtual const std::vector<Ref<class VertexBuffer>> &GetVertexBuffers() const = 0;
+        virtual const Ref<class IndexBuffer> &GetIndexBuffer() const = 0;
 
         static VertexArray *Create();
     };

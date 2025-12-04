@@ -11,6 +11,6 @@ namespace Engine::Platform::OpenGL
         virtual void SetClearColor(const glm::vec4 &color) override;
         virtual void Clear() override;
 
-        virtual void DrawIndexed(std::shared_ptr<Renderer::VertexArray> &vertexArray) override;
+        virtual void DrawIndexed(Ref<Renderer::VertexArray> &vertexArray) override;
     };
 } // namespace Engine::Platform::OpenGL

@@ -17,7 +17,7 @@ namespace Engine::Renderer
             CurrentRendererAPI->Clear();
         }
 
-        static void DrawIndexed(std::shared_ptr<VertexArray> &vertexArray)
+        static void DrawIndexed(Ref<VertexArray> &vertexArray)
         {
             CurrentRendererAPI->DrawIndexed(vertexArray);
         }

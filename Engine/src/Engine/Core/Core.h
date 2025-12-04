@@ -1,5 +1,5 @@
 #pragma once
-
+#include <memory>
 #ifdef FOREST_PLATFORM_WINDOWS
 #ifdef FOREST_DYNAMIC_LINK
 #ifdef FOREST_BUILD_DLL
@@ -38,3 +38,12 @@
 #define ENGINE_ASSERT(x, ...)
 #define ASSERT(x, ...)
 #endif
+
+namespace Engine
+{
+    template <typename T>
+    using Scope = std::unique_ptr<T>;
+
+    template <typename T>
+    using Ref = std::shared_ptr<T>;
+}
