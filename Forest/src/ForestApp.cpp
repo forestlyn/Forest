@@ -9,6 +9,9 @@
 #include "Engine/Renderer/Camera/Camera.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 class ExampleLayer : public Engine::Core::Layer
 {
@@ -16,13 +19,13 @@ public:
 	ExampleLayer()
 		: Layer("Example"), m_Camera(new Engine::Renderer::PerspectiveCamera(45.0f, 16.0f / 9.0f, 0.1f, 100.0f)),
 		  m_CameraPosition(0.0f, 0.0f, 0.0f), m_CameraRotation(0.0f, 0.0f, 0.0f),
-		  m_QuadPosition(0.0f, 0.0f, 0.0f), m_QuadScale(1.0f, 1.0f, 1.0f)
+		  m_QuadPosition(0.0f, 0.0f, 0.0f), m_QuadScale(.1f, .1f, 1.f)
 	{
 		float vertices[4 * 7] = {
 			-0.5f, -0.5f, -5.0f, 1.0f, 0.0f, 0.0f, 1.0f,
 			-0.5f, 0.5f, -5.0f, 0.0f, 1.0f, 0.0f, 1.0f,
 			0.5f, 0.5f, -5.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-			0.5f, -0.5f, -5.0f, 1.0f, 1.0f, 0.0f, 1.0f};
+			0.5f, -0.5f, -5.0f, 0.0f, 0.0f, 0.0f, 1.0f};
 
 		Engine::Renderer::BufferLayout layout = {
 			{Engine::Renderer::ShaderDataType::Float3, "a_Position"},
@@ -66,6 +69,7 @@ public:
 			in vec4 v_Color;
 			void main()
 			{
+				//color = vec4(0.2, 0.3, 0.8, 1.0); 
 				color = v_Color;
 			}
 		)";
@@ -73,7 +77,7 @@ public:
 			Engine::Renderer::Shader::Create(vertexSrc, fragmentSrc));
 
 		float vertices2[4 * 3] = {
-			-0.5f, -0.0f, -1.0f,
+			-0.5f, -0.5f, -1.0f,
 			0.5f, -0.5f, -1.0f,
 			0.5f, 0.5f, -1.0f,
 			-0.5f, 0.5f, -1.0f};
@@ -110,15 +114,18 @@ public:
 			#version 330 core
 			
 			layout(location = 0) out vec4 color;
+			uniform vec3 u_Color;
 			in vec3 v_Position;
 			void main()
 			{
-				color = vec4(v_Position * 0.5 + 0.5, 1.0);
+				color = vec4(u_Color, 1.0);
 			}
 		)";
 
 		m_Shader2 = std::shared_ptr<Engine::Renderer::Shader>(
 			Engine::Renderer::Shader::Create(vertexSrc2, fragmentSrc2));
+
+		// Engine::Core::Application::Get().GetWindow().SetVSync(false);
 	}
 
 	void OnAttach() override
@@ -154,6 +161,9 @@ public:
 		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_L))
 			m_QuadPosition.x += m_QuadMoveSpeed * timestep;
 
+		// float ts = timestep;
+		// LOG_TRACE("{0}", ts);
+
 		Engine::Renderer::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
 		Engine::Renderer::RenderCommand::Clear();
 		m_Camera->SetPosition(m_CameraPosition);
@@ -161,10 +171,20 @@ public:
 
 		Engine::Renderer::Renderer::BeginScene(*m_Camera);
 
-		Engine::Renderer::Renderer::Submit(m_Shader2, m_VertexArray2);
-		Engine::Renderer::Renderer::Submit(m_Shader, m_VertexArray,
-										   glm::translate(glm::mat4(1.0f), m_QuadPosition) *
-											   glm::scale(glm::mat4(1.0f), m_QuadScale));
+		Engine::Renderer::Renderer::Submit(m_Shader, m_VertexArray);
+
+		m_Shader2->Bind();
+		dynamic_cast<Platform::OpenGL::OpenGLShader &>(*m_Shader2).UploadUniformFloat3("u_Color", m_SquareColor);
+		float posdelta = 0.11f;
+		for (int x = 0; x < 20; x++)
+		{
+			for (int y = 0; y < 20; y++)
+			{
+				Engine::Renderer::Renderer::Submit(m_Shader2, m_VertexArray2,
+												   glm::translate(glm::mat4(1.0f), m_QuadPosition + glm::vec3(x * posdelta, y * posdelta, 0.0f)) *
+													   glm::scale(glm::mat4(1.0f), m_QuadScale));
+			}
+		}
 
 		Engine::Renderer::Renderer::EndScene();
 	}
@@ -176,6 +196,9 @@ public:
 
 	void OnImGuiRender() override
 	{
+		ImGui::Begin("Settings");
+		ImGui::ColorEdit3("Square Color", glm::value_ptr(m_SquareColor));
+		ImGui::End();
 	}
 
 private:
@@ -193,8 +216,10 @@ private:
 	float m_CameraRotationSpeed = 20.0f;
 
 	glm::vec3 m_QuadPosition;
-	glm::vec3 m_QuadScale = glm::vec3(0.1f, 0.1f, 0.1f);
+	glm::vec3 m_QuadScale;
 	float m_QuadMoveSpeed = 1.0f;
+
+	glm::vec3 m_SquareColor;
 };
 
 class ForestApp : public Engine::Core::Application
