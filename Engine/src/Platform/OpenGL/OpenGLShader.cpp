@@ -146,8 +146,9 @@ namespace Platform::OpenGL
     }
     void OpenGLShader::CompileShader(std::unordered_map<GLenum, std::string> &shaderSources)
     {
-
-        std::vector<GLuint> shaderIDs = std::vector<GLuint>(shaderSources.size());
+        ENGINE_ASSERT(shaderSources.size() <= 2, "We only support 2 shaders for now (vertex and fragment)");
+        std::array<GLuint, 2> shaderIDs;
+        int shaderIndex = 0;
 
         for (const auto &kv : shaderSources)
         {
@@ -184,7 +185,7 @@ namespace Platform::OpenGL
                 return;
             }
 
-            shaderIDs.push_back(shader);
+            shaderIDs[shaderIndex++] = shader;
         }
 
         // Vertex and fragment shaders are successfully compiled.
