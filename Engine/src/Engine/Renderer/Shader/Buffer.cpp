@@ -5,7 +5,7 @@
 #include "Platform/OpenGL/OpenGLBuffer.h"
 namespace Engine::Renderer
 {
-    VertexBuffer *VertexBuffer::Create(float *vertices, uint32_t size)
+    Ref<VertexBuffer> VertexBuffer::Create(float *vertices, uint32_t size)
     {
         switch (Renderer::Renderer::GetAPI())
         {
@@ -13,13 +13,13 @@ namespace Engine::Renderer
             ENGINE_ASSERT(false, "RendererAPI::None is currently not supported!");
             return nullptr;
         case RendererAPI::API::OpenGL:
-            return new Platform::OpenGL::OpenGLVertexBuffer(vertices, size);
+            return Ref<Platform::OpenGL::OpenGLVertexBuffer>(new Platform::OpenGL::OpenGLVertexBuffer(vertices, size));
         }
         ENGINE_ASSERT(false, "Unknown RendererAPI!");
         return nullptr;
     }
 
-    IndexBuffer *IndexBuffer::Create(uint32_t *indices, uint32_t count)
+    Ref<IndexBuffer> IndexBuffer::Create(uint32_t *indices, uint32_t count)
     {
         switch (Renderer::Renderer::GetAPI())
         {
@@ -27,7 +27,7 @@ namespace Engine::Renderer
             ENGINE_ASSERT(false, "RendererAPI::None is currently not supported!");
             return nullptr;
         case RendererAPI::API::OpenGL:
-            return new Platform::OpenGL::OpenGLIndexBuffer(indices, count);
+            return Ref<Platform::OpenGL::OpenGLIndexBuffer>(new Platform::OpenGL::OpenGLIndexBuffer(indices, count));
         }
         ENGINE_ASSERT(false, "Unknown RendererAPI!");
         return nullptr;

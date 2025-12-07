@@ -9,7 +9,7 @@ namespace Engine::Renderer
     {
     }
 
-    VertexArray *VertexArray::Create()
+    Ref<VertexArray> VertexArray::Create()
     {
         switch (Renderer::Renderer::GetAPI())
         {
@@ -17,7 +17,7 @@ namespace Engine::Renderer
             ENGINE_ASSERT(false, "RendererAPI::None is currently not supported!");
             return nullptr;
         case RendererAPI::API::OpenGL:
-            return new Platform::OpenGL::OpenGLVertexArray();
+            return Ref<Platform::OpenGL::OpenGLVertexArray>(new Platform::OpenGL::OpenGLVertexArray());
         }
         ENGINE_ASSERT(false, "Unknown RendererAPI!");
         return nullptr;

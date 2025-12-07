@@ -18,7 +18,8 @@ namespace Platform::OpenGL
         return 0;
     }
 
-    OpenGLShader::OpenGLShader(const std::string &vertexSrc, const std::string &fragmentSrc)
+    OpenGLShader::OpenGLShader(const std::string &name, const std::string &vertexSrc, const std::string &fragmentSrc)
+        : m_Name(name)
     {
         std::unordered_map<GLenum, std::string> shaderSources;
         shaderSources[GL_VERTEX_SHADER] = vertexSrc;
@@ -56,6 +57,18 @@ namespace Platform::OpenGL
 
         auto shaderSources = PreProcess(source);
         CompileShader(shaderSources);
+
+        // // test
+        // ExtractNameFromFilepath("filepath/shader.glsl");
+        // ENGINE_INFO("Shader name extracted: {0}", m_Name);
+        // ExtractNameFromFilepath("shader.glsl");
+        // ENGINE_INFO("Shader name extracted: {0}", m_Name);
+        // ExtractNameFromFilepath("filepath\\shader.glsl");
+        // ENGINE_INFO("Shader name extracted: {0}", m_Name);
+        // ExtractNameFromFilepath("shader");
+        // ENGINE_INFO("Shader name extracted: {0}", m_Name);
+
+        ExtractNameFromFilepath(filepath);
     }
 
     OpenGLShader::~OpenGLShader()
@@ -233,6 +246,15 @@ namespace Platform::OpenGL
         {
             glDetachShader(program, shader);
         }
+    }
+
+    void OpenGLShader::ExtractNameFromFilepath(const std::string &filepath)
+    {
+        size_t lastSlash = filepath.find_last_of("/\\");
+        lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+        size_t lastDot = filepath.rfind('.');
+        lastDot = lastDot == std::string::npos ? filepath.size() : lastDot;
+        m_Name = filepath.substr(lastSlash, lastDot - lastSlash);
     }
 
 #pragma endregion

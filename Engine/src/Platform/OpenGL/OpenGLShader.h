@@ -11,11 +11,13 @@ namespace Platform::OpenGL
     class OpenGLShader : public Engine::Renderer::Shader
     {
     public:
-        OpenGLShader(const std::string &vertexSrc, const std::string &fragmentSrc);
+        OpenGLShader(const std::string &name, const std::string &vertexSrc, const std::string &fragmentSrc);
         OpenGLShader(const std::string &filepath);
         virtual ~OpenGLShader();
         virtual void Bind() const override;
         virtual void Unbind() const override;
+
+        virtual const std::string &GetName() const override { return m_Name; }
 
         virtual void UploadUniformInt(const std::string &name, int value);
 
@@ -32,8 +34,11 @@ namespace Platform::OpenGL
 
         void CompileShader(std::unordered_map<GLenum, std::string> &shaderSources);
 
+        void ExtractNameFromFilepath(const std::string &filepath);
+
     private:
         uint32_t m_RendererID = 0;
+        std::string m_Name;
     };
 
 } // namespace Engine::Renderer

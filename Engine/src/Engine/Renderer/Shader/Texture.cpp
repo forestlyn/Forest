@@ -5,7 +5,7 @@
 
 namespace Engine::Renderer
 {
-    Texture2D *Texture2D::Create(const std::string &path)
+    Ref<Texture2D> Texture2D::Create(const std::string &path)
     {
         switch (Renderer::Renderer::GetAPI())
         {
@@ -13,7 +13,7 @@ namespace Engine::Renderer
             ENGINE_ASSERT(false, "RendererAPI::None is currently not supported!");
             return nullptr;
         case RendererAPI::API::OpenGL:
-            return new Platform::OpenGL::OpenGLTexture2D(path);
+            return Ref<Platform::OpenGL::OpenGLTexture2D>(new Platform::OpenGL::OpenGLTexture2D(path));
         default:
             break;
         }

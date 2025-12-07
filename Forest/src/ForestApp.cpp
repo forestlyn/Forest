@@ -2,6 +2,7 @@
 #include "Imgui.h"
 #include "Engine/Renderer/RenderCommand.h"
 #include "Engine/Renderer/Renderer.h"
+#include "Engine/Renderer/Shader/ShaderLibrary.h"
 #include "Engine/Renderer/Shader/Shader.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Engine/Renderer/Shader/Buffer.h"
@@ -33,9 +34,9 @@ public:
 			{Engine::Renderer::ShaderDataType::Float2, "a_TexCoord"},
 		};
 
-		m_VertexArray.reset(Engine::Renderer::VertexArray::Create());
+		m_VertexArray = Engine::Renderer::VertexArray::Create();
 		Engine::Ref<Engine::Renderer::VertexBuffer> vertexBuffer;
-		vertexBuffer.reset(Engine::Renderer::VertexBuffer::Create(vertices, sizeof(vertices)));
+		vertexBuffer = Engine::Renderer::VertexBuffer::Create(vertices, sizeof(vertices));
 		vertexBuffer->SetLayout(layout);
 		m_VertexArray->AddVertexBuffer(vertexBuffer);
 
@@ -75,8 +76,10 @@ public:
 				// color = vec4(0.2, 0.3, 0.8, 1.0); 
 			}
 		)";
-		m_Shader = Engine::Ref<Engine::Renderer::Shader>(
-			Engine::Renderer::Shader::Create(vertexSrc, fragmentSrc));
+
+		auto m_Shader = Engine::Ref<Engine::Renderer::Shader>(
+			Engine::Renderer::Shader::Create("TextureShader", vertexSrc, fragmentSrc));
+		m_ShaderLibrary.Add(m_Shader);
 
 		float vertices2[4 * 3] = {
 			-0.5f, -0.5f, -1.0f,
@@ -87,9 +90,9 @@ public:
 			{Engine::Renderer::ShaderDataType::Float3, "a_Position"},
 		};
 
-		m_VertexArray2.reset(Engine::Renderer::VertexArray::Create());
+		m_VertexArray2 = Engine::Renderer::VertexArray::Create();
 		Engine::Ref<Engine::Renderer::VertexBuffer> vertexBuffer2;
-		vertexBuffer2.reset(Engine::Renderer::VertexBuffer::Create(vertices2, sizeof(vertices2)));
+		vertexBuffer2 = Engine::Renderer::VertexBuffer::Create(vertices2, sizeof(vertices2));
 		vertexBuffer2->SetLayout(layout2);
 		m_VertexArray2->AddVertexBuffer(vertexBuffer2);
 
@@ -99,8 +102,7 @@ public:
 				Engine::Renderer::IndexBuffer::Create(indices2, sizeof(indices2) / sizeof(uint32_t)));
 		m_VertexArray2->SetIndexBuffer(indexBuffer2);
 
-		m_Shader2 = Engine::Ref<Engine::Renderer::Shader>(
-			Engine::Renderer::Shader::Create("assets/shaders/ColorShader.glsl"));
+		m_ShaderLibrary.Load("assets/shaders/ColorShader.glsl");
 
 		m_CheckerBoardTexture = Engine::Ref<Engine::Renderer::Texture2D>(
 			Engine::Renderer::Texture2D::Create("assets/textures/Checkerboard.png"));
@@ -155,6 +157,7 @@ public:
 
 		Engine::Renderer::Renderer::BeginScene(*m_Camera);
 
+		auto m_Shader2 = m_ShaderLibrary.Get("ColorShader");
 		m_Shader2->Bind();
 		dynamic_cast<Platform::OpenGL::OpenGLShader &>(*m_Shader2).UploadUniformFloat3("u_Color", m_SquareColor);
 		float posdelta = 0.11f;
@@ -167,6 +170,7 @@ public:
 													   glm::scale(glm::mat4(1.0f), m_QuadScale));
 			}
 		}
+		auto m_Shader = m_ShaderLibrary.Get("TextureShader");
 		m_CheckerBoardTexture->Bind(0);
 		Engine::Renderer::Renderer::Submit(m_Shader, m_VertexArray,
 										   glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)) *
@@ -194,10 +198,10 @@ public:
 
 private:
 	Engine::Ref<Engine::Renderer::VertexArray> m_VertexArray;
-	Engine::Ref<Engine::Renderer::Shader> m_Shader;
 
 	Engine::Ref<Engine::Renderer::VertexArray> m_VertexArray2;
-	Engine::Ref<Engine::Renderer::Shader> m_Shader2;
+
+	Engine::Renderer::ShaderLibrary m_ShaderLibrary;
 
 	Engine::Ref<Engine::Renderer::Texture2D> m_CheckerBoardTexture, m_LogoTexture;
 

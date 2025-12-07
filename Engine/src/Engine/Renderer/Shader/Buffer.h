@@ -134,7 +134,7 @@ namespace Engine::Renderer
         virtual void Unbind() const = 0;
         virtual const BufferLayout &GetLayout() const { return m_Layout; }
         virtual void SetLayout(const BufferLayout &layout) { m_Layout = layout; }
-        static VertexBuffer *Create(float *vertices, uint32_t size);
+        static Ref<VertexBuffer> Create(float *vertices, uint32_t size);
 
     private:
         BufferLayout m_Layout;
@@ -147,6 +147,6 @@ namespace Engine::Renderer
         virtual void Bind() const = 0;
         virtual void Unbind() const = 0;
         virtual uint32_t GetCount() const = 0;
-        static IndexBuffer *Create(uint32_t *indices, uint32_t count);
+        static Ref<IndexBuffer> Create(uint32_t *indices, uint32_t count);
     };
 } // namespace Engine::Renderer

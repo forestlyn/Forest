@@ -18,6 +18,6 @@ namespace Engine::Renderer
         virtual const std::vector<Ref<class VertexBuffer>> &GetVertexBuffers() const = 0;
         virtual const Ref<class IndexBuffer> &GetIndexBuffer() const = 0;
 
-        static VertexArray *Create();
+        static Ref<VertexArray> Create();
     };
 } // namespace Engine::Renderer

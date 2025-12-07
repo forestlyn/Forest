@@ -4,7 +4,7 @@
 #include "../Renderer.h"
 namespace Engine::Renderer
 {
-    Shader *Shader::Create(const std::string &vertexSrc, const std::string &fragmentSrc)
+    Ref<Shader> Shader::Create(const std::string &name, const std::string &vertexSrc, const std::string &fragmentSrc)
     {
         switch (Renderer::Renderer::GetAPI())
         {
@@ -12,13 +12,13 @@ namespace Engine::Renderer
             ENGINE_ASSERT(false, "RendererAPI::None is currently not supported!");
             return nullptr;
         case RendererAPI::API::OpenGL:
-            return new Platform::OpenGL::OpenGLShader(vertexSrc, fragmentSrc);
+            return Ref<Platform::OpenGL::OpenGLShader>(new Platform::OpenGL::OpenGLShader(name, vertexSrc, fragmentSrc));
         }
         ENGINE_ASSERT(false, "Unknown RendererAPI!");
         return nullptr;
     }
 
-    Shader *Shader::Create(const std::string &filepath)
+    Ref<Shader> Shader::Create(const std::string &filepath)
     {
         switch (Renderer::Renderer::GetAPI())
         {
@@ -26,7 +26,7 @@ namespace Engine::Renderer
             ENGINE_ASSERT(false, "RendererAPI::None is currently not supported!");
             return nullptr;
         case RendererAPI::API::OpenGL:
-            return new Platform::OpenGL::OpenGLShader(filepath);
+            return Ref<Platform::OpenGL::OpenGLShader>(new Platform::OpenGL::OpenGLShader(filepath));
         }
         ENGINE_ASSERT(false, "Unknown RendererAPI!");
         return nullptr;
