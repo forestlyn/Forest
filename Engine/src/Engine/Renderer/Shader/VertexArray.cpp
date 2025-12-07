@@ -1,11 +1,15 @@
-#include "Texture.h"
+#include "VertexArray.h"
 #include "Engine/pcheader.h"
-#include "Renderer.h"
-#include "Platform/OpenGL/OpenGLTexture.h"
+#include "../Renderer.h"
+#include "Platform/OpenGL/OpenGLVertexArray.h"
 
 namespace Engine::Renderer
 {
-    Texture2D *Texture2D::Create(const std::string &path)
+    VertexArray::~VertexArray()
+    {
+    }
+
+    VertexArray *VertexArray::Create()
     {
         switch (Renderer::Renderer::GetAPI())
         {
@@ -13,9 +17,7 @@ namespace Engine::Renderer
             ENGINE_ASSERT(false, "RendererAPI::None is currently not supported!");
             return nullptr;
         case RendererAPI::API::OpenGL:
-            return new Platform::OpenGL::OpenGLTexture2D(path);
-        default:
-            break;
+            return new Platform::OpenGL::OpenGLVertexArray();
         }
         ENGINE_ASSERT(false, "Unknown RendererAPI!");
         return nullptr;

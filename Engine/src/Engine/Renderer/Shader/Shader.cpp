@@ -1,7 +1,7 @@
 #include "Shader.h"
 #include "Engine/pcheader.h"
 #include "Platform/OpenGL/OpenGLShader.h"
-#include "Renderer.h"
+#include "../Renderer.h"
 namespace Engine::Renderer
 {
     Shader *Shader::Create(const std::string &vertexSrc, const std::string &fragmentSrc)

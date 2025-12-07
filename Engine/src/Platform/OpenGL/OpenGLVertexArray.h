@@ -1,5 +1,5 @@
 #pragma once
-#include "Engine/Renderer/VertexArray.h"
+#include "Engine/Renderer/Shader/VertexArray.h"
 
 namespace Platform::OpenGL
 {

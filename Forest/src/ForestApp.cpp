@@ -2,12 +2,12 @@
 #include "Imgui.h"
 #include "Engine/Renderer/RenderCommand.h"
 #include "Engine/Renderer/Renderer.h"
-#include "Engine/Renderer/Shader.h"
+#include "Engine/Renderer/Shader/Shader.h"
 #include "Platform/OpenGL/OpenGLShader.h"
-#include "Engine/Renderer/Buffer.h"
-#include "Engine/Renderer/VertexArray.h"
+#include "Engine/Renderer/Shader/Buffer.h"
+#include "Engine/Renderer/Shader/VertexArray.h"
 #include "Engine/Renderer/Camera/Camera.h"
-#include "Engine/Renderer/Texture.h"
+#include "Engine/Renderer/Shader/Texture.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -99,7 +99,7 @@ public:
 				Engine::Renderer::IndexBuffer::Create(indices2, sizeof(indices2) / sizeof(uint32_t)));
 		m_VertexArray2->SetIndexBuffer(indexBuffer2);
 
-				m_Shader2 = Engine::Ref<Engine::Renderer::Shader>(
+		m_Shader2 = Engine::Ref<Engine::Renderer::Shader>(
 			Engine::Renderer::Shader::Create("assets/shaders/ColorShader.glsl"));
 
 		m_CheckerBoardTexture = Engine::Ref<Engine::Renderer::Texture2D>(

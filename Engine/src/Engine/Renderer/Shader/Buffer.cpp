@@ -1,6 +1,6 @@
 #include "Buffer.h"
 #include "Engine/pcheader.h"
-#include "Renderer.h"
+#include "../Renderer.h"
 
 #include "Platform/OpenGL/OpenGLBuffer.h"
 namespace Engine::Renderer
@@ -16,7 +16,7 @@ namespace Engine::Renderer
             return new Platform::OpenGL::OpenGLVertexBuffer(vertices, size);
         }
         ENGINE_ASSERT(false, "Unknown RendererAPI!");
-        return nullptr; // Placeholder
+        return nullptr;
     }
 
     IndexBuffer *IndexBuffer::Create(uint32_t *indices, uint32_t count)
@@ -30,6 +30,6 @@ namespace Engine::Renderer
             return new Platform::OpenGL::OpenGLIndexBuffer(indices, count);
         }
         ENGINE_ASSERT(false, "Unknown RendererAPI!");
-        return nullptr; // Placeholder
+        return nullptr;
     }
 } // namespace Engine::Renderer

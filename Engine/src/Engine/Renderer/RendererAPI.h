@@ -1,5 +1,5 @@
 #pragma once
-#include "VertexArray.h"
+#include "Shader/VertexArray.h"
 #include "glm/vec4.hpp"
 namespace Engine::Renderer
 {

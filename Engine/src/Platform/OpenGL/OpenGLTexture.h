@@ -1,5 +1,5 @@
 #pragma once
-#include "Engine/Renderer/Texture.h"
+#include "Engine/Renderer/Shader/Texture.h"
 
 namespace Platform::OpenGL
 {

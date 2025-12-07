@@ -1,6 +1,6 @@
 #pragma once
 #include "Engine/pcheader.h"
-#include "Engine/Renderer/Buffer.h"
+#include "Engine/Renderer/Shader/Buffer.h"
 
 namespace Platform::OpenGL
 {
