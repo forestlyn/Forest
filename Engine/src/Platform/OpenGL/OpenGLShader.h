@@ -2,6 +2,9 @@
 #include "Engine/Renderer/Shader.h"
 #include "Engine/pcheader.h"
 #include <glm/glm.hpp>
+#include <unordered_map>
+
+typedef unsigned int GLenum;
 namespace Platform::OpenGL
 {
 
@@ -9,6 +12,7 @@ namespace Platform::OpenGL
     {
     public:
         OpenGLShader(const std::string &vertexSrc, const std::string &fragmentSrc);
+        OpenGLShader(const std::string &filepath);
         virtual ~OpenGLShader();
         virtual void Bind() const override;
         virtual void Unbind() const override;
@@ -22,6 +26,11 @@ namespace Platform::OpenGL
 
         virtual void UploadUniformMat3(const std::string &name, const glm::mat3 &matrix);
         virtual void UploadUniformMat4(const std::string &name, const glm::mat4 &matrix);
+
+    private:
+        std::unordered_map<GLenum, std::string> PreProcess(const std::string &source);
+
+        void CompileShader(std::unordered_map<GLenum, std::string> &shaderSources);
 
     private:
         uint32_t m_RendererID = 0;

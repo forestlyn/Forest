@@ -17,4 +17,18 @@ namespace Engine::Renderer
         ENGINE_ASSERT(false, "Unknown RendererAPI!");
         return nullptr;
     }
+
+    Shader *Shader::Create(const std::string &filepath)
+    {
+        switch (Renderer::Renderer::GetAPI())
+        {
+        case RendererAPI::API::None:
+            ENGINE_ASSERT(false, "RendererAPI::None is currently not supported!");
+            return nullptr;
+        case RendererAPI::API::OpenGL:
+            return new Platform::OpenGL::OpenGLShader(filepath);
+        }
+        ENGINE_ASSERT(false, "Unknown RendererAPI!");
+        return nullptr;
+    }
 }

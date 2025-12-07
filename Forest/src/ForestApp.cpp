@@ -99,33 +99,8 @@ public:
 				Engine::Renderer::IndexBuffer::Create(indices2, sizeof(indices2) / sizeof(uint32_t)));
 		m_VertexArray2->SetIndexBuffer(indexBuffer2);
 
-		std::string vertexSrc2 = R"(
-			#version 330 core
-			
-			layout(location = 0) in vec3 a_Position;
-			out vec3 v_Position;
-			uniform mat4 u_ViewProjection;
-			uniform mat4 u_Transform;
-			void main()
-			{
-				v_Position = a_Position;
-				gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
-			}
-		)";
-		std::string fragmentSrc2 = R"(
-			#version 330 core
-			
-			layout(location = 0) out vec4 color;
-			uniform vec3 u_Color;
-			in vec3 v_Position;
-			void main()
-			{
-				color = vec4(u_Color, 1.0);
-			}
-		)";
-
-		m_Shader2 = Engine::Ref<Engine::Renderer::Shader>(
-			Engine::Renderer::Shader::Create(vertexSrc2, fragmentSrc2));
+				m_Shader2 = Engine::Ref<Engine::Renderer::Shader>(
+			Engine::Renderer::Shader::Create("assets/shaders/ColorShader.glsl"));
 
 		m_CheckerBoardTexture = Engine::Ref<Engine::Renderer::Texture2D>(
 			Engine::Renderer::Texture2D::Create("assets/textures/Checkerboard.png"));
