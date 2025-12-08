@@ -53,6 +53,7 @@ namespace Engine::Core
 	{
 		Event::EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<Event::WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
+		dispatcher.Dispatch<Event::WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
 
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
 		{
@@ -68,6 +69,20 @@ namespace Engine::Core
 	{
 		m_Running = false;
 		return true;
+	}
+
+	bool Application::OnWindowResize(Event::WindowResizeEvent &e)
+	{
+		if (e.GetWidth() == 0 || e.GetHeight() == 0)
+		{
+			m_Minimized = true;
+		}
+		else
+		{
+			m_Minimized = false;
+		}
+		Renderer::Renderer::SetViewport(0, 0, e.GetWidth(), e.GetHeight());
+		return false;
 	}
 
 	void Application::PushLayer(Layer *layer)

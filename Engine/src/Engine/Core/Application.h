@@ -28,12 +28,15 @@ namespace Engine::Core
 
 	private:
 		bool m_Running = true;
+		bool m_Minimized = false;
+
 		float m_LastFrameTime = 0.0f;
 		Scope<Window> m_Window;
 		Engine::MyImGui::ImGuiLayer *m_ImGuiLayer;
 
 		bool OnEvent(Event::Event &e);
 		bool OnWindowClose(Event::WindowCloseEvent &e);
+		bool OnWindowResize(Event::WindowResizeEvent &e);
 
 		LayerStack m_LayerStack;
 		static Application *s_Instance;

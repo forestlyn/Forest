@@ -19,6 +19,11 @@ namespace Engine::Renderer
     {
     }
 
+    void Renderer::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+    {
+        RenderCommand::SetViewport(x, y, width, height);
+    }
+
     void Renderer::Submit(Ref<Shader> &shader, Ref<VertexArray> &vertexArray, glm::mat4 transform)
     {
         shader->Bind();
