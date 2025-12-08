@@ -65,6 +65,8 @@ namespace Engine
 
     bool PerspectiveCameraController::OnWindowResize(Event::WindowResizeEvent &event)
     {
+        if (event.GetHeight() == 0 || event.GetWidth() == 0)
+            return false;
         m_AspectRatio = (float)event.GetWidth() / (float)event.GetHeight();
         m_Camera.SetProjection(m_FOV, m_AspectRatio, 0.1f, 1000.0f);
         return false;

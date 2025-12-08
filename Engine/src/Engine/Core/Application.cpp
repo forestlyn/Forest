@@ -36,8 +36,12 @@ namespace Engine::Core
 			Timestep time = glfwGetTime(); // Get time in seconds
 			float deltaTime = time - m_LastFrameTime;
 			m_LastFrameTime = time;
-			for (auto layer : m_LayerStack)
-				layer->OnUpdate(deltaTime);
+			if (!m_Minimized)
+			{
+				for (auto layer : m_LayerStack)
+					layer->OnUpdate(deltaTime);
+			}
+
 			m_ImGuiLayer->Begin();
 			for (auto layer : m_LayerStack)
 			{
@@ -80,8 +84,8 @@ namespace Engine::Core
 		else
 		{
 			m_Minimized = false;
+			Renderer::Renderer::SetViewport(0, 0, e.GetWidth(), e.GetHeight());
 		}
-		Renderer::Renderer::SetViewport(0, 0, e.GetWidth(), e.GetHeight());
 		return false;
 	}
 

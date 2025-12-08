@@ -44,6 +44,8 @@ namespace Engine
     }
     bool OrthographicCameraController::OnWindowResize(Event::WindowResizeEvent &event)
     {
+        if (event.GetHeight() == 0 || event.GetWidth() == 0)
+            return false;
         m_AspectRatio = (float)event.GetWidth() / (float)event.GetHeight();
         m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
         return false;
