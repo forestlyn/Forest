@@ -9,6 +9,7 @@
 #include "Engine/Renderer/Shader/VertexArray.h"
 #include "Engine/Renderer/Camera/Camera.h"
 #include "Engine/Renderer/Shader/Texture.h"
+#include "Engine/Controller/OrthographicCameraController.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -19,15 +20,14 @@ class ExampleLayer : public Engine::Core::Layer
 {
 public:
 	ExampleLayer()
-		: Layer("Example"), m_Camera(new Engine::Renderer::PerspectiveCamera(45.0f, 16.0f / 9.0f, 0.1f, 100.0f)),
-		  m_CameraPosition(0.0f, 0.0f, 0.0f), m_CameraRotation(0.0f, 0.0f, 0.0f),
+		: Layer("Example"), m_CameraController(16.0f / 9.0f, 1.0f, true),
 		  m_QuadPosition(0.0f, 0.0f, 0.0f), m_QuadScale(.1f, .1f, 1.f)
 	{
 		float vertices[4 * 5] = {
-			-0.5f, -0.5f, -5.0f, 0.0f, 0.0f,
-			-0.5f, 0.5f, -5.0f, 0.0f, 1.0f,
-			0.5f, 0.5f, -5.0f, 1.0f, 1.0f,
-			0.5f, -0.5f, -5.0f, 1.0f, 0.0f};
+			-0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
+			-0.5f, 0.5f, -1.0f, 0.0f, 1.0f,
+			0.5f, 0.5f, -1.0f, 1.0f, 1.0f,
+			0.5f, -0.5f, -1.0f, 1.0f, 0.0f};
 
 		Engine::Renderer::BufferLayout layout = {
 			{Engine::Renderer::ShaderDataType::Float3, "a_Position"},
@@ -124,19 +124,7 @@ public:
 
 	void OnUpdate(Engine::Core::Timestep timestep) override
 	{
-		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_UP))
-			m_CameraPosition.y -= m_CameraMoveSpeed * timestep;
-		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_DOWN))
-			m_CameraPosition.y += m_CameraMoveSpeed * timestep;
-		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_LEFT))
-			m_CameraPosition.x -= m_CameraMoveSpeed * timestep;
-		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_RIGHT))
-			m_CameraPosition.x += m_CameraMoveSpeed * timestep;
-
-		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_A))
-			m_CameraRotation.z -= m_CameraRotationSpeed * timestep;
-		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_D))
-			m_CameraRotation.z += m_CameraRotationSpeed * timestep;
+		m_CameraController.OnUpdate(timestep);
 
 		if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_I))
 			m_QuadPosition.y += m_QuadMoveSpeed * timestep;
@@ -152,10 +140,8 @@ public:
 
 		Engine::Renderer::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
 		Engine::Renderer::RenderCommand::Clear();
-		m_Camera->SetPosition(m_CameraPosition);
-		m_Camera->SetRotationDegrees(m_CameraRotation);
 
-		Engine::Renderer::Renderer::BeginScene(*m_Camera);
+		Engine::Renderer::Renderer::BeginScene(m_CameraController.GetCamera());
 
 		auto m_Shader2 = m_ShaderLibrary.Get("ColorShader");
 		m_Shader2->Bind();
@@ -174,12 +160,12 @@ public:
 		m_CheckerBoardTexture->Bind(0);
 		Engine::Renderer::Renderer::Submit(m_Shader, m_VertexArray,
 										   glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)) *
-											   glm::scale(glm::mat4(1.0f), glm::vec3(4.0f, 4.0f, 1.0f)));
+											   glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f)));
 
 		m_LogoTexture->Bind(0);
 		Engine::Renderer::Renderer::Submit(m_Shader, m_VertexArray,
 										   glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)) *
-											   glm::scale(glm::mat4(1.0f), glm::vec3(4.0f, 4.0f, 1.0f)));
+											   glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f)));
 
 		Engine::Renderer::Renderer::EndScene();
 	}
@@ -205,12 +191,7 @@ private:
 
 	Engine::Ref<Engine::Renderer::Texture2D> m_CheckerBoardTexture, m_LogoTexture;
 
-	Engine::Renderer::Camera *m_Camera;
-
-	glm::vec3 m_CameraPosition;
-	glm::vec3 m_CameraRotation;
-	float m_CameraMoveSpeed = 1.f;
-	float m_CameraRotationSpeed = 20.0f;
+	Engine::OrthographicCameraController m_CameraController;
 
 	glm::vec3 m_QuadPosition;
 	glm::vec3 m_QuadScale;
