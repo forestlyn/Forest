@@ -9,7 +9,7 @@
 #include "Engine/Renderer/Shader/VertexArray.h"
 #include "Engine/Renderer/Camera/Camera.h"
 #include "Engine/Renderer/Shader/Texture.h"
-#include "Engine/Controller/OrthographicCameraController.h"
+#include "Engine/Controller/PerspectiveCameraController.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -20,14 +20,14 @@ class ExampleLayer : public Engine::Core::Layer
 {
 public:
 	ExampleLayer()
-		: Layer("Example"), m_CameraController(16.0f / 9.0f, 1.0f, true),
+		: Layer("Example"), m_CameraController(45.0f, 16.0f / 9.0f, glm::bvec3(true, true, true)),
 		  m_QuadPosition(0.0f, 0.0f, 0.0f), m_QuadScale(.1f, .1f, 1.f)
 	{
 		float vertices[4 * 5] = {
-			-0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
-			-0.5f, 0.5f, -1.0f, 0.0f, 1.0f,
-			0.5f, 0.5f, -1.0f, 1.0f, 1.0f,
-			0.5f, -0.5f, -1.0f, 1.0f, 0.0f};
+			-0.5f, -0.5f, -5.0f, 0.0f, 0.0f,
+			-0.5f, 0.5f, -5.0f, 0.0f, 1.0f,
+			0.5f, 0.5f, -5.0f, 1.0f, 1.0f,
+			0.5f, -0.5f, -5.0f, 1.0f, 0.0f};
 
 		Engine::Renderer::BufferLayout layout = {
 			{Engine::Renderer::ShaderDataType::Float3, "a_Position"},
@@ -172,6 +172,7 @@ public:
 
 	bool OnEvent(Engine::Event::Event &event) override
 	{
+		m_CameraController.OnEvent(event);
 		return false;
 	}
 
@@ -191,7 +192,7 @@ private:
 
 	Engine::Ref<Engine::Renderer::Texture2D> m_CheckerBoardTexture, m_LogoTexture;
 
-	Engine::OrthographicCameraController m_CameraController;
+	Engine::PerspectiveCameraController m_CameraController;
 
 	glm::vec3 m_QuadPosition;
 	glm::vec3 m_QuadScale;

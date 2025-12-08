@@ -7,7 +7,7 @@ namespace Engine::Renderer
 {
     PerspectiveCamera::PerspectiveCamera(float fovDegrees, float aspectRatio, float nearClip, float farClip)
     {
-        // ENGINE_INFO("Creating PerspectiveCamera with FOV: {}, Aspect Ratio: {}, Near Clip: {}, Far Clip: {}", fovDegrees, aspectRatio, nearClip, farClip);
+        ENGINE_INFO("Creating PerspectiveCamera with FOV: {}, Aspect Ratio: {}, Near Clip: {}, Far Clip: {}", fovDegrees, aspectRatio, nearClip, farClip);
         m_ProjectionMatrix = glm::perspectiveRH_NO(glm::radians(fovDegrees), aspectRatio, nearClip, farClip);
         m_ViewMatrix = glm::mat4(1.0f);
         m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
@@ -19,6 +19,12 @@ namespace Engine::Renderer
 
         // ENGINE_TRACE("ViewProjectionMatrix:");
         // ENGINE_TRACE("{0}", glm::to_string(m_ViewProjectionMatrix));
+    }
+
+    void PerspectiveCamera::SetProjection(float fovDegrees, float aspectRatio, float nearClip, float farClip)
+    {
+        m_ProjectionMatrix = glm::perspectiveRH_NO(glm::radians(fovDegrees), aspectRatio, nearClip, farClip);
+        m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
     }
 
     void PerspectiveCamera::SetPosition(const glm::vec3 &position)
