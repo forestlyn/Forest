@@ -24,6 +24,7 @@ target_link_libraries(Forest PRIVATE Engine)
 set_target_properties(Forest PROPERTIES
     OUTPUT_NAME "Forest"
     DEBUG_POSTFIX "-debug"
+    RELEASE_POSTFIX "_release"
 )
 
 # 复制运行时依赖（如果需要）

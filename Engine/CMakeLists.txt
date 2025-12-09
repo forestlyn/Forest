@@ -36,7 +36,7 @@ target_include_directories(Engine
 target_link_libraries(Engine PUBLIC glfw glad opengl32 imgui)
 
 # 设置编译器特性
-target_compile_features(Engine PUBLIC cxx_std_17)
+target_compile_features(Engine PUBLIC cxx_std_20)
 
 # 设置预处理器定义
 target_compile_definitions(Engine
@@ -54,6 +54,7 @@ target_precompile_headers(
 set_target_properties(Engine PROPERTIES
     OUTPUT_NAME "Engine"
     DEBUG_POSTFIX "-debug"
+    RELEASE_POSTFIX "_release"
 )
 
 # 安装配置
