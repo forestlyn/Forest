@@ -23,6 +23,7 @@
 
 //------renderer system------
 #include "Engine/Renderer/Renderer.h"
+#include "Engine/Renderer/Renderer2D.h"
 #include "Engine/Renderer/RenderCommand.h"
 
 #include "Engine/Renderer/Shader/Buffer.h"

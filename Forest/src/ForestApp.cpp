@@ -204,8 +204,8 @@ public:
 	{
 		LOG_INFO("ForestApp created!");
 
-		PushLayer(new ExampleLayer());
-		// PushLayer(new Forest2D());
+		// PushLayer(new ExampleLayer());
+		PushLayer(new Forest2D());
 	}
 	~ForestApp()
 	{

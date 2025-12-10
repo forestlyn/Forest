@@ -14,8 +14,6 @@ public:
     virtual bool OnEvent(Engine::Event::Event &event) override;
 
 private:
-    Engine::Ref<Engine::Renderer::VertexArray> m_SquareVA;
-    Engine::Ref<Engine::Renderer::Shader> m_FlatColorShader;
     Engine::OrthographicCameraController m_CameraController;
 
     glm::vec4 m_SquareColor = {0.2f, 0.3f, 0.8f, 1.0f};
