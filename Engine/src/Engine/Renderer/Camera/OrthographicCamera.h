@@ -13,5 +13,8 @@ namespace Engine::Renderer
         virtual void SetRotationDegrees(const glm::vec3 &rotation) override; // In degrees
     private:
         void RecalculateViewMatrix();
+
+        const float zNear = -100.0f;
+        const float zFar = 100.0f;
     };
 }

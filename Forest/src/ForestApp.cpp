@@ -19,10 +19,10 @@ public:
 		  m_QuadPosition(0.0f, 0.0f, 0.0f), m_QuadScale(.1f, .1f, 1.f)
 	{
 		float vertices[4 * 5] = {
-			-0.5f, -0.5f, -5.0f, 0.0f, 0.0f,
-			-0.5f, 0.5f, -5.0f, 0.0f, 1.0f,
-			0.5f, 0.5f, -5.0f, 1.0f, 1.0f,
-			0.5f, -0.5f, -5.0f, 1.0f, 0.0f};
+			-0.5f, -0.5f, -2.0f, 0.0f, 0.0f,
+			-0.5f, 0.5f, -2.0f, 0.0f, 1.0f,
+			0.5f, 0.5f, -2.0f, 1.0f, 1.0f,
+			0.5f, -0.5f, -2.0f, 1.0f, 0.0f};
 
 		Engine::Renderer::BufferLayout layout = {
 			{Engine::Renderer::ShaderDataType::Float3, "a_Position"},
@@ -77,10 +77,10 @@ public:
 		m_ShaderLibrary.Add(m_Shader);
 
 		float vertices2[4 * 3] = {
-			-0.5f, -0.5f, -1.0f,
-			0.5f, -0.5f, -1.0f,
-			0.5f, 0.5f, -1.0f,
-			-0.5f, 0.5f, -1.0f};
+			-0.5f, -0.5f, -2.1f,
+			0.5f, -0.5f, -2.1f,
+			0.5f, 0.5f, -2.1f,
+			-0.5f, 0.5f, -2.1f};
 		Engine::Renderer::BufferLayout layout2 = {
 			{Engine::Renderer::ShaderDataType::Float3, "a_Position"},
 		};
@@ -151,6 +151,7 @@ public:
 													   glm::scale(glm::mat4(1.0f), m_QuadScale));
 			}
 		}
+
 		auto m_Shader = m_ShaderLibrary.Get("TextureShader");
 		m_CheckerBoardTexture->Bind(0);
 		Engine::Renderer::Renderer::Submit(m_Shader, m_VertexArray,
@@ -159,7 +160,7 @@ public:
 
 		m_LogoTexture->Bind(0);
 		Engine::Renderer::Renderer::Submit(m_Shader, m_VertexArray,
-										   glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)) *
+										   glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.1f)) *
 											   glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f)));
 
 		Engine::Renderer::Renderer::EndScene();
@@ -203,8 +204,8 @@ public:
 	{
 		LOG_INFO("ForestApp created!");
 
-		// PushLayer(new ExampleLayer());
-		PushLayer(new Forest2D());
+		PushLayer(new ExampleLayer());
+		// PushLayer(new Forest2D());
 	}
 	~ForestApp()
 	{

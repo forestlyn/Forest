@@ -9,10 +9,10 @@ Forest2D::Forest2D(const std::string &name)
     : Layer(name), m_CameraController(Engine::OrthographicCameraController(16.0f / 9.0f, 1.0f, true))
 {
     float vertices[4 * 3] = {
-        -0.5f, -0.5f, -1.0f,
-        -0.5f, 0.5f, -1.0f,
-        0.5f, 0.5f, -1.0f,
-        0.5f, -0.5f, -1.0f};
+        -0.5f, -0.5f, -50.0f,
+        -0.5f, 0.5f, -50.0f,
+        0.5f, 0.5f, -50.0f,
+        0.5f, -0.5f, -50.0f};
 
     Engine::Renderer::BufferLayout layout = {
         {Engine::Renderer::ShaderDataType::Float3, "a_Position"}};
