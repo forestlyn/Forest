@@ -27,8 +27,8 @@ namespace Engine::Renderer
     void Renderer::Submit(Ref<Shader> &shader, Ref<VertexArray> &vertexArray, glm::mat4 transform)
     {
         shader->Bind();
-        dynamic_cast<Platform::OpenGL::OpenGLShader *>(shader.get())->UploadUniformMat4("u_ViewProjection", m_SceneData->ViewProjectionMatrix);
-        dynamic_cast<Platform::OpenGL::OpenGLShader *>(shader.get())->UploadUniformMat4("u_Transform", transform);
+        shader->SetMat4("u_ViewProjection", m_SceneData->ViewProjectionMatrix);
+        shader->SetMat4("u_Transform", transform);
         vertexArray->Bind();
         RenderCommand::DrawIndexed(vertexArray);
     }

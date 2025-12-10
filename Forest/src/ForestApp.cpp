@@ -106,7 +106,7 @@ public:
 			Engine::Renderer::Texture2D::Create("assets/textures/ForestLogo.png"));
 
 		m_Shader->Bind();
-		dynamic_cast<Platform::OpenGL::OpenGLShader &>(*m_Shader).UploadUniformInt("u_Texture", 0);
+		m_Shader->SetInt("u_Texture", 0);
 	}
 
 	void OnAttach() override
@@ -140,7 +140,7 @@ public:
 
 		auto m_Shader2 = m_ShaderLibrary.Get("ColorShader");
 		m_Shader2->Bind();
-		dynamic_cast<Platform::OpenGL::OpenGLShader &>(*m_Shader2).UploadUniformFloat3("u_Color", m_SquareColor);
+		m_Shader2->SetFloat3("u_Color", m_SquareColor);
 		float posdelta = 0.11f;
 		for (int x = 0; x < 20; x++)
 		{

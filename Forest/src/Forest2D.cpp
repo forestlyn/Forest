@@ -52,7 +52,7 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
 
     Engine::Renderer::Renderer::BeginScene(m_CameraController.GetCamera());
     m_FlatColorShader->Bind();
-    dynamic_cast<Platform::OpenGL::OpenGLShader &>(*m_FlatColorShader).UploadUniformFloat4("u_Color", m_SquareColor);
+    m_FlatColorShader->SetFloat4("u_Color", m_SquareColor);
     Engine::Renderer::Renderer::Submit(m_FlatColorShader, m_SquareVA,
                                        glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)) *
                                            glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f)));
