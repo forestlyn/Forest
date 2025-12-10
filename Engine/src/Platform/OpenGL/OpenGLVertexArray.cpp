@@ -57,7 +57,6 @@ namespace Platform::OpenGL
         uint32_t index = 0;
         for (const auto &element : layout)
         {
-            printf("index: %d\n", index);
             glEnableVertexAttribArray(index);
             glVertexAttribPointer(index,
                                   element.GetComponentCount(),

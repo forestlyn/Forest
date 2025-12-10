@@ -24,14 +24,19 @@
 //------renderer system------
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Renderer/RenderCommand.h"
+
 #include "Engine/Renderer/Shader/Buffer.h"
 #include "Engine/Renderer/Shader/Shader.h"
 #include "Engine/Renderer/Shader/VertexArray.h"
+#include "Engine/Renderer/Shader/Texture.h"
+#include "Engine/Renderer/Shader/ShaderLibrary.h"
+
 #include "Engine/Renderer/Camera/Camera.h"
 #include "Engine/Renderer/Camera/OrthographicCamera.h"
 #include "Engine/Renderer/Camera/PerspectiveCamera.h"
+
 //-------------------------
 
-//--------entry point-------------
-#include "Engine/Core/EntryPoint.h"
-//-------------------------------
+//------camera controller system------
+#include "Engine/Controller/OrthographicCameraController.h"
+#include "Engine/Controller/PerspectiveCameraController.h"

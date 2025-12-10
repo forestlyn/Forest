@@ -1,20 +1,15 @@
 #include "Engine.h"
 #include "Imgui.h"
-#include "Engine/Renderer/RenderCommand.h"
-#include "Engine/Renderer/Renderer.h"
-#include "Engine/Renderer/Shader/ShaderLibrary.h"
-#include "Engine/Renderer/Shader/Shader.h"
 #include "Platform/OpenGL/OpenGLShader.h"
-#include "Engine/Renderer/Shader/Buffer.h"
-#include "Engine/Renderer/Shader/VertexArray.h"
-#include "Engine/Renderer/Camera/Camera.h"
-#include "Engine/Renderer/Shader/Texture.h"
-#include "Engine/Controller/PerspectiveCameraController.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#include "Forest2D.h"
+
+#include "Engine/Core/EntryPoint.h"
 
 class ExampleLayer : public Engine::Core::Layer
 {
@@ -208,7 +203,8 @@ public:
 	{
 		LOG_INFO("ForestApp created!");
 
-		PushLayer(new ExampleLayer());
+		// PushLayer(new ExampleLayer());
+		PushLayer(new Forest2D());
 	}
 	~ForestApp()
 	{
