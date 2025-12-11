@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include "Engine/Renderer/Camera/Camera.h"
 #include "Engine/Renderer/Shader/Shader.h"
+#include "Engine/Renderer/Shader/Texture.h"
 #include "Engine/Renderer/Shader/VertexArray.h"
 namespace Engine::Renderer
 {
@@ -17,6 +18,9 @@ namespace Engine::Renderer
         static void EndScene();
 
         static void DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color);
+        static void DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color);
+        static void DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const Ref<Texture2D> &texture);
+        static void DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const Ref<Texture2D> &texture);
 
     private:
         struct Scene2DData
@@ -24,6 +28,8 @@ namespace Engine::Renderer
             glm::mat4 ViewProjectionMatrix;
 
             Ref<Shader> QuadShader;
+            Ref<Shader> QuadTextureShader;
+
             Ref<VertexArray> QuadVertexArray;
         };
 

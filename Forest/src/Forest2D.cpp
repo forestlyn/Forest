@@ -8,6 +8,7 @@
 Forest2D::Forest2D(const std::string &name)
     : Layer(name), m_CameraController(Engine::OrthographicCameraController(16.0f / 9.0f, 1.0f, true))
 {
+    m_CheckerBoardTexture = Engine::Renderer::Texture2D::Create("assets/textures/Checkerboard.png");
 }
 
 Forest2D::~Forest2D()
@@ -35,6 +36,9 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
     Engine::Renderer::Renderer2D::DrawQuad({-1.0f, 0.0f}, {0.8f, 0.8f}, m_SquareColor);
 
     Engine::Renderer::Renderer2D::DrawQuad({0.5f, -0.5f}, {0.4f, 0.4f}, {0.8f, 0.2f, 0.3f, 1.0f});
+
+    Engine::Renderer::Renderer2D::DrawQuad({0.0f, 0.0f, -0.1f}, {10.0f, 10.0f}, m_CheckerBoardTexture);
+
     Engine::Renderer::Renderer2D::EndScene();
 }
 void Forest2D::OnImGuiRender()
