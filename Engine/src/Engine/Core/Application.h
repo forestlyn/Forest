@@ -5,9 +5,10 @@
 #include "Engine/ImGui/ImGuiLayer.h"
 #include "Engine/pcheader.h"
 #include "Engine/Events/WindowEvent.h"
+#include "Engine/Profile/ProfileLayer.h"
+
 namespace Engine::Core
 {
-
 	class FOREST_API Application
 	{
 	public:
@@ -40,6 +41,10 @@ namespace Engine::Core
 
 		LayerStack m_LayerStack;
 		static Application *s_Instance;
+
+#if defined(FOREST_ENABLE_PROFILING)
+		Engine::Profile::ProfileLayer *m_ProfileLayer;
+#endif
 	};
 	Application *CreateApplication();
 }

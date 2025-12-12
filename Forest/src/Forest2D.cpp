@@ -1,10 +1,12 @@
-﻿#include "Forest2D.h"
+#include "Forest2D.h"
 #include "imgui.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 #include <glm/gtc/matrix_transform.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "Engine/Profile/ProfileLayer.h"
+
 Forest2D::Forest2D(const std::string &name)
     : Layer(name), m_CameraController(Engine::OrthographicCameraController(16.0f / 9.0f, 1.0f, true))
 {
@@ -27,21 +29,28 @@ void Forest2D::OnDetach()
 
 void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
 {
-    m_CameraController.OnUpdate(timestep);
+    Timer_Profiling("Forest2D::OnUpdate");
+    {
+        Timer_Profiling("m_CameraController::OnUpdate");
+        m_CameraController.OnUpdate(timestep);
+    }
+    {
+        Timer_Profiling("Render Prep");
+        Engine::Renderer::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
+        Engine::Renderer::RenderCommand::Clear();
+    }
 
-    Engine::Renderer::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
-    Engine::Renderer::RenderCommand::Clear();
+    {
+        Timer_Profiling("Renderer2D::BeginScene/EndScene");
+        Engine::Renderer::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
-    Engine::Renderer::Renderer2D::BeginScene(m_CameraController.GetCamera());
-    Engine::Renderer::Renderer2D::DrawQuad({-1.0f, 0.0f}, {0.8f, 0.8f}, m_SquareColor);
+        Engine::Renderer::Renderer2D::DrawQuad({-1.0f, 0.0f}, {0.8f, 0.8f}, m_SquareColor);
+        Engine::Renderer::Renderer2D::DrawQuad({0.5f, -0.5f}, {0.4f, 0.4f}, {0.8f, 0.2f, 0.3f, 1.0f});
+        Engine::Renderer::Renderer2D::DrawQuad({0.0f, 0.0f, -0.1f}, {1.0f, 1.0f}, m_CheckerBoardTexture);
+        Engine::Renderer::Renderer2D::DrawQuad({-2.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, 45.0f, m_CheckerBoardTexture, {0.8f, 1.0f, 0.3f, 1.0f});
 
-    Engine::Renderer::Renderer2D::DrawQuad({0.5f, -0.5f}, {0.4f, 0.4f}, {0.8f, 0.2f, 0.3f, 1.0f});
-
-    Engine::Renderer::Renderer2D::DrawQuad({0.0f, 0.0f, -0.1f}, {1.0f, 1.0f}, m_CheckerBoardTexture);
-
-    Engine::Renderer::Renderer2D::DrawQuad({-2.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, 45.0f, m_CheckerBoardTexture, {0.8f, 1.0f, 0.3f, 1.0f});
-
-    Engine::Renderer::Renderer2D::EndScene();
+        Engine::Renderer::Renderer2D::EndScene();
+    }
 }
 void Forest2D::OnImGuiRender()
 {

@@ -5,6 +5,7 @@
 #include "Engine/Core/KeyCode.h"
 #include "GLFW/glfw3.h"
 #include "Engine/Renderer/Renderer.h"
+
 namespace Engine::Core
 {
 
@@ -23,6 +24,12 @@ namespace Engine::Core
 		// imgui init needs to be after window creation and s_Instance assignment
 		m_ImGuiLayer = new MyImGui::ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
+
+#if defined(FOREST_ENABLE_PROFILING)
+		m_ProfileLayer = new Engine::Profile::ProfileLayer();
+		PushOverlay(m_ProfileLayer);
+#endif
+		// m_Window->SetVSync(false);
 	}
 
 	Application::~Application()
@@ -33,23 +40,32 @@ namespace Engine::Core
 	{
 		while (m_Running)
 		{
+			Timer_Profiling("Application::Run");
 			Timestep time = glfwGetTime(); // Get time in seconds
 			float deltaTime = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 			if (!m_Minimized)
 			{
+				Timer_Profiling("LayerStack OnUpdate");
 				for (auto layer : m_LayerStack)
 					layer->OnUpdate(deltaTime);
 			}
 
 			m_ImGuiLayer->Begin();
-			for (auto layer : m_LayerStack)
 			{
-				layer->OnImGuiRender();
+				Timer_Profiling("LayerStack OnImGuiRender");
+				for (auto layer : m_LayerStack)
+				{
+					layer->OnImGuiRender();
+				}
 			}
+
 			m_ImGuiLayer->End();
 
-			m_Window->OnUpdate();
+			{
+				Timer_Profiling("Window OnUpdate");
+				m_Window->OnUpdate();
+			}
 		}
 	}
 

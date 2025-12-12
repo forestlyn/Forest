@@ -1,6 +1,7 @@
 #pragma once
 #include "Engine.h"
 #include <glm/glm.hpp>
+
 class Forest2D : public Engine::Core::Layer
 {
 public:
@@ -19,4 +20,6 @@ private:
     glm::vec4 m_SquareColor = {0.2f, 0.3f, 0.8f, 1.0f};
 
     Engine::Ref<Engine::Renderer::Texture2D> m_CheckerBoardTexture;
+
+    std::vector<Engine::Profile::ProfileResult> m_Profiles;
 };

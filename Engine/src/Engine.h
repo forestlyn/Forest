@@ -38,6 +38,11 @@
 
 //-------------------------
 
+//-------profile system------
+#include "Engine/Profile/Timer.h"
+#include "Engine/Profile/ProfileLayer.h"
+//--------------------------
+
 //------camera controller system------
 #include "Engine/Controller/OrthographicCameraController.h"
 #include "Engine/Controller/PerspectiveCameraController.h"

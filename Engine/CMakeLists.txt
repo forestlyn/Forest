@@ -44,6 +44,7 @@ target_compile_definitions(Engine
     PUBLIC FOREST_PLATFORM_WINDOWS
     FOREST_ENABLE_ASSERTS
     GLFW_INCLUDE_NONE
+    FOREST_ENABLE_PROFILING
 )
 
 target_precompile_headers(

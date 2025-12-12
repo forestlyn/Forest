@@ -39,6 +39,14 @@
 #define ASSERT(x, ...)
 #endif
 
+#if defined(FOREST_ENABLE_PROFILING)
+#define Timer_Profiling(name)                                                               \
+    Engine::Profile::Timer timer##__LINE__(name, [&](Engine::Profile::ProfileResult result) \
+                                           { Engine::Profile::ProfileLayer::ProfileResults.push_back(result); });
+#else
+#define Timer_Profiling(name)
+#endif
+
 namespace Engine
 {
     template <typename T>
