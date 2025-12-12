@@ -21,16 +21,17 @@ namespace Engine::Renderer
         static void DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color);
         static void DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const Ref<Texture2D> &texture);
         static void DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const Ref<Texture2D> &texture);
+        static void DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const float z_rotation,
+                             const Ref<Texture2D> &texture, const glm::vec4 &tintColor);
 
     private:
         struct Scene2DData
         {
             glm::mat4 ViewProjectionMatrix;
 
-            Ref<Shader> QuadShader;
             Ref<Shader> QuadTextureShader;
-
             Ref<VertexArray> QuadVertexArray;
+            Ref<Texture2D> WhiteTexture;
         };
 
         static Scene2DData *m_SceneData;
