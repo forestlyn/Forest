@@ -1,9 +1,12 @@
 #pragma once
 #include <chrono>
 #include <string>
+#include <thread>
+#include "Engine/Core/Log.h"
 
 namespace Engine::Profile
 {
+
     struct ProfileResult
     {
         std::string Name;

@@ -1,6 +1,7 @@
 #include "WindowsWindow.h"
 #include "Platform/OpenGL/OpenGLContext.h"
 #include "glfw/glfw3.h"
+#include "Engine/Profile/Instrumentor.h"
 #ifdef FOREST_PLATFORM_WINDOWS
 namespace Engine::Core
 {
@@ -17,6 +18,7 @@ namespace Platform::Windows
 
     WindowsWindow::WindowsWindow(const Engine::Core::WindowProps &props)
     {
+        ENGINE_PROFILING_FUNC();
         Init(props);
     }
 
@@ -138,6 +140,7 @@ namespace Platform::Windows
 
     void WindowsWindow::OnUpdate()
     {
+        ENGINE_PROFILING_FUNC();
         glfwPollEvents();
         m_Context->SwapBuffers();
     }

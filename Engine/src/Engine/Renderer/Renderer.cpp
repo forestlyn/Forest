@@ -2,14 +2,22 @@
 #include "RenderCommand.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Renderer2D.h"
+#include "Engine/Profile/Instrumentor.h"
 namespace Engine::Renderer
 {
     Renderer::SceneData *Renderer::m_SceneData = new Renderer::SceneData();
 
     void Renderer::Init()
     {
+        ENGINE_PROFILING_FUNC();
         RenderCommand::Init();
         Renderer2D::Init();
+    }
+
+    void Renderer::Shutdown()
+    {
+        ENGINE_PROFILING_FUNC();
+        Renderer2D::Shutdown();
     }
 
     void Renderer::BeginScene(const Camera &camera)

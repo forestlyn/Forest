@@ -1,6 +1,7 @@
 #include "Renderer2D.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include "RenderCommand.h"
+#include "Engine/Profile/Instrumentor.h"
 
 namespace Engine::Renderer
 {
@@ -36,6 +37,7 @@ namespace Engine::Renderer
 
     void Renderer2D::Shutdown()
     {
+        ENGINE_PROFILING_FUNC();
         delete m_SceneData;
     }
 

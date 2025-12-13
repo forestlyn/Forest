@@ -24,6 +24,7 @@ namespace Engine::Profile
 
     void ProfileLayer::OnImGuiRender()
     {
+        ENGINE_PROFILING_FUNC();
         ImGui::Begin("Profile Results");
         for (auto result : ProfileResults)
         {

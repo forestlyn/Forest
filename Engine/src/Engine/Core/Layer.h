@@ -3,6 +3,7 @@
 #include "Engine/pcheader.h"
 #include "Engine/Events/Event.h"
 #include "Engine/Core/Timestep.h"
+#include "Engine/Profile/Instrumentor.h"
 namespace Engine::Core
 {
     class FOREST_API Layer

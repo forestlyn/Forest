@@ -3,6 +3,7 @@
 #include "Engine/Core/KeyCode.h"
 #include "Engine/Events/Event.h"
 #include "Engine/Core/Input.h"
+#include "Engine/Profile/Instrumentor.h"
 namespace Engine
 {
     OrthographicCameraController::OrthographicCameraController(float aspectRatio, float zoomLevel, bool rotation)
