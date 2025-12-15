@@ -80,12 +80,12 @@ namespace Engine::Renderer
         RenderCommand::DrawIndexed(m_SceneData->QuadVertexArray);
     }
 
-    void Renderer2D::DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const Ref<Texture2D> &texture)
+    void Renderer2D::DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor)
     {
-        DrawQuad(glm::vec3(position, 0.0f), size, texture);
+        DrawQuad(glm::vec3(position, 0.0f), size, texture, tintFactor, tintColor);
     }
 
-    void Renderer2D::DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const Ref<Texture2D> &texture)
+    void Renderer2D::DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor)
     {
         ENGINE_PROFILING_FUNC();
 
@@ -93,28 +93,62 @@ namespace Engine::Renderer
                               glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
         m_SceneData->QuadTextureShader->Bind();
-        m_SceneData->QuadTextureShader->SetFloat4("u_Color", glm::vec4(1.0f));
+        m_SceneData->QuadTextureShader->SetFloat4("u_Color", tintColor);
         m_SceneData->QuadTextureShader->SetMat4("u_Transform", transform);
+        m_SceneData->QuadTextureShader->SetFloat("u_TintFactor", tintFactor);
         texture->Bind(0);
         m_SceneData->QuadTextureShader->SetInt("u_Texture", 0);
 
         m_SceneData->QuadVertexArray->Bind();
         RenderCommand::DrawIndexed(m_SceneData->QuadVertexArray);
     }
-    void Renderer2D::DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const float z_rotation = 0, const Ref<Texture2D> &texture = nullptr, const glm::vec4 &tintColor = glm::vec4(1.0f))
+
+    void Renderer2D::DrawRotateQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color, const float z_rotation)
+    {
+        DrawRotateQuad(glm::vec3(position, 0.0f), size, color, z_rotation);
+    }
+
+    void Renderer2D::DrawRotateQuad(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color, const float z_rotation)
     {
         ENGINE_PROFILING_FUNC();
 
         glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
-                              glm::rotate(glm::mat4(1.0f), glm::radians(z_rotation), glm::vec3(0.0f, 0.0f, 1.0f)) *
+                              glm::rotate(glm::mat4(1.0f), z_rotation, glm::vec3(0.0f, 0.0f, 1.0f)) *
+                              glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
+
+        m_SceneData->QuadTextureShader->Bind();
+        m_SceneData->QuadTextureShader->SetFloat4("u_Color", color);
+        m_SceneData->QuadTextureShader->SetMat4("u_Transform", transform);
+
+        m_SceneData->WhiteTexture->Bind(0);
+        m_SceneData->QuadTextureShader->SetInt("u_Texture", 0);
+
+        m_SceneData->QuadVertexArray->Bind();
+        RenderCommand::DrawIndexed(m_SceneData->QuadVertexArray);
+    }
+
+    void Renderer2D::DrawRotateQuad(const glm::vec2 &position, const glm::vec2 &size, const float z_rotation, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor)
+    {
+        DrawRotateQuad(glm::vec3(position, 0.0f), size, z_rotation, texture, tintFactor, tintColor);
+    }
+
+    void Renderer2D::DrawRotateQuad(const glm::vec3 &position, const glm::vec2 &size, const float z_rotation, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor)
+    {
+        ENGINE_PROFILING_FUNC();
+
+        glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
+                              glm::rotate(glm::mat4(1.0f), z_rotation, glm::vec3(0.0f, 0.0f, 1.0f)) *
                               glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
         m_SceneData->QuadTextureShader->Bind();
         m_SceneData->QuadTextureShader->SetFloat4("u_Color", tintColor);
         m_SceneData->QuadTextureShader->SetMat4("u_Transform", transform);
-        texture ? texture->Bind(0) : m_SceneData->WhiteTexture->Bind(0);
+        m_SceneData->QuadTextureShader->SetFloat("u_TintFactor", tintFactor);
+        texture->Bind(0);
         m_SceneData->QuadTextureShader->SetInt("u_Texture", 0);
+
         m_SceneData->QuadVertexArray->Bind();
         RenderCommand::DrawIndexed(m_SceneData->QuadVertexArray);
     }
+
 }

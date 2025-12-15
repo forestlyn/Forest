@@ -19,10 +19,13 @@ namespace Engine::Renderer
 
         static void DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color);
         static void DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color);
-        static void DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const Ref<Texture2D> &texture);
-        static void DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const Ref<Texture2D> &texture);
-        static void DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const float z_rotation,
-                             const Ref<Texture2D> &texture, const glm::vec4 &tintColor);
+        static void DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const Ref<Texture2D> &texture, const float tintFactor = 1.0f, const glm::vec4 &tintColor = glm::vec4(1.0f));
+        static void DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const Ref<Texture2D> &texture, const float tintFactor = 1.0f, const glm::vec4 &tintColor = glm::vec4(1.0f));
+
+        static void DrawRotateQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color, const float z_rotation);
+        static void DrawRotateQuad(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color, const float z_rotation);
+        static void DrawRotateQuad(const glm::vec2 &position, const glm::vec2 &size, const float z_rotation, const Ref<Texture2D> &texture, const float tintFactor = 1.0f, const glm::vec4 &tintColor = glm::vec4(1.0f));
+        static void DrawRotateQuad(const glm::vec3 &position, const glm::vec2 &size, const float z_rotation, const Ref<Texture2D> &texture, const float tintFactor = 1.0f, const glm::vec4 &tintColor = glm::vec4(1.0f));
 
     private:
         struct Scene2DData
