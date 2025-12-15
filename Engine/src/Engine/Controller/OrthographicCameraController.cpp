@@ -16,6 +16,7 @@ namespace Engine
 
     void OrthographicCameraController::OnUpdate(Core::Timestep timestep)
     {
+        ENGINE_PROFILING_FUNC();
         m_CameraMoveSpeed = m_ZoomLevel;
         if (Core::Input::IsKeyPressed(FOREST_KEY_W))
             m_CameraPosition.y -= m_CameraMoveSpeed * timestep;
@@ -39,12 +40,14 @@ namespace Engine
     }
     void OrthographicCameraController::OnEvent(Event::Event &event)
     {
+        ENGINE_PROFILING_FUNC();
         Event::EventDispatcher dispatcher(event);
         dispatcher.Dispatch<Event::WindowResizeEvent>(BIND_EVENT_FN(OrthographicCameraController::OnWindowResize));
         dispatcher.Dispatch<Event::MouseScrolledEvent>(BIND_EVENT_FN(OrthographicCameraController::OnScroll));
     }
     bool OrthographicCameraController::OnWindowResize(Event::WindowResizeEvent &event)
     {
+        ENGINE_PROFILING_FUNC();
         if (event.GetHeight() == 0 || event.GetWidth() == 0)
             return false;
         m_AspectRatio = (float)event.GetWidth() / (float)event.GetHeight();
@@ -53,6 +56,7 @@ namespace Engine
     }
     bool OrthographicCameraController::OnScroll(Event::MouseScrolledEvent &event)
     {
+        ENGINE_PROFILING_FUNC();
         m_ZoomLevel -= event.GetYOffset() * 0.1f;
         m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
         m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);

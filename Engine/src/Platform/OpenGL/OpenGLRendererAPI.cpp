@@ -1,11 +1,14 @@
 #include "OpenGLRendererAPI.h"
 
 #include <glad/glad.h>
+#include "Engine/Profile/Instrumentor.h"
 
 namespace Engine::Platform::OpenGL
 {
     void OpenGLRendererAPI::Init()
     {
+        ENGINE_PROFILING_FUNC();
+
         ENGINE_INFO("Initializing OpenGL Renderer API");
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

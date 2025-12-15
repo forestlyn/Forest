@@ -9,6 +9,8 @@ namespace Engine::Renderer
 
     void Renderer2D::Init()
     {
+        ENGINE_PROFILING_FUNC();
+
         // initialize shaders
         m_SceneData->QuadTextureShader = Shader::Create("assets/shaders/TextureShader.glsl");
         // initialize vertex array
@@ -43,6 +45,8 @@ namespace Engine::Renderer
 
     void Renderer2D::BeginScene(const Camera &camera)
     {
+        ENGINE_PROFILING_FUNC();
+
         m_SceneData->ViewProjectionMatrix = camera.GetViewProjectionMatrix();
 
         m_SceneData->QuadTextureShader->Bind();
@@ -51,6 +55,7 @@ namespace Engine::Renderer
 
     void Renderer2D::EndScene()
     {
+        ENGINE_PROFILING_FUNC();
     }
 
     void Renderer2D::DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color)
@@ -60,6 +65,8 @@ namespace Engine::Renderer
 
     void Renderer2D::DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color)
     {
+        ENGINE_PROFILING_FUNC();
+
         glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
                               glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
@@ -80,6 +87,8 @@ namespace Engine::Renderer
 
     void Renderer2D::DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const Ref<Texture2D> &texture)
     {
+        ENGINE_PROFILING_FUNC();
+
         glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
                               glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
@@ -94,6 +103,8 @@ namespace Engine::Renderer
     }
     void Renderer2D::DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const float z_rotation = 0, const Ref<Texture2D> &texture = nullptr, const glm::vec4 &tintColor = glm::vec4(1.0f))
     {
+        ENGINE_PROFILING_FUNC();
+
         glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
                               glm::rotate(glm::mat4(1.0f), glm::radians(z_rotation), glm::vec3(0.0f, 0.0f, 1.0f)) *
                               glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));

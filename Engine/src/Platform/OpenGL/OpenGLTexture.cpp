@@ -1,11 +1,14 @@
 #include "OpenGLTexture.h"
 #include <glad/glad.h>
 #include "stb_image.h"
+#include "Engine/Profile/Instrumentor.h"
 namespace Platform::OpenGL
 {
     OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
         : m_Width(width), m_Height(height)
     {
+        ENGINE_PROFILING_FUNC();
+
         glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
         glTextureStorage2D(m_RendererID, 1, GL_RGBA8, m_Width, m_Height);
 
@@ -18,6 +21,8 @@ namespace Platform::OpenGL
     OpenGLTexture2D::OpenGLTexture2D(const std::string &path)
         : m_Path(path)
     {
+        ENGINE_PROFILING_FUNC();
+
         // Load texture from file (implementation not shown)
         // Set m_Width, m_Height, and m_RendererID accordingly
         stbi_set_flip_vertically_on_load(1);
@@ -55,16 +60,22 @@ namespace Platform::OpenGL
 
     OpenGLTexture2D::~OpenGLTexture2D()
     {
+        ENGINE_PROFILING_FUNC();
+
         glDeleteTextures(1, &m_RendererID);
     }
 
     void OpenGLTexture2D::Bind(uint32_t slot) const
     {
+        ENGINE_PROFILING_FUNC();
+
         glBindTextureUnit(slot, m_RendererID);
     }
 
     void OpenGLTexture2D::SetData(void *data, uint32_t size)
     {
+        ENGINE_PROFILING_FUNC();
+
         uint32_t bpp = (m_Width * m_Height * 4); // Assuming 4 bytes per pixel (RGBA)
         ENGINE_ASSERT(size == bpp, "Data must be entire texture!");
         glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, GL_RGBA, GL_UNSIGNED_BYTE, data);

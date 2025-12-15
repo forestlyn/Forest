@@ -13,48 +13,39 @@ namespace Engine::Core
 
 	Application::Application()
 	{
-		ENGINE_PROFILING_BEGIN("Application::Application", "start.json");
-		{
-			ENGINE_PROFILING_SCOPE("START");
-			m_Window = Scope<Window>(Window::Create());
-			m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-			Renderer::Renderer::Init();
+		ENGINE_PROFILING_SCOPE("START");
+		m_Window = Scope<Window>(Window::Create());
+		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-			ENGINE_ASSERT(!s_Instance, "Application already exists!");
-			s_Instance = this;
+		Renderer::Renderer::Init();
 
-			// imgui init needs to be after window creation and s_Instance assignment
-			m_ImGuiLayer = new MyImGui::ImGuiLayer();
-			PushOverlay(m_ImGuiLayer);
+		ENGINE_ASSERT(!s_Instance, "Application already exists!");
+		s_Instance = this;
+
+		// imgui init needs to be after window creation and s_Instance assignment
+		m_ImGuiLayer = new MyImGui::ImGuiLayer();
+		PushOverlay(m_ImGuiLayer);
 
 #if defined(FOREST_ENABLE_PROFILING)
-			m_ProfileLayer = new Engine::Profile::ProfileLayer();
-			PushOverlay(m_ProfileLayer);
+		m_ProfileLayer = new Engine::Profile::ProfileLayer();
+		PushOverlay(m_ProfileLayer);
 #endif
-			m_Window->SetVSync(false);
-		}
-		ENGINE_PROFILING_END();
 	}
 
 	Application::~Application()
 	{
-		ENGINE_PROFILING_BEGIN("~Application::Application", "end.json");
-		{
-			ENGINE_PROFILING_FUNC();
-			Renderer::Renderer::Shutdown();
-		}
-		ENGINE_PROFILING_END();
+		ENGINE_PROFILING_FUNC();
+		Renderer::Renderer::Shutdown();
 	}
 
 	void Application::Run()
 	{
-		ENGINE_PROFILING_BEGIN("Application::Run", "run.json");
-
+		ENGINE_PROFILING_FUNC();
 		while (m_Running)
 		{
 			{
-				ENGINE_PROFILING_FUNC();
+				ENGINE_PROFILING_SCOPE("Run Loop");
 				Timestep time = glfwGetTime(); // Get time in seconds
 				float deltaTime = time - m_LastFrameTime;
 				m_LastFrameTime = time;
@@ -90,11 +81,11 @@ namespace Engine::Core
 				}
 			}
 		}
-		ENGINE_PROFILING_END();
 	}
 
 	bool Application::OnEvent(Event::Event &e)
 	{
+		ENGINE_PROFILING_FUNC();
 		Event::EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<Event::WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
 		dispatcher.Dispatch<Event::WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
@@ -111,12 +102,16 @@ namespace Engine::Core
 
 	bool Application::OnWindowClose(Event::WindowCloseEvent &e)
 	{
+		ENGINE_PROFILING_FUNC();
+
 		m_Running = false;
 		return true;
 	}
 
 	bool Application::OnWindowResize(Event::WindowResizeEvent &e)
 	{
+		ENGINE_PROFILING_FUNC();
+
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{
 			m_Minimized = true;
@@ -133,11 +128,13 @@ namespace Engine::Core
 	{
 		ENGINE_PROFILING_FUNC();
 		m_LayerStack.PushLayer(layer);
+		layer->OnAttach();
 	}
 
 	void Application::PushOverlay(Layer *overlay)
 	{
 		ENGINE_PROFILING_FUNC();
 		m_LayerStack.PushOverlay(overlay);
+		overlay->OnAttach();
 	}
 }

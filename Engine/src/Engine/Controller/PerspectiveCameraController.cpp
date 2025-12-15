@@ -3,7 +3,7 @@
 #include "Engine/Core/KeyCode.h"
 #include "Engine/Events/Event.h"
 #include "Engine/Core/Input.h"
-
+#include "Engine/Profile/Instrumentor.h"
 namespace Engine
 {
     PerspectiveCameraController::PerspectiveCameraController(float fov, float aspectRatio, glm::bvec3 rotation)
@@ -16,6 +16,7 @@ namespace Engine
 
     void PerspectiveCameraController::OnUpdate(Core::Timestep timestep)
     {
+        ENGINE_PROFILING_FUNC();
         m_CameraMoveSpeed = 1.0f;
         if (Core::Input::IsKeyPressed(FOREST_KEY_W))
             m_CameraPosition.z -= m_CameraMoveSpeed * timestep;
@@ -58,6 +59,7 @@ namespace Engine
 
     void PerspectiveCameraController::OnEvent(Event::Event &event)
     {
+        ENGINE_PROFILING_FUNC();
         Event::EventDispatcher dispatcher(event);
         dispatcher.Dispatch<Event::WindowResizeEvent>(BIND_EVENT_FN(PerspectiveCameraController::OnWindowResize));
         dispatcher.Dispatch<Event::MouseScrolledEvent>(BIND_EVENT_FN(PerspectiveCameraController::OnScroll));
@@ -65,6 +67,7 @@ namespace Engine
 
     bool PerspectiveCameraController::OnWindowResize(Event::WindowResizeEvent &event)
     {
+        ENGINE_PROFILING_FUNC();
         if (event.GetHeight() == 0 || event.GetWidth() == 0)
             return false;
         m_AspectRatio = (float)event.GetWidth() / (float)event.GetHeight();
@@ -74,6 +77,7 @@ namespace Engine
 
     bool PerspectiveCameraController::OnScroll(Event::MouseScrolledEvent &event)
     {
+        ENGINE_PROFILING_FUNC();
         m_FOV -= event.GetYOffset();
         m_FOV = std::clamp(m_FOV, 1.0f, 90.0f);
         // ENGINE_INFO("FOV changed to: {}", m_FOV);

@@ -12,6 +12,7 @@ namespace Engine::MyImGui
 
     void ImGuiLayer::OnAttach()
     {
+        ENGINE_PROFILING_FUNC();
         ENGINE_INFO("ImGuiLayer attached");
         // Initialize ImGui context here if needed
         IMGUI_CHECKVERSION();
@@ -46,8 +47,7 @@ namespace Engine::MyImGui
 
     void ImGuiLayer::OnDetach()
     {
-        ENGINE_INFO("ImGuiLayer detached");
-        // Cleanup ImGui context here if needed
+        ENGINE_PROFILING_FUNC();
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
@@ -55,6 +55,7 @@ namespace Engine::MyImGui
 
     void ImGuiLayer::Begin()
     {
+        ENGINE_PROFILING_FUNC();
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -62,6 +63,7 @@ namespace Engine::MyImGui
 
     void ImGuiLayer::End()
     {
+        ENGINE_PROFILING_FUNC();
         ImGuiIO &io = ImGui::GetIO();
 
         io.DisplaySize = ImVec2((float)Engine::Core::Application::Get().GetWindowWidth(),

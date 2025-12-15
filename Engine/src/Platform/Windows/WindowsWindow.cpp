@@ -24,11 +24,13 @@ namespace Platform::Windows
 
     WindowsWindow::~WindowsWindow()
     {
+        ENGINE_PROFILING_FUNC();
         Shutdown();
     }
 
     void WindowsWindow::Init(const Engine::Core::WindowProps &props)
     {
+        ENGINE_PROFILING_FUNC();
         m_Data.Title = props.Title;
         m_Data.Width = props.Width;
         m_Data.Height = props.Height;
@@ -37,13 +39,17 @@ namespace Platform::Windows
 
         if (!s_GLFWInitialized)
         {
+            ENGINE_PROFILING_SCOPE("glfwInit");
+
             int success = glfwInit();
             ENGINE_ASSERT(success, "Could not initialize GLFW!");
             s_GLFWInitialized = true;
         }
 
-        m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
-
+        {
+            ENGINE_PROFILING_SCOPE("glfwCreateWindow");
+            m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+        }
         m_Context = new OpenGL::OpenGLContext(m_Window);
         m_Context->Init();
         glfwSetWindowUserPointer(m_Window, &m_Data);
@@ -134,6 +140,7 @@ namespace Platform::Windows
 
     void WindowsWindow::Shutdown()
     {
+        ENGINE_PROFILING_FUNC();
         glfwDestroyWindow(m_Window);
         m_Context->Cleanup();
     }

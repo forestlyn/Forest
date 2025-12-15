@@ -2,16 +2,21 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "Engine/pcheader.h"
+#include "Engine/Profile/Instrumentor.h"
 namespace Platform::OpenGL
 {
     OpenGLContext::OpenGLContext(GLFWwindow *windowHandle)
         : m_WindowHandle(windowHandle)
     {
+        ENGINE_PROFILING_FUNC();
+
         ENGINE_ASSERT(windowHandle, "Window handle is null!");
     }
 
     void OpenGLContext::Init()
     {
+        ENGINE_PROFILING_FUNC();
+
         glfwMakeContextCurrent(m_WindowHandle);
         int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
         ENGINE_ASSERT(status, "Failed to initialize Glad!");
@@ -24,6 +29,8 @@ namespace Platform::OpenGL
 
     void OpenGLContext::SwapBuffers()
     {
+        ENGINE_PROFILING_FUNC();
+
         glfwSwapBuffers(m_WindowHandle);
     }
 

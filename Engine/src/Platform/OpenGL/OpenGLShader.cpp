@@ -4,6 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <fstream>
 #include <vector>
+#include "Engine/Profile/Instrumentor.h"
 namespace Platform::OpenGL
 {
 
@@ -21,6 +22,8 @@ namespace Platform::OpenGL
     OpenGLShader::OpenGLShader(const std::string &name, const std::string &vertexSrc, const std::string &fragmentSrc)
         : m_Name(name)
     {
+        ENGINE_PROFILING_FUNC();
+
         std::unordered_map<GLenum, std::string> shaderSources;
         shaderSources[GL_VERTEX_SHADER] = vertexSrc;
         shaderSources[GL_FRAGMENT_SHADER] = fragmentSrc;
@@ -30,6 +33,8 @@ namespace Platform::OpenGL
 
     OpenGLShader::OpenGLShader(const std::string &filepath)
     {
+        ENGINE_PROFILING_FUNC();
+
         std::string source = "";
         {
             std::ifstream in(filepath, std::ios::in | std::ios::binary);
@@ -73,36 +78,50 @@ namespace Platform::OpenGL
 
     OpenGLShader::~OpenGLShader()
     {
+        ENGINE_PROFILING_FUNC();
+
         glDeleteProgram(m_RendererID);
     }
 
     void OpenGLShader::Bind() const
     {
+        ENGINE_PROFILING_FUNC();
+
         glUseProgram(m_RendererID);
     }
 
     void OpenGLShader::Unbind() const
     {
+        ENGINE_PROFILING_FUNC();
+
         glUseProgram(0);
     }
 
     void OpenGLShader::SetInt(const std::string &name, int value)
     {
+        ENGINE_PROFILING_FUNC();
+
         UploadUniformInt(name, value);
     }
 
     void OpenGLShader::SetFloat3(const std::string &name, const glm::vec3 &value)
     {
+        ENGINE_PROFILING_FUNC();
+
         UploadUniformFloat3(name, value);
     }
 
     void OpenGLShader::SetFloat4(const std::string &name, const glm::vec4 &value)
     {
+        ENGINE_PROFILING_FUNC();
+
         UploadUniformFloat4(name, value);
     }
 
     void OpenGLShader::SetMat4(const std::string &name, const glm::mat4 &matrix)
     {
+        ENGINE_PROFILING_FUNC();
+
         UploadUniformMat4(name, matrix);
     }
 
@@ -110,42 +129,56 @@ namespace Platform::OpenGL
 
     void OpenGLShader::UploadUniformInt(const std::string &name, int value)
     {
+        ENGINE_PROFILING_FUNC();
+
         GLint location = glGetUniformLocation(m_RendererID, name.c_str());
         glUniform1i(location, value);
     }
 
     void OpenGLShader::UploadUniformFloat(const std::string &name, float value)
     {
+        ENGINE_PROFILING_FUNC();
+
         GLint location = glGetUniformLocation(m_RendererID, name.c_str());
         glUniform1f(location, value);
     }
 
     void OpenGLShader::UploadUniformFloat2(const std::string &name, const glm::vec2 &value)
     {
+        ENGINE_PROFILING_FUNC();
+
         GLint location = glGetUniformLocation(m_RendererID, name.c_str());
         glUniform2f(location, value.x, value.y);
     }
 
     void OpenGLShader::UploadUniformFloat3(const std::string &name, const glm::vec3 &value)
     {
+        ENGINE_PROFILING_FUNC();
+
         GLint location = glGetUniformLocation(m_RendererID, name.c_str());
         glUniform3f(location, value.x, value.y, value.z);
     }
 
     void OpenGLShader::UploadUniformFloat4(const std::string &name, const glm::vec4 &value)
     {
+        ENGINE_PROFILING_FUNC();
+
         GLint location = glGetUniformLocation(m_RendererID, name.c_str());
         glUniform4f(location, value.x, value.y, value.z, value.w);
     }
 
     void OpenGLShader::UploadUniformMat3(const std::string &name, const glm::mat3 &matrix)
     {
+        ENGINE_PROFILING_FUNC();
+
         GLint location = glGetUniformLocation(m_RendererID, name.c_str());
         glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
     }
 
     void OpenGLShader::UploadUniformMat4(const std::string &name, const glm::mat4 &matrix)
     {
+        ENGINE_PROFILING_FUNC();
+
         GLint location = glGetUniformLocation(m_RendererID, name.c_str());
         glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
     }
@@ -155,6 +188,8 @@ namespace Platform::OpenGL
 #pragma region Compile Shader
     std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string &source)
     {
+        ENGINE_PROFILING_FUNC();
+
         auto shaderSources = std::unordered_map<GLenum, std::string>();
 
         const char *typeToken = "#type";
@@ -179,6 +214,8 @@ namespace Platform::OpenGL
     }
     void OpenGLShader::CompileShader(std::unordered_map<GLenum, std::string> &shaderSources)
     {
+        ENGINE_PROFILING_FUNC();
+
         ENGINE_ASSERT(shaderSources.size() <= 2, "We only support 2 shaders for now (vertex and fragment)");
         std::array<GLuint, 2> shaderIDs;
         int shaderIndex = 0;

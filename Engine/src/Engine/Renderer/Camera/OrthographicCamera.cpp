@@ -1,6 +1,7 @@
 #include "OrthographicCamera.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include "Engine/pcheader.h"
+#include "Engine/Profile/Instrumentor.h"
 namespace Engine::Renderer
 {
     OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top)
@@ -12,18 +13,21 @@ namespace Engine::Renderer
 
     void OrthographicCamera::SetProjection(float left, float right, float bottom, float top)
     {
+        ENGINE_PROFILING_FUNC();
         m_ProjectionMatrix = glm::ortho(left, right, bottom, top, zNear, zFar);
         m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
     }
 
     void OrthographicCamera::SetPosition(const glm::vec3 &position)
     {
+        ENGINE_PROFILING_FUNC();
         m_Position = position;
         RecalculateViewMatrix();
     }
 
     void OrthographicCamera::SetRotationDegrees(const glm::vec3 &rotation)
     {
+        ENGINE_PROFILING_FUNC();
         m_RotationDegrees = rotation;
         if (m_RotationDegrees.x != 0.0f || m_RotationDegrees.y != 0.0f)
         {

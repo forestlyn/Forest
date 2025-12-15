@@ -1,6 +1,7 @@
 #include "OpenGLVertexArray.h"
 #include "Engine/pcheader.h"
 #include <glad/glad.h>
+#include "Engine/Profile/Instrumentor.h"
 namespace Platform::OpenGL
 {
     GLenum GetGLenumFromShaderDataType(Engine::Renderer::ShaderDataType type)
@@ -29,26 +30,36 @@ namespace Platform::OpenGL
 
     OpenGLVertexArray::OpenGLVertexArray()
     {
+        ENGINE_PROFILING_FUNC();
+
         glCreateVertexArrays(1, &m_RendererID);
     }
 
     OpenGLVertexArray::~OpenGLVertexArray()
     {
+        ENGINE_PROFILING_FUNC();
+
         glDeleteVertexArrays(1, &m_RendererID);
     }
 
     void OpenGLVertexArray::Bind() const
     {
+        ENGINE_PROFILING_FUNC();
+
         glBindVertexArray(m_RendererID);
     }
 
     void OpenGLVertexArray::Unbind() const
     {
+        ENGINE_PROFILING_FUNC();
+
         glBindVertexArray(0);
     }
 
     void OpenGLVertexArray::AddVertexBuffer(const Engine::Ref<Engine::Renderer::VertexBuffer> &vertexBuffer)
     {
+        ENGINE_PROFILING_FUNC();
+
         ENGINE_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer has no layout!");
 
         glBindVertexArray(m_RendererID);
@@ -71,6 +82,8 @@ namespace Platform::OpenGL
 
     void OpenGLVertexArray::SetIndexBuffer(const Engine::Ref<Engine::Renderer::IndexBuffer> &indexBuffer)
     {
+        ENGINE_PROFILING_FUNC();
+
         glBindVertexArray(m_RendererID);
         indexBuffer->Bind();
 

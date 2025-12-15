@@ -3,6 +3,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include "Engine/pcheader.h"
+#include "Engine/Profile/Instrumentor.h"
 namespace Engine::Renderer
 {
     PerspectiveCamera::PerspectiveCamera(float fovDegrees, float aspectRatio, float nearClip, float farClip)
@@ -23,18 +24,23 @@ namespace Engine::Renderer
 
     void PerspectiveCamera::SetProjection(float fovDegrees, float aspectRatio, float nearClip, float farClip)
     {
+        ENGINE_PROFILING_FUNC();
         m_ProjectionMatrix = glm::perspectiveRH_NO(glm::radians(fovDegrees), aspectRatio, nearClip, farClip);
         m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
     }
 
     void PerspectiveCamera::SetPosition(const glm::vec3 &position)
     {
+        ENGINE_PROFILING_FUNC();
+
         m_Position = position;
         RecalculateViewMatrix();
     }
 
     void PerspectiveCamera::SetRotationDegrees(const glm::vec3 &rotation)
     {
+        ENGINE_PROFILING_FUNC();
+
         m_RotationDegrees = rotation;
         RecalculateViewMatrix();
     }

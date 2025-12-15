@@ -33,10 +33,9 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
     // InstrumentorProfilingBegin("Forest2D::OnUpdate");
     {
         ENGINE_PROFILING_FUNC();
-        {
-            ENGINE_PROFILING_SCOPE("m_CameraController::OnUpdate");
-            m_CameraController.OnUpdate(timestep);
-        }
+
+        m_CameraController.OnUpdate(timestep);
+
         {
             ENGINE_PROFILING_SCOPE("Forest2D::PreRenderer");
             Engine::Renderer::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -44,10 +43,9 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
         }
 
         {
-            {
-                ENGINE_PROFILING_SCOPE("Renderer2D::BeginScene");
-                Engine::Renderer::Renderer2D::BeginScene(m_CameraController.GetCamera());
-            }
+
+            Engine::Renderer::Renderer2D::BeginScene(m_CameraController.GetCamera());
+
             {
                 ENGINE_PROFILING_SCOPE("Renderer2D::DrawQuad");
                 Engine::Renderer::Renderer2D::DrawQuad({-1.0f, 0.0f}, {0.8f, 0.8f}, m_SquareColor);
@@ -55,10 +53,8 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
                 Engine::Renderer::Renderer2D::DrawQuad({0.0f, 0.0f, -0.1f}, {1.0f, 1.0f}, m_CheckerBoardTexture);
                 Engine::Renderer::Renderer2D::DrawQuad({-2.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, 45.0f, m_CheckerBoardTexture, {0.8f, 1.0f, 0.3f, 1.0f});
             }
-            {
-                ENGINE_PROFILING_SCOPE("Renderer2D::EndScene");
-                Engine::Renderer::Renderer2D::EndScene();
-            }
+
+            Engine::Renderer::Renderer2D::EndScene();
         }
     }
     // InstrumentorProfilingEnd();
