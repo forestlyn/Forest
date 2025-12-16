@@ -18,6 +18,11 @@ namespace Engine::Core
 	};
 }
 
+#define LOG_ENABLE 1
+#define ENGINE_LOG_LEVEL spdlog::level::err
+#define LOG_LEVEL spdlog::level::err
+
+#if LOG_ENABLE == 1
 // Engine log macros
 #define ENGINE_TRACE(...) ::Engine::Core::Log::GetCoreLogger()->trace(__VA_ARGS__)
 #define ENGINE_INFO(...) ::Engine::Core::Log::GetCoreLogger()->info(__VA_ARGS__)
@@ -30,3 +35,17 @@ namespace Engine::Core
 #define LOG_WARN(...) ::Engine::Core::Log::GetClientLogger()->warn(__VA_ARGS__)
 #define LOG_ERROR(...) ::Engine::Core::Log::GetClientLogger()->error(__VA_ARGS__)
 #define LOG_CRITICAL(...) ::Engine::Core::Log::GetClientLogger()->critical(__VA_ARGS__)
+#else
+// Engine log macros
+#define ENGINE_TRACE(...)
+#define ENGINE_INFO(...)
+#define ENGINE_WARN(...)
+#define ENGINE_ERROR(...)
+#define ENGINE_CRITICAL(...)
+// App log macros
+#define LOG_TRACE(...)
+#define LOG_INFO(...)
+#define LOG_WARN(...)
+#define LOG_ERROR(...)
+#define LOG_CRITICAL(...)
+#endif
