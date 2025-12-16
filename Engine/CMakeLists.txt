@@ -1,21 +1,24 @@
 project(Engine)
 
-file(GLOB ENGINE_SOURCES 
+file(GLOB_RECURSE ENGINE_SOURCES 
     "src/Engine/*.cpp" 
-    "src/Engine/**/*.cpp"
-    "src/Engine/**/**/*.cpp"
-    "src/Platform/**/*.cpp"
-    "ThirdParty/stb_image/*.cpp")
-file(GLOB ENGINE_HEADERS 
+    "src/Platform/*.cpp"
+)
+list(APPEND ENGINE_SOURCES "ThirdParty/stb_image/stb_image.cpp")
+
+file(GLOB_RECURSE ENGINE_HEADERS 
     "src/Engine/*.h" 
-    "src/Engine/**/*.h"
-    "src/Engine/**/**/*.h"
-    "src/Platform/**/*.h"
-    "ThirdParty/stb_image/*.h")
+    "src/Platform/*.h"
+)
+list(APPEND ENGINE_HEADERS "ThirdParty/stb_image/stb_image.h")
 
 add_subdirectory("ThirdParty/glfw")
 add_subdirectory("ThirdParty/glad")
 add_subdirectory("ThirdParty/imgui")
+
+# Configure Profiling
+set(SOURCE_FILES ${ENGINE_SOURCES})
+include("src/Engine/Profile/CMakeLists.txt")
 
 add_library(Engine STATIC ${ENGINE_SOURCES} ${ENGINE_HEADERS})
 
@@ -44,7 +47,7 @@ target_compile_definitions(Engine
     PUBLIC FOREST_PLATFORM_WINDOWS
     FOREST_ENABLE_ASSERTS
     GLFW_INCLUDE_NONE
-    FOREST_ENABLE_PROFILING
+    FOREST_ENABLE_PROFILING_GLOBAL
 )
 
 target_precompile_headers(

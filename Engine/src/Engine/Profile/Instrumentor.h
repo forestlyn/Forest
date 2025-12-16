@@ -1,4 +1,5 @@
 #pragma once
+#include "Engine/Profile/ProfileMacros.h"
 #include "Engine/Core/Log.h"
 #include <algorithm>
 #include <chrono>

@@ -5,6 +5,13 @@ extern Engine::Core::Application *Engine::Core::CreateApplication();
 int main(int argc, char **argv)
 {
 	Engine::Core::Log::Init();
+
+#if FOREST_ENABLE_PROFILING
+	ENGINE_INFO("Profiling is ENABLED in EntryPoint.h");
+#else
+	ENGINE_INFO("Profiling is DISABLED in EntryPoint.h");
+#endif
+
 	Engine::Core::Application *app;
 	{
 		ENGINE_PROFILING_BEGIN("Application::", "start.json");

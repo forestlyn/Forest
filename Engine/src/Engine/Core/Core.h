@@ -39,25 +39,6 @@
 #define ASSERT(x, ...)
 #endif
 
-#if defined(FOREST_ENABLE_PROFILING)
-#define Timer_Profiling(name)                                                               \
-    Engine::Profile::Timer timer##__LINE__(name, [&](Engine::Profile::ProfileResult result) \
-                                           { Engine::Profile::ProfileLayer::ProfileResults.push_back(result); })
-#define ENGINE_PROFILING_SCOPE(name) \
-    Engine::Profile::InstrumentorTimer instrumentorTimer##__LINE__(name)
-#define ENGINE_PROFILING_FUNC() ENGINE_PROFILING_SCOPE(__FUNCSIG__)
-#define ENGINE_PROFILING_BEGIN(name, filepath) \
-    Engine::Profile::Instrumentor::Get().BeginSession(name, filepath)
-#define ENGINE_PROFILING_END() \
-    Engine::Profile::Instrumentor::Get().EndSession()
-#else
-#define Timer_Profiling(name)
-#define ENGINE_PROFILING_FUNC()
-#define ENGINE_PROFILING_SCOPE(name)
-#define ENGINE_PROFILING_BEGIN(name, filepath)
-#define ENGINE_PROFILING_END()
-#endif
-
 namespace Engine
 {
     template <typename T>

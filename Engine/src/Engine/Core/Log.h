@@ -19,8 +19,8 @@ namespace Engine::Core
 }
 
 #define LOG_ENABLE 1
-#define ENGINE_LOG_LEVEL spdlog::level::err
-#define LOG_LEVEL spdlog::level::err
+#define ENGINE_LOG_LEVEL spdlog::level::trace
+#define LOG_LEVEL spdlog::level::trace
 
 #if LOG_ENABLE == 1
 // Engine log macros

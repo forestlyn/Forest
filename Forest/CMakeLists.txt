@@ -2,10 +2,14 @@
 project(Forest)
 
 # 设置源文件
-file(GLOB FOREST_SOURCES "src/*.cpp" "src/**/*.cpp")
+file(GLOB_RECURSE FOREST_SOURCES "src/*.cpp")
 
 # 设置头文件目录
-file(GLOB FOREST_HEADERS "src/*.h" "src/**/*.h")
+file(GLOB_RECURSE FOREST_HEADERS "src/*.h")
+
+# Configure Profiling
+set(SOURCE_FILES ${FOREST_SOURCES})
+include("${CMAKE_SOURCE_DIR}/Engine/src/Engine/Profile/CMakeLists.txt")
 
 # 创建可执行文件
 add_executable(Forest ${FOREST_SOURCES} ${FOREST_HEADERS})
