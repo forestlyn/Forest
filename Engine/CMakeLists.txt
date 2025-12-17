@@ -48,6 +48,7 @@ target_compile_definitions(Engine
     FOREST_ENABLE_ASSERTS
     GLFW_INCLUDE_NONE
     FOREST_ENABLE_PROFILING_GLOBAL
+    ENGINE_ENABLE_PROFILELAYER
 )
 
 target_precompile_headers(

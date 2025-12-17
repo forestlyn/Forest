@@ -27,10 +27,11 @@ namespace Engine::Core
 		m_ImGuiLayer = new MyImGui::ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
 
-#if defined(FOREST_ENABLE_PROFILING)
+#if defined(ENGINE_ENABLE_PROFILELAYER)
 		m_ProfileLayer = new Engine::Profile::ProfileLayer();
 		PushOverlay(m_ProfileLayer);
 #endif
+		m_Window->SetVSync(false);
 	}
 
 	Application::~Application()

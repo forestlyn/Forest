@@ -20,7 +20,7 @@ namespace Engine::Renderer
 
         virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
 
-        virtual void DrawIndexed(Ref<VertexArray> &vertexArray) = 0;
+        virtual void DrawIndexed(Ref<VertexArray> &vertexArray, uint32_t indexCount = 0) = 0;
         static API GetAPI()
         {
             return CurrentAPI;

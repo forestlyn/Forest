@@ -5,57 +5,84 @@
 
 namespace Engine::Renderer
 {
-    Renderer2D::Scene2DData *Renderer2D::m_SceneData = new Renderer2D::Scene2DData();
+    Renderer2D::Scene2DData Renderer2D::m_SceneData = Renderer2D::Scene2DData();
 
     void Renderer2D::Init()
     {
         ENGINE_PROFILING_FUNC();
 
         // initialize shaders
-        m_SceneData->QuadTextureShader = Shader::Create("assets/shaders/TextureShader.glsl");
+        m_SceneData.QuadTextureShader = Shader::Create("assets/shaders/TextureShader.glsl");
         // initialize vertex array
-        float quadVertices[5 * 4] = {
-            -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-            0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-            0.5f, 0.5f, 0.0f, 1.0f, 1.0f,
-            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f};
 
-        m_SceneData->QuadVertexArray = VertexArray::Create();
+        m_SceneData.QuadVertexArray = VertexArray::Create();
 
-        Ref<VertexBuffer> quadVB = VertexBuffer::Create(quadVertices, sizeof(quadVertices));
-        quadVB->SetLayout({{ShaderDataType::Float3, "a_Position"},
-                           {ShaderDataType::Float2, "a_TexCoord"}});
-        m_SceneData->QuadVertexArray->AddVertexBuffer(quadVB);
+        m_SceneData.QuadVertexBufferBase = new QuadVertex[m_SceneData.MaxVertices];
+        m_SceneData.QuadVertexBufferPtr = m_SceneData.QuadVertexBufferBase;
 
-        uint32_t quadIndices[6] = {0, 1, 2, 2, 3, 0};
-        Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, sizeof(quadIndices) / sizeof(uint32_t));
-        m_SceneData->QuadVertexArray->SetIndexBuffer(quadIB);
+        m_SceneData.QuadVertexBuffer = VertexBuffer::Create(sizeof(QuadVertex) * m_SceneData.MaxVertices);
+        m_SceneData.QuadVertexBuffer->SetLayout({{ShaderDataType::Float3, "a_Position"},
+                                                 {ShaderDataType::Float4, "a_Color"},
+                                                 {ShaderDataType::Float2, "a_TexCoord"}});
+        m_SceneData.QuadVertexArray->AddVertexBuffer(m_SceneData.QuadVertexBuffer);
+
+        uint32_t *quadIndices = new uint32_t[m_SceneData.MaxIndices];
+        uint32_t offset = 0;
+        for (size_t i = 0; i < m_SceneData.MaxQuads * 6; i += 6)
+        {
+            quadIndices[i + 0] = offset + 0;
+            quadIndices[i + 1] = offset + 1;
+            quadIndices[i + 2] = offset + 2;
+
+            quadIndices[i + 3] = offset + 2;
+            quadIndices[i + 4] = offset + 3;
+            quadIndices[i + 5] = offset + 0;
+
+            offset += 4;
+        }
+
+        Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, m_SceneData.MaxIndices);
+        m_SceneData.QuadVertexArray->SetIndexBuffer(quadIB);
+        delete[] quadIndices;
 
         // create a 1x1 white texture
-        m_SceneData->WhiteTexture = Texture2D::Create(1, 1);
+        m_SceneData.WhiteTexture = Texture2D::Create(1, 1);
         uint32_t whitePixel = 0xffffffff;
-        m_SceneData->WhiteTexture->SetData(&whitePixel, sizeof(uint32_t));
+        m_SceneData.WhiteTexture->SetData(&whitePixel, sizeof(uint32_t));
     }
 
     void Renderer2D::Shutdown()
     {
         ENGINE_PROFILING_FUNC();
-        delete m_SceneData;
     }
 
     void Renderer2D::BeginScene(const Camera &camera)
     {
         ENGINE_PROFILING_FUNC();
 
-        m_SceneData->ViewProjectionMatrix = camera.GetViewProjectionMatrix();
+        m_SceneData.ViewProjectionMatrix = camera.GetViewProjectionMatrix();
 
-        m_SceneData->QuadTextureShader->Bind();
-        m_SceneData->QuadTextureShader->SetMat4("u_ViewProjection", m_SceneData->ViewProjectionMatrix);
+        m_SceneData.QuadTextureShader->Bind();
+        m_SceneData.QuadTextureShader->SetMat4("u_ViewProjection", m_SceneData.ViewProjectionMatrix);
+
+        m_SceneData.QuadVertexBufferPtr = m_SceneData.QuadVertexBufferBase;
+        m_SceneData.QuadIndexCount = 0;
     }
 
     void Renderer2D::EndScene()
     {
         ENGINE_PROFILING_FUNC();
+
+        uint32_t dataSize = (uint32_t)((uint8_t *)m_SceneData.QuadVertexBufferPtr - (uint8_t *)m_SceneData.QuadVertexBufferBase);
+        m_SceneData.QuadVertexBuffer->SetData(m_SceneData.QuadVertexBufferBase, dataSize);
+
+        Flush();
+    }
+
+    void Renderer2D::Flush()
+    {
+        ENGINE_PROFILING_FUNC();
+        RenderCommand::DrawIndexed(m_SceneData.QuadVertexArray, m_SceneData.QuadIndexCount);
     }
 
     void Renderer2D::DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color)
@@ -67,17 +94,40 @@ namespace Engine::Renderer
     {
         ENGINE_PROFILING_FUNC();
 
-        glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
-                              glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
+        m_SceneData.QuadVertexBufferPtr->Position = position;
+        m_SceneData.QuadVertexBufferPtr->Color = color;
+        m_SceneData.QuadVertexBufferPtr->TexCoord = {0.0f, 0.0f};
+        m_SceneData.QuadVertexBufferPtr++;
 
-        m_SceneData->QuadTextureShader->Bind();
-        m_SceneData->QuadTextureShader->SetMat4("u_Transform", transform);
-        m_SceneData->QuadTextureShader->SetFloat4("u_Color", color);
+        m_SceneData.QuadVertexBufferPtr->Position = {position.x + size.x, position.y, position.z};
+        m_SceneData.QuadVertexBufferPtr->Color = color;
+        m_SceneData.QuadVertexBufferPtr->TexCoord = {1.0f, 0.0f};
+        m_SceneData.QuadVertexBufferPtr++;
 
-        m_SceneData->WhiteTexture->Bind(0);
-        m_SceneData->QuadTextureShader->SetInt("u_Texture", 0);
-        m_SceneData->QuadVertexArray->Bind();
-        RenderCommand::DrawIndexed(m_SceneData->QuadVertexArray);
+        m_SceneData.QuadVertexBufferPtr->Position = {position.x + size.x, position.y + size.y, position.z};
+        m_SceneData.QuadVertexBufferPtr->Color = color;
+        m_SceneData.QuadVertexBufferPtr->TexCoord = {1.0f, 1.0f};
+        m_SceneData.QuadVertexBufferPtr++;
+
+        m_SceneData.QuadVertexBufferPtr->Position = {position.x, position.y + size.y, position.z};
+        m_SceneData.QuadVertexBufferPtr->Color = color;
+        m_SceneData.QuadVertexBufferPtr->TexCoord = {0.0f, 1.0f};
+        m_SceneData.QuadVertexBufferPtr++;
+
+        m_SceneData.QuadIndexCount += 6;
+
+        if (m_SceneData.QuadIndexCount >= m_SceneData.MaxIndices)
+        {
+            uint32_t dataSize = (uint32_t)((uint8_t *)m_SceneData.QuadVertexBufferPtr - (uint8_t *)m_SceneData.QuadVertexBufferBase);
+            m_SceneData.QuadVertexBuffer->SetData(m_SceneData.QuadVertexBufferBase, dataSize);
+
+            Flush();
+
+            m_SceneData.QuadVertexBufferPtr = m_SceneData.QuadVertexBufferBase;
+            m_SceneData.QuadIndexCount = 0;
+        }
+
+        ENGINE_ASSERT(m_SceneData.QuadIndexCount <= m_SceneData.MaxIndices, "Renderer2D::DrawQuad - Exceeded max quad index count!");
     }
 
     void Renderer2D::DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor)
@@ -92,15 +142,15 @@ namespace Engine::Renderer
         glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
                               glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
-        m_SceneData->QuadTextureShader->Bind();
-        m_SceneData->QuadTextureShader->SetFloat4("u_Color", tintColor);
-        m_SceneData->QuadTextureShader->SetMat4("u_Transform", transform);
-        m_SceneData->QuadTextureShader->SetFloat("u_TintFactor", tintFactor);
+        m_SceneData.QuadTextureShader->Bind();
+        m_SceneData.QuadTextureShader->SetFloat4("u_Color", tintColor);
+        m_SceneData.QuadTextureShader->SetMat4("u_Transform", transform);
+        m_SceneData.QuadTextureShader->SetFloat("u_TintFactor", tintFactor);
         texture->Bind(0);
-        m_SceneData->QuadTextureShader->SetInt("u_Texture", 0);
+        m_SceneData.QuadTextureShader->SetInt("u_Texture", 0);
 
-        m_SceneData->QuadVertexArray->Bind();
-        RenderCommand::DrawIndexed(m_SceneData->QuadVertexArray);
+        m_SceneData.QuadVertexArray->Bind();
+        RenderCommand::DrawIndexed(m_SceneData.QuadVertexArray);
     }
 
     void Renderer2D::DrawRotateQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color, const float z_rotation)
@@ -116,15 +166,15 @@ namespace Engine::Renderer
                               glm::rotate(glm::mat4(1.0f), z_rotation, glm::vec3(0.0f, 0.0f, 1.0f)) *
                               glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
-        m_SceneData->QuadTextureShader->Bind();
-        m_SceneData->QuadTextureShader->SetFloat4("u_Color", color);
-        m_SceneData->QuadTextureShader->SetMat4("u_Transform", transform);
+        m_SceneData.QuadTextureShader->Bind();
+        m_SceneData.QuadTextureShader->SetFloat4("u_Color", color);
+        m_SceneData.QuadTextureShader->SetMat4("u_Transform", transform);
 
-        m_SceneData->WhiteTexture->Bind(0);
-        m_SceneData->QuadTextureShader->SetInt("u_Texture", 0);
+        m_SceneData.WhiteTexture->Bind(0);
+        m_SceneData.QuadTextureShader->SetInt("u_Texture", 0);
 
-        m_SceneData->QuadVertexArray->Bind();
-        RenderCommand::DrawIndexed(m_SceneData->QuadVertexArray);
+        m_SceneData.QuadVertexArray->Bind();
+        RenderCommand::DrawIndexed(m_SceneData.QuadVertexArray);
     }
 
     void Renderer2D::DrawRotateQuad(const glm::vec2 &position, const glm::vec2 &size, const float z_rotation, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor)
@@ -140,15 +190,15 @@ namespace Engine::Renderer
                               glm::rotate(glm::mat4(1.0f), z_rotation, glm::vec3(0.0f, 0.0f, 1.0f)) *
                               glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
-        m_SceneData->QuadTextureShader->Bind();
-        m_SceneData->QuadTextureShader->SetFloat4("u_Color", tintColor);
-        m_SceneData->QuadTextureShader->SetMat4("u_Transform", transform);
-        m_SceneData->QuadTextureShader->SetFloat("u_TintFactor", tintFactor);
+        m_SceneData.QuadTextureShader->Bind();
+        m_SceneData.QuadTextureShader->SetFloat4("u_Color", tintColor);
+        m_SceneData.QuadTextureShader->SetMat4("u_Transform", transform);
+        m_SceneData.QuadTextureShader->SetFloat("u_TintFactor", tintFactor);
         texture->Bind(0);
-        m_SceneData->QuadTextureShader->SetInt("u_Texture", 0);
+        m_SceneData.QuadTextureShader->SetInt("u_Texture", 0);
 
-        m_SceneData->QuadVertexArray->Bind();
-        RenderCommand::DrawIndexed(m_SceneData->QuadVertexArray);
+        m_SceneData.QuadVertexArray->Bind();
+        RenderCommand::DrawIndexed(m_SceneData.QuadVertexArray);
     }
 
 }

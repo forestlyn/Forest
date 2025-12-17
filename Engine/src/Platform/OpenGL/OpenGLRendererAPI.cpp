@@ -31,8 +31,10 @@ namespace Engine::Platform::OpenGL
         // ENGINE_INFO("Viewport set to x:{0}, y:{1}, width:{2}, height:{3}", x, y, width, height);
     }
 
-    void OpenGLRendererAPI::DrawIndexed(Ref<Renderer::VertexArray> &vertexArray)
+    void OpenGLRendererAPI::DrawIndexed(Ref<Renderer::VertexArray> &vertexArray, uint32_t indexCount)
     {
-        glDrawElements(GL_TRIANGLES, vertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+        ENGINE_PROFILING_FUNC();
+        uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
+        glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
     }
 } // namespace Engine::Platform::OpenGL

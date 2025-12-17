@@ -27,9 +27,9 @@ namespace Engine::Renderer
             CurrentRendererAPI->SetViewport(x, y, width, height);
         }
 
-        inline static void DrawIndexed(Ref<VertexArray> &vertexArray)
+        inline static void DrawIndexed(Ref<VertexArray> &vertexArray, uint32_t indexCount = 0)
         {
-            CurrentRendererAPI->DrawIndexed(vertexArray);
+            CurrentRendererAPI->DrawIndexed(vertexArray, indexCount);
         }
 
     private:

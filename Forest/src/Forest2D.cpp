@@ -30,7 +30,6 @@ void Forest2D::OnDetach()
 
 void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
 {
-    // InstrumentorProfilingBegin("Forest2D::OnUpdate");
     {
         ENGINE_PROFILING_FUNC();
 
@@ -43,15 +42,22 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
         }
 
         {
+            Timer_Profiling("Forest2D::Renderer2D Scene");
 
             Engine::Renderer::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
             {
                 ENGINE_PROFILING_SCOPE("Renderer2D::DrawQuad");
-                Engine::Renderer::Renderer2D::DrawQuad({-1.0f, 0.0f}, {0.8f, 0.8f}, m_SquareColor);
-                Engine::Renderer::Renderer2D::DrawQuad({0.5f, -0.5f}, {0.4f, 0.4f}, {0.8f, 0.2f, 0.3f, 1.0f});
-                Engine::Renderer::Renderer2D::DrawQuad({0.0f, 0.0f, -0.1f}, {1.0f, 1.0f}, m_CheckerBoardTexture);
-                Engine::Renderer::Renderer2D::DrawRotateQuad({-2.0f, 0.0f}, {1.0f, 1.0f}, glm::radians(45.0f), m_CheckerBoardTexture, 1.0f, {0.8f, 1.0f, 0.3f, 1.0f});
+                for (uint32_t i = 0; i < 100000; i++)
+                {
+                    float x = (i % 20) * 0.11f - 1.0f;
+                    float y = (i / 20) * 0.11f - 1.0f;
+                    Engine::Renderer::Renderer2D::DrawQuad({x, y}, {0.1f, 0.1f}, m_SquareColor);
+                }
+
+                Engine::Renderer::Renderer2D::DrawQuad({0.5f, -0.5f, 0.1f}, {0.4f, 0.4f}, {0.8f, 0.2f, 0.3f, 1.0f});
+                // Engine::Renderer::Renderer2D::DrawQuad({0.0f, 0.0f, -0.1f}, {1.0f, 1.0f}, m_CheckerBoardTexture);
+                // Engine::Renderer::Renderer2D::DrawRotateQuad({-2.0f, 0.0f}, {1.0f, 1.0f}, glm::radians(45.0f), m_CheckerBoardTexture, 1.0f, {0.8f, 1.0f, 0.3f, 1.0f});
             }
 
             Engine::Renderer::Renderer2D::EndScene();
@@ -64,7 +70,12 @@ void Forest2D::OnImGuiRender()
     ENGINE_PROFILING_FUNC();
     ImGui::Begin("Settings");
     ImGui::ColorEdit4("Square Color", glm::value_ptr(m_SquareColor));
+    int maxQuads = Engine::Renderer::Renderer2D::GetMaxQuads();
+    ImGui::Text("Max Quads: %d", maxQuads);
+    ImGui::InputInt("Max Quads", &maxQuads);
     ImGui::End();
+
+    Engine::Renderer::Renderer2D::SetMaxQuads(maxQuads);
 }
 
 bool Forest2D::OnEvent(Engine::Event::Event &event)
