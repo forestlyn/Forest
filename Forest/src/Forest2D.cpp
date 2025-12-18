@@ -56,10 +56,9 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
                 }
 
                 Engine::Renderer::Renderer2D::DrawQuad({0.5f, -0.5f, 0.1f}, {0.4f, 0.4f}, {0.8f, 0.2f, 0.3f, 1.0f});
-                // Engine::Renderer::Renderer2D::DrawQuad({0.0f, 0.0f, -0.1f}, {1.0f, 1.0f}, m_CheckerBoardTexture);
+                Engine::Renderer::Renderer2D::DrawQuad({0.0f, 0.0f, 0.1f}, {1.0f, 1.0f}, m_CheckerBoardTexture);
                 // Engine::Renderer::Renderer2D::DrawRotateQuad({-2.0f, 0.0f}, {1.0f, 1.0f}, glm::radians(45.0f), m_CheckerBoardTexture, 1.0f, {0.8f, 1.0f, 0.3f, 1.0f});
             }
-
             Engine::Renderer::Renderer2D::EndScene();
         }
     }

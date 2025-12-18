@@ -47,30 +47,41 @@ namespace Engine::Renderer
         }
 
     private:
+        static float GetTextureIndex(const Ref<Texture2D> &texture);
+
+        static void UploadQuadData();
+        static void Reset();
+
         struct QuadVertex
         {
             glm::vec3 Position;
             glm::vec4 Color;
             glm::vec2 TexCoord;
-            // texture
+            float TexIndex;
+            float TilingFactor;
         };
 
         struct Scene2DData
         {
+            //-- Camera data --
             glm::mat4 ViewProjectionMatrix;
 
-            Ref<VertexArray> QuadVertexArray;
-            Ref<VertexBuffer> QuadVertexBuffer;
-
+            //-- Textures and shaders --
             Ref<Shader> QuadTextureShader;
-            Ref<Texture2D> WhiteTexture;
 
+            static const int MaxTextureSlots = 32;
+            std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
+            uint32_t TextureSlotIndex = 1; // 0 = white texture
+
+            //-- Quad data --
             const int InitialMaxQuads = 10000;
 
             uint32_t MaxQuads = InitialMaxQuads;
             uint32_t MaxVertices = MaxQuads * 4;
             uint32_t MaxIndices = MaxQuads * 6;
 
+            Ref<VertexArray> QuadVertexArray;
+            Ref<VertexBuffer> QuadVertexBuffer;
             uint32_t QuadIndexCount = 0;
 
             QuadVertex *QuadVertexBufferBase = nullptr;

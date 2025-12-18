@@ -104,6 +104,14 @@ namespace Platform::OpenGL
         UploadUniformInt(name, value);
     }
 
+    void OpenGLShader::SetIntArray(const std::string &name, int *values, uint32_t count)
+    {
+        ENGINE_PROFILING_FUNC();
+
+        GLint location = glGetUniformLocation(m_RendererID, name.c_str());
+        glUniform1iv(location, count, values);
+    }
+
     void OpenGLShader::SetFloat(const std::string &name, float value)
     {
         ENGINE_PROFILING_FUNC();
