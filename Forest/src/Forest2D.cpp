@@ -48,16 +48,18 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
 
             {
                 ENGINE_PROFILING_SCOPE("Renderer2D::DrawQuad");
-                for (uint32_t i = 0; i < 100000; i++)
-                {
-                    float x = (i % 20) * 0.11f - 1.0f;
-                    float y = (i / 20) * 0.11f - 1.0f;
-                    Engine::Renderer::Renderer2D::DrawQuad({x, y}, {0.1f, 0.1f}, m_SquareColor);
-                }
+                // for (uint32_t i = 0; i < 10000; i++)
+                // {
+                //     float x = (i % 20) * 0.11f - 1.0f;
+                //     float y = (i / 20) * 0.11f - 1.0f;
+                //     Engine::Renderer::Renderer2D::DrawQuad({x, y}, {0.1f, 0.1f}, m_SquareColor);
+                // }
 
+                // when debugging, just draw a few quads , the 4th and 2th with texture cannt be drawn at the same time
                 Engine::Renderer::Renderer2D::DrawQuad({0.5f, -0.5f, 0.1f}, {0.4f, 0.4f}, {0.8f, 0.2f, 0.3f, 1.0f});
                 Engine::Renderer::Renderer2D::DrawQuad({0.0f, 0.0f, 0.1f}, {1.0f, 1.0f}, m_CheckerBoardTexture);
-                // Engine::Renderer::Renderer2D::DrawRotateQuad({-2.0f, 0.0f}, {1.0f, 1.0f}, glm::radians(45.0f), m_CheckerBoardTexture, 1.0f, {0.8f, 1.0f, 0.3f, 1.0f});
+                Engine::Renderer::Renderer2D::DrawRotateQuad({0.5f, 0.5f, 0.2f}, {1.0f, 1.0f}, {0.8f, 1.0f, 0.3f, 1.0f}, 45.0f);
+                Engine::Renderer::Renderer2D::DrawRotateQuad({-0.5f, -0.5f, 0.2f}, {1.0f, 1.0f}, 45.0f, m_CheckerBoardTexture, 1.0f, {0.8f, 1.0f, 0.3f, 1.0f});
             }
             Engine::Renderer::Renderer2D::EndScene();
         }
