@@ -157,7 +157,7 @@ namespace Engine::Renderer
     {
         ENGINE_PROFILING_FUNC();
 
-        if (m_SceneData.QuadIndexCount >= m_SceneData.MaxIndices)
+        if (m_SceneData.QuadIndexCount >= m_SceneData.MaxTextureSlots)
         {
             UploadQuadData();
             Flush();
@@ -178,6 +178,7 @@ namespace Engine::Renderer
             m_SceneData.QuadVertexBufferPtr->TilingFactor = tintFactor;
             m_SceneData.QuadVertexBufferPtr++;
         }
+        m_SceneData.QuadIndexCount += 6;
 
         ENGINE_ASSERT(m_SceneData.QuadIndexCount <= m_SceneData.MaxIndices, "Renderer2D::DrawQuad - Exceeded max quad index count!");
     }
@@ -191,7 +192,7 @@ namespace Engine::Renderer
     {
         ENGINE_PROFILING_FUNC();
 
-        if (m_SceneData.QuadIndexCount >= m_SceneData.MaxIndices)
+        if (m_SceneData.QuadIndexCount >= m_SceneData.MaxTextureSlots)
         {
             UploadQuadData();
             Flush();
@@ -258,8 +259,11 @@ namespace Engine::Renderer
     {
         for (uint32_t i = 1; i < m_SceneData.TextureSlotIndex; i++)
         {
-            if (m_SceneData.TextureSlots[i] == texture)
+            if (Texture::IsEqual(*m_SceneData.TextureSlots[i], *texture))
+            {
+                ENGINE_INFO("Existing Texture Slot: {}", i);
                 return (float)i;
+            }
         }
 
         // New Texture
@@ -269,6 +273,8 @@ namespace Engine::Renderer
             Flush();
             Reset();
         }
+
+        ENGINE_INFO("New Texture Slot: {}", m_SceneData.TextureSlotIndex);
 
         m_SceneData.TextureSlots[m_SceneData.TextureSlotIndex] = texture;
         return (float)(m_SceneData.TextureSlotIndex++);

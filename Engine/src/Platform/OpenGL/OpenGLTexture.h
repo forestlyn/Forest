@@ -16,6 +16,12 @@ namespace Platform::OpenGL
         virtual void Bind(uint32_t slot = 0) const override;
         virtual void SetData(void *data, uint32_t size) override;
 
+        virtual bool operator==(const Engine::Renderer::Texture &other) const override
+        {
+            ENGINE_INFO("Comparing OpenGLTexture2D instances: {0} and {1}", m_RendererID, ((OpenGLTexture2D &)other).m_RendererID);
+            return m_RendererID == ((OpenGLTexture2D &)other).m_RendererID;
+        }
+
     private:
         std::string m_Path;
         uint32_t m_Width, m_Height;
