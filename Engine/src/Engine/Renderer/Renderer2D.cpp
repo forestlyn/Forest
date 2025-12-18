@@ -261,7 +261,7 @@ namespace Engine::Renderer
         {
             if (Texture::IsEqual(*m_SceneData.TextureSlots[i], *texture))
             {
-                ENGINE_INFO("Existing Texture Slot: {}", i);
+                // ENGINE_INFO("Existing Texture Slot: {}", i);
                 return (float)i;
             }
         }
@@ -274,7 +274,7 @@ namespace Engine::Renderer
             Reset();
         }
 
-        ENGINE_INFO("New Texture Slot: {}", m_SceneData.TextureSlotIndex);
+        // ENGINE_INFO("New Texture Slot: {}", m_SceneData.TextureSlotIndex);
 
         m_SceneData.TextureSlots[m_SceneData.TextureSlotIndex] = texture;
         return (float)(m_SceneData.TextureSlotIndex++);
