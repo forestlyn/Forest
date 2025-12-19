@@ -11,6 +11,16 @@ namespace Engine::Renderer
     class Renderer2D
     {
     public:
+        struct Statistics
+        {
+            uint32_t DrawCalls = 0;
+            uint32_t QuadCount = 0;
+
+            uint32_t GetTotalVertexCount() const { return QuadCount * 4; }
+            uint32_t GetTotalIndexCount() const { return QuadCount * 6; }
+        };
+
+    public:
         static void Init();
         static void Shutdown();
 
@@ -44,6 +54,17 @@ namespace Engine::Renderer
             m_SceneData.MaxQuads = maxQuads;
             m_SceneData.MaxVertices = m_SceneData.MaxQuads * 4;
             m_SceneData.MaxIndices = m_SceneData.MaxQuads * 6;
+        }
+
+        static Statistics GetStats()
+        {
+            return m_Stats;
+        }
+
+        static void ResetStats()
+        {
+            m_Stats.DrawCalls = 0;
+            m_Stats.QuadCount = 0;
         }
 
     private:
@@ -92,6 +113,7 @@ namespace Engine::Renderer
         };
 
         static Scene2DData m_SceneData;
+        static Statistics m_Stats;
     };
 
 } // namespace Engine::Renderer

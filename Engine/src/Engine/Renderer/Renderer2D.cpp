@@ -6,6 +6,8 @@
 namespace Engine::Renderer
 {
     Renderer2D::Scene2DData Renderer2D::m_SceneData = Renderer2D::Scene2DData();
+    Renderer2D::Statistics Renderer2D::m_Stats;
+
     const glm::vec4 Renderer2D::QuadVertexPositions[4] =
         {
             {-0.5f, -0.5f, 0.0f, 1.0f},
@@ -107,6 +109,7 @@ namespace Engine::Renderer
         {
             m_SceneData.TextureSlots[i]->Bind(i);
         }
+        m_Stats.DrawCalls++;
         RenderCommand::DrawIndexed(m_SceneData.QuadVertexArray, m_SceneData.QuadIndexCount);
     }
 
@@ -145,6 +148,8 @@ namespace Engine::Renderer
 
         m_SceneData.QuadIndexCount += 6;
 
+        m_Stats.QuadCount++;
+
         ENGINE_ASSERT(m_SceneData.QuadIndexCount <= m_SceneData.MaxIndices, "Renderer2D::DrawQuad - Exceeded max quad index count!");
     }
 
@@ -157,7 +162,7 @@ namespace Engine::Renderer
     {
         ENGINE_PROFILING_FUNC();
 
-        if (m_SceneData.QuadIndexCount >= m_SceneData.MaxTextureSlots)
+        if (m_SceneData.QuadIndexCount >= m_SceneData.MaxIndices)
         {
             UploadQuadData();
             Flush();
@@ -179,6 +184,7 @@ namespace Engine::Renderer
             m_SceneData.QuadVertexBufferPtr++;
         }
         m_SceneData.QuadIndexCount += 6;
+        m_Stats.QuadCount++;
 
         ENGINE_ASSERT(m_SceneData.QuadIndexCount <= m_SceneData.MaxIndices, "Renderer2D::DrawQuad - Exceeded max quad index count!");
     }
@@ -192,7 +198,7 @@ namespace Engine::Renderer
     {
         ENGINE_PROFILING_FUNC();
 
-        if (m_SceneData.QuadIndexCount >= m_SceneData.MaxTextureSlots)
+        if (m_SceneData.QuadIndexCount >= m_SceneData.MaxIndices)
         {
             UploadQuadData();
             Flush();
@@ -215,6 +221,7 @@ namespace Engine::Renderer
             m_SceneData.QuadVertexBufferPtr++;
         }
         m_SceneData.QuadIndexCount += 6;
+        m_Stats.QuadCount++;
 
         ENGINE_ASSERT(m_SceneData.QuadIndexCount <= m_SceneData.MaxIndices, "Renderer2D::DrawQuad - Exceeded max quad index count!");
     }
@@ -251,10 +258,14 @@ namespace Engine::Renderer
             m_SceneData.QuadVertexBufferPtr++;
         }
         m_SceneData.QuadIndexCount += 6;
+        m_Stats.QuadCount++;
 
         ENGINE_ASSERT(m_SceneData.QuadIndexCount <= m_SceneData.MaxIndices, "Renderer2D::DrawQuad - Exceeded max quad index count!");
     }
 
+    /// @brief get the texture index in slot
+    /// if not exist, add it to slot
+    /// if exceed max slots, flush and reset
     float Renderer2D::GetTextureIndex(const Ref<Texture2D> &texture)
     {
         for (uint32_t i = 1; i < m_SceneData.TextureSlotIndex; i++)
