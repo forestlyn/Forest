@@ -1,7 +1,7 @@
 #pragma once
 #include "Engine.h"
 #include <glm/glm.hpp>
-
+#include "Particle/ParticleSystem.h"
 class Forest2D : public Engine::Core::Layer
 {
 public:
@@ -22,4 +22,7 @@ private:
     Engine::Ref<Engine::Renderer::Texture2D> m_CheckerBoardTexture;
 
     std::vector<Engine::Profile::ProfileResult> m_Profiles;
+
+    Engine::Scope<ParticleSystem> m_ParticleSystem;
+    ParticleProperties m_ParticleTemplate;
 };

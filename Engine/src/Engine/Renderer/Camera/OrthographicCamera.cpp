@@ -9,6 +9,7 @@ namespace Engine::Renderer
         m_ProjectionMatrix = glm::ortho(left, right, bottom, top, zNear, zFar);
         m_ViewMatrix = glm::mat4(1.0f);
         m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
+        m_InverseViewProjectionMatrix = glm::inverse(m_ViewProjectionMatrix);
     }
 
     void OrthographicCamera::SetProjection(float left, float right, float bottom, float top)
@@ -16,6 +17,7 @@ namespace Engine::Renderer
         ENGINE_PROFILING_FUNC();
         m_ProjectionMatrix = glm::ortho(left, right, bottom, top, zNear, zFar);
         m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
+        m_InverseViewProjectionMatrix = glm::inverse(m_ViewProjectionMatrix);
     }
 
     void OrthographicCamera::SetPosition(const glm::vec3 &position)
@@ -43,5 +45,6 @@ namespace Engine::Renderer
 
         m_ViewMatrix = glm::inverse(transform);
         m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
+        m_InverseViewProjectionMatrix = glm::inverse(m_ViewProjectionMatrix);
     }
 } // namespace Engine::Renderer

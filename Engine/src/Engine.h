@@ -21,6 +21,10 @@
 
 #include "Engine/ImGui/ImGuiLayer.h"
 
+//--------math system------
+#include "Engine/Math/Math.h"
+//------------------------
+
 //------renderer system------
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Renderer/Renderer2D.h"
