@@ -4,6 +4,7 @@
 #include "Engine/Renderer/Camera/Camera.h"
 #include "Engine/Renderer/Shader/Shader.h"
 #include "Engine/Renderer/Shader/Texture.h"
+#include "Engine/Renderer/Shader/SubTexture.h"
 #include "Engine/Renderer/Shader/VertexArray.h"
 namespace Engine::Renderer
 {
@@ -38,6 +39,11 @@ namespace Engine::Renderer
         static void DrawRotateQuad(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color, const float z_degrees);
         static void DrawRotateQuad(const glm::vec2 &position, const glm::vec2 &size, const float z_degrees, const Ref<Texture2D> &texture, const float tintFactor = 1.0f, const glm::vec4 &tintColor = glm::vec4(1.0f));
         static void DrawRotateQuad(const glm::vec3 &position, const glm::vec2 &size, const float z_degrees, const Ref<Texture2D> &texture, const float tintFactor = 1.0f, const glm::vec4 &tintColor = glm::vec4(1.0f));
+
+        static void DrawSubTextureQuad(const glm::vec2 &position, const glm::vec2 &size, const Ref<SubTexture2D> &subTexture, const float tintFactor = 1.0f, const glm::vec4 &tintColor = glm::vec4(1.0f));
+        static void DrawSubTextureQuad(const glm::vec3 &position, const glm::vec2 &size, const Ref<SubTexture2D> &subTexture, const float tintFactor = 1.0f, const glm::vec4 &tintColor = glm::vec4(1.0f));
+        static void DrawRotateSubTextureQuad(const glm::vec2 &position, const glm::vec2 &size, const float z_degrees, const Ref<SubTexture2D> &subTexture, const float tintFactor = 1.0f, const glm::vec4 &tintColor = glm::vec4(1.0f));
+        static void DrawRotateSubTextureQuad(const glm::vec3 &position, const glm::vec2 &size, const float z_degrees, const Ref<SubTexture2D> &subTexture, const float tintFactor = 1.0f, const glm::vec4 &tintColor = glm::vec4(1.0f));
 
         // just for test
         static int GetMaxQuads()
@@ -75,6 +81,8 @@ namespace Engine::Renderer
 
         static void UploadQuadData();
         static void Reset();
+
+        static void DrawQuadInternal(glm::mat4 &transform, const glm::vec4 &color, const float textureIndex, const float tilingFactor, const glm::vec2 *texCoords = QuadTexCoords);
 
         struct QuadVertex
         {

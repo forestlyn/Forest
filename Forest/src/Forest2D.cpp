@@ -12,6 +12,11 @@ Forest2D::Forest2D(const std::string &name)
     : Layer(name), m_CameraController(Engine::OrthographicCameraController(16.0f / 9.0f, 1.0f, true))
 {
     m_CheckerBoardTexture = Engine::Renderer::Texture2D::Create("assets/textures/Checkerboard.png");
+    m_SpriteSheetTexture = Engine::Renderer::Texture2D::Create("assets/game/textures/RPGpack_sheet_2X.png");
+    m_TreeSubTexture = Engine::Renderer::SubTexture2D::CreateFromCoords(m_SpriteSheetTexture, {128.0f, 128.0f}, {1, 1}, {1, 2});
+    m_Upstairs = Engine::Renderer::SubTexture2D::CreateFromCoords(m_SpriteSheetTexture, {128.0f, 128.0f}, {7, 6});
+
+    // Initialize Particle System
     m_ParticleSystem = std::make_unique<ParticleSystem>();
     m_ParticleTemplate = ParticleProperties();
     m_ParticleTemplate.Velocity = {0.0f, 0.0f, 0.0f};
@@ -82,11 +87,13 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
                 //         Engine::Renderer::Renderer2D::DrawQuad({x, y}, {0.1f, 0.1f}, {i % 255 / 255.0f, 0.3f, i / 255.0f, 1.0f});
                 //     }
 
-                // when debugging, just draw a few quads , the 4th and 2th with texture cannt be drawn at the same time
-                Engine::Renderer::Renderer2D::DrawQuad({0.5f, -0.5f, 0.1f}, {0.4f, 0.4f}, {0.8f, 0.2f, 0.3f, 1.0f});
-                Engine::Renderer::Renderer2D::DrawQuad({0.0f, 0.0f, 0.1f}, {1.0f, 1.0f}, m_CheckerBoardTexture);
-                Engine::Renderer::Renderer2D::DrawRotateQuad({0.5f, 0.5f, 0.2f}, {1.0f, 1.0f}, {0.8f, 1.0f, 0.3f, 1.0f}, 45.0f);
-                Engine::Renderer::Renderer2D::DrawRotateQuad({-0.5f, -0.5f, 0.2f}, {1.0f, 1.0f}, 45.0f, m_CheckerBoardTexture, 1.0f, {0.8f, 1.0f, 0.3f, 1.0f});
+                // Engine::Renderer::Renderer2D::DrawQuad({0.5f, -0.5f, 0.1f}, {0.4f, 0.4f}, {0.8f, 0.2f, 0.3f, 1.0f});
+                // Engine::Renderer::Renderer2D::DrawQuad({0.0f, 0.0f, 0.1f}, {1.0f, 1.0f}, m_CheckerBoardTexture);
+                // Engine::Renderer::Renderer2D::DrawRotateQuad({0.5f, 0.5f, 0.2f}, {1.0f, 1.0f}, {0.8f, 1.0f, 0.3f, 1.0f}, 45.0f);
+                // Engine::Renderer::Renderer2D::DrawRotateQuad({-0.5f, -0.5f, 0.2f}, {1.0f, 1.0f}, 45.0f, m_CheckerBoardTexture, 1.0f, {0.8f, 1.0f, 0.3f, 1.0f});
+                // Engine::Renderer::Renderer2D::DrawQuad({-0.5f, -0.5f, 0.2f}, {1.0f, 1.0f}, m_SpriteSheetTexture);
+                Engine::Renderer::Renderer2D::DrawSubTextureQuad({-0.5f, -0.5f, 0.2f}, {1.0f, 2.0f}, m_TreeSubTexture);
+                Engine::Renderer::Renderer2D::DrawSubTextureQuad({0.5f, -0.5f, 0.2f}, {1.0f, 1.0f}, m_Upstairs);
             }
             Engine::Renderer::Renderer2D::EndScene();
         }

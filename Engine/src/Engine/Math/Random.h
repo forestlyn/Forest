@@ -3,8 +3,8 @@
 #include <random>
 namespace Engine::Math::Random
 {
-    static std::mt19937 s_RandomEngine;
-    static std::uniform_int_distribution<std::mt19937::result_type> s_Distribution;
+    extern std::mt19937 s_RandomEngine;
+    extern std::uniform_int_distribution<std::mt19937::result_type> s_Distribution;
 
     static inline float Float()
     {

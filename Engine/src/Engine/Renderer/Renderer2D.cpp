@@ -112,7 +112,7 @@ namespace Engine::Renderer
         m_Stats.DrawCalls++;
         RenderCommand::DrawIndexed(m_SceneData.QuadVertexArray, m_SceneData.QuadIndexCount);
     }
-
+#pragma region DrawQuadImplementations
     void Renderer2D::DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color)
     {
         DrawQuad(glm::vec3(position, 0.0f), size, color);
@@ -122,35 +122,13 @@ namespace Engine::Renderer
     {
         ENGINE_PROFILING_FUNC();
 
-        // if exceed max index count,draw current batch and reset
-        if (m_SceneData.QuadIndexCount >= m_SceneData.MaxIndices)
-        {
-            UploadQuadData();
-            Flush();
-            Reset();
-        }
-
         const float TextureIndex = 0.0f; // White Texture
         const float TilingFactor = 1.0f;
 
         glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
                               glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
 
-        for (int i = 0; i < 4; i++)
-        {
-            m_SceneData.QuadVertexBufferPtr->Position = transform * QuadVertexPositions[i];
-            m_SceneData.QuadVertexBufferPtr->Color = color;
-            m_SceneData.QuadVertexBufferPtr->TexCoord = QuadTexCoords[i];
-            m_SceneData.QuadVertexBufferPtr->TexIndex = TextureIndex;
-            m_SceneData.QuadVertexBufferPtr->TilingFactor = TilingFactor;
-            m_SceneData.QuadVertexBufferPtr++;
-        }
-
-        m_SceneData.QuadIndexCount += 6;
-
-        m_Stats.QuadCount++;
-
-        ENGINE_ASSERT(m_SceneData.QuadIndexCount <= m_SceneData.MaxIndices, "Renderer2D::DrawQuad - Exceeded max quad index count!");
+        DrawQuadInternal(transform, color, TextureIndex, TilingFactor);
     }
 
     void Renderer2D::DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor)
@@ -162,31 +140,12 @@ namespace Engine::Renderer
     {
         ENGINE_PROFILING_FUNC();
 
-        if (m_SceneData.QuadIndexCount >= m_SceneData.MaxIndices)
-        {
-            UploadQuadData();
-            Flush();
-            Reset();
-        }
-
         const float TextureIndex = GetTextureIndex(texture);
 
         glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
                               glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
 
-        for (int i = 0; i < 4; i++)
-        {
-            m_SceneData.QuadVertexBufferPtr->Position = transform * QuadVertexPositions[i];
-            m_SceneData.QuadVertexBufferPtr->Color = tintColor;
-            m_SceneData.QuadVertexBufferPtr->TexCoord = QuadTexCoords[i];
-            m_SceneData.QuadVertexBufferPtr->TexIndex = TextureIndex;
-            m_SceneData.QuadVertexBufferPtr->TilingFactor = tintFactor;
-            m_SceneData.QuadVertexBufferPtr++;
-        }
-        m_SceneData.QuadIndexCount += 6;
-        m_Stats.QuadCount++;
-
-        ENGINE_ASSERT(m_SceneData.QuadIndexCount <= m_SceneData.MaxIndices, "Renderer2D::DrawQuad - Exceeded max quad index count!");
+        DrawQuadInternal(transform, tintColor, TextureIndex, tintFactor);
     }
 
     void Renderer2D::DrawRotateQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color, const float z_degrees)
@@ -198,32 +157,13 @@ namespace Engine::Renderer
     {
         ENGINE_PROFILING_FUNC();
 
-        if (m_SceneData.QuadIndexCount >= m_SceneData.MaxIndices)
-        {
-            UploadQuadData();
-            Flush();
-            Reset();
-        }
-
         glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
                               glm::rotate(glm::mat4(1.0f), glm::radians(z_degrees), glm::vec3(0.0f, 0.0f, 1.0f)) *
                               glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
         const float TextureIndex = 0.0f; // White Texture
         const float TilingFactor = 1.0f;
-        for (int i = 0; i < 4; i++)
-        {
-            m_SceneData.QuadVertexBufferPtr->Position = transform * QuadVertexPositions[i];
-            m_SceneData.QuadVertexBufferPtr->Color = color;
-            m_SceneData.QuadVertexBufferPtr->TexCoord = QuadTexCoords[i];
-            m_SceneData.QuadVertexBufferPtr->TexIndex = TextureIndex;
-            m_SceneData.QuadVertexBufferPtr->TilingFactor = TilingFactor;
-            m_SceneData.QuadVertexBufferPtr++;
-        }
-        m_SceneData.QuadIndexCount += 6;
-        m_Stats.QuadCount++;
-
-        ENGINE_ASSERT(m_SceneData.QuadIndexCount <= m_SceneData.MaxIndices, "Renderer2D::DrawQuad - Exceeded max quad index count!");
+        DrawQuadInternal(transform, color, TextureIndex, TilingFactor);
     }
 
     void Renderer2D::DrawRotateQuad(const glm::vec2 &position, const glm::vec2 &size, const float z_degrees, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor)
@@ -235,34 +175,59 @@ namespace Engine::Renderer
     {
         ENGINE_PROFILING_FUNC();
 
-        if (m_SceneData.QuadIndexCount >= m_SceneData.MaxIndices)
-        {
-            UploadQuadData();
-            Flush();
-            Reset();
-        }
-
         glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
                               glm::rotate(glm::mat4(1.0f), glm::radians(z_degrees), glm::vec3(0.0f, 0.0f, 1.0f)) *
                               glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
         const float TextureIndex = GetTextureIndex(texture);
         const float TilingFactor = 1.0f;
-        for (int i = 0; i < 4; i++)
-        {
-            m_SceneData.QuadVertexBufferPtr->Position = transform * QuadVertexPositions[i];
-            m_SceneData.QuadVertexBufferPtr->Color = tintColor;
-            m_SceneData.QuadVertexBufferPtr->TexCoord = QuadTexCoords[i];
-            m_SceneData.QuadVertexBufferPtr->TexIndex = TextureIndex;
-            m_SceneData.QuadVertexBufferPtr->TilingFactor = TilingFactor;
-            m_SceneData.QuadVertexBufferPtr++;
-        }
-        m_SceneData.QuadIndexCount += 6;
-        m_Stats.QuadCount++;
 
-        ENGINE_ASSERT(m_SceneData.QuadIndexCount <= m_SceneData.MaxIndices, "Renderer2D::DrawQuad - Exceeded max quad index count!");
+        DrawQuadInternal(transform, tintColor, TextureIndex, TilingFactor);
     }
 
+    void Renderer2D::DrawSubTextureQuad(const glm::vec2 &position, const glm::vec2 &size, const Ref<SubTexture2D> &texture, const float tintFactor, const glm::vec4 &tintColor)
+    {
+        ENGINE_PROFILING_FUNC();
+        DrawSubTextureQuad(glm::vec3(position, 0.0f), size, texture, tintFactor, tintColor);
+    }
+
+    void Renderer2D::DrawSubTextureQuad(const glm::vec3 &position, const glm::vec2 &size, const Ref<SubTexture2D> &subTexture, const float tintFactor, const glm::vec4 &tintColor)
+    {
+        ENGINE_PROFILING_FUNC();
+
+        const float TextureIndex = GetTextureIndex(subTexture->GetTexture());
+
+        glm::vec2 spriteSize = subTexture->GetTexCoords()[2] - subTexture->GetTexCoords()[0];
+
+        glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
+                              glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
+
+        const float TilingFactor = 1.0f;
+
+        DrawQuadInternal(transform, tintColor, TextureIndex, tintFactor, subTexture->GetTexCoords());
+    }
+
+    void Renderer2D::DrawRotateSubTextureQuad(const glm::vec2 &position, const glm::vec2 &size, const float z_degrees, const Ref<SubTexture2D> &subTexture, const float tintFactor, const glm::vec4 &tintColor)
+    {
+        DrawRotateSubTextureQuad(glm::vec3(position, 0.0f), size, z_degrees, subTexture, tintFactor, tintColor);
+    }
+
+    void Renderer2D::DrawRotateSubTextureQuad(const glm::vec3 &position, const glm::vec2 &size, const float z_degrees, const Ref<SubTexture2D> &subTexture, const float tintFactor, const glm::vec4 &tintColor)
+    {
+        ENGINE_PROFILING_FUNC();
+
+        const float TextureIndex = GetTextureIndex(subTexture->GetTexture());
+
+        glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
+                              glm::rotate(glm::mat4(1.0f), glm::radians(z_degrees), glm::vec3(0.0f, 0.0f, 1.0f)) *
+                              glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
+
+        const float TilingFactor = 1.0f;
+
+        DrawQuadInternal(transform, tintColor, TextureIndex, tintFactor, subTexture->GetTexCoords());
+    }
+
+#pragma endregion
     /// @brief get the texture index in slot
     /// if not exist, add it to slot
     /// if exceed max slots, flush and reset
@@ -302,5 +267,31 @@ namespace Engine::Renderer
         m_SceneData.QuadVertexBufferPtr = m_SceneData.QuadVertexBufferBase;
         m_SceneData.QuadIndexCount = 0;
         m_SceneData.TextureSlotIndex = 1;
+    }
+
+    /// @brief internal function to draw quad
+    void Renderer2D::DrawQuadInternal(glm::mat4 &transform, const glm::vec4 &color, const float textureIndex, const float tilingFactor, const glm::vec2 *texCoords)
+    {
+        if (m_SceneData.QuadIndexCount >= m_SceneData.MaxIndices)
+        {
+            UploadQuadData();
+            Flush();
+            Reset();
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            m_SceneData.QuadVertexBufferPtr->Position = transform * QuadVertexPositions[i];
+            m_SceneData.QuadVertexBufferPtr->Color = color;
+            m_SceneData.QuadVertexBufferPtr->TexCoord = texCoords[i];
+            m_SceneData.QuadVertexBufferPtr->TexIndex = textureIndex;
+            m_SceneData.QuadVertexBufferPtr->TilingFactor = tilingFactor;
+            m_SceneData.QuadVertexBufferPtr++;
+        }
+
+        m_SceneData.QuadIndexCount += 6;
+        m_Stats.QuadCount++;
+
+        ENGINE_ASSERT(m_SceneData.QuadIndexCount <= m_SceneData.MaxIndices, "Renderer2D::DrawQuad - Exceeded max quad index count!");
     }
 }

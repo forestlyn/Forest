@@ -20,6 +20,10 @@ private:
     glm::vec4 m_SquareColor = {0.2f, 0.3f, 0.8f, 1.0f};
 
     Engine::Ref<Engine::Renderer::Texture2D> m_CheckerBoardTexture;
+    Engine::Ref<Engine::Renderer::Texture2D> m_SpriteSheetTexture;
+
+    Engine::Ref<Engine::Renderer::SubTexture2D> m_TreeSubTexture;
+    Engine::Ref<Engine::Renderer::SubTexture2D> m_Upstairs;
 
     std::vector<Engine::Profile::ProfileResult> m_Profiles;
 
