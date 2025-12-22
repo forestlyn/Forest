@@ -27,6 +27,12 @@ Forest2D::Forest2D(const std::string &name)
     m_ParticleTemplate.SizeEnd = 0.01f;
     m_ParticleTemplate.SizeVariation = 0.05f;
     m_ParticleTemplate.LifeTime = 1.0f;
+
+    // Initialize FrameBuffer
+    Engine::Renderer::FrameBufferSpecification fbSpec;
+    fbSpec.Width = 1280;
+    fbSpec.Height = 720;
+    m_FrameBuffer = Engine::Renderer::FrameBuffer::Create(fbSpec);
 }
 
 Forest2D::~Forest2D()
@@ -51,11 +57,7 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
         if (Engine::Core::Input::IsMouseButtonPressed(FOREST_MOUSE_BUTTON_LEFT))
         {
             auto [x, y] = Engine::Core::Input::GetMousePosition();
-            auto width = Engine::Core::Application::Get().GetWindowWidth();
-            auto height = Engine::Core::Application::Get().GetWindowHeight();
-            float ndc_x = (x / (float)width) * 2.0f - 1.0f;
-            float ndc_y = -((y / (float)height) * 2.0f - 1.0f);
-            glm::vec2 worldPos = m_CameraController.GetCamera().ScreenToWorld({ndc_x, ndc_y});
+            glm::vec2 worldPos = m_CameraController.GetCamera().ScreenToWorld({x, y});
             m_ParticleTemplate.Position = glm::vec3(worldPos.x, worldPos.y, 0.0f);
             // ENGINE_INFO("Left Mouse Button Pressed - Emitting Particle: Screen Pos: ({}, {}), World Pos: ({}, {})", x, y, worldPos.x, worldPos.y);
             m_ParticleSystem->Emit(m_ParticleTemplate);
@@ -67,6 +69,9 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
         m_ParticleSystem->OnUpdate(timestep);
         {
             ENGINE_PROFILING_SCOPE("Forest2D::PreRenderer");
+
+            m_FrameBuffer->Bind();
+
             Engine::Renderer::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
             Engine::Renderer::RenderCommand::Clear();
         }
@@ -80,22 +85,19 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
                 ENGINE_PROFILING_SCOPE("Renderer2D::DrawQuad");
                 m_ParticleSystem->OnRender();
 
-                //     for (uint32_t i = 0; i < 10000; i++)
-                //     {
-                //         float x = (i % 100) * 0.11f - 5.0f;
-                //         float y = (i / 100) * 0.11f - 5.0f;
-                //         Engine::Renderer::Renderer2D::DrawQuad({x, y}, {0.1f, 0.1f}, {i % 255 / 255.0f, 0.3f, i / 255.0f, 1.0f});
-                //     }
+                for (uint32_t i = 0; i < 100; i++)
+                {
+                    float x = (i % 100) * 0.11f - 5.0f;
+                    float y = (i / 100) * 0.11f - 5.0f;
+                    Engine::Renderer::Renderer2D::DrawQuad({x, y}, {0.1f, 0.1f}, {i % 255 / 255.0f, 0.3f, i / 255.0f, 1.0f});
+                }
 
-                // Engine::Renderer::Renderer2D::DrawQuad({0.5f, -0.5f, 0.1f}, {0.4f, 0.4f}, {0.8f, 0.2f, 0.3f, 1.0f});
-                // Engine::Renderer::Renderer2D::DrawQuad({0.0f, 0.0f, 0.1f}, {1.0f, 1.0f}, m_CheckerBoardTexture);
-                // Engine::Renderer::Renderer2D::DrawRotateQuad({0.5f, 0.5f, 0.2f}, {1.0f, 1.0f}, {0.8f, 1.0f, 0.3f, 1.0f}, 45.0f);
-                // Engine::Renderer::Renderer2D::DrawRotateQuad({-0.5f, -0.5f, 0.2f}, {1.0f, 1.0f}, 45.0f, m_CheckerBoardTexture, 1.0f, {0.8f, 1.0f, 0.3f, 1.0f});
-                // Engine::Renderer::Renderer2D::DrawQuad({-0.5f, -0.5f, 0.2f}, {1.0f, 1.0f}, m_SpriteSheetTexture);
                 Engine::Renderer::Renderer2D::DrawSubTextureQuad({-0.5f, -0.5f, 0.2f}, {1.0f, 2.0f}, m_TreeSubTexture);
                 Engine::Renderer::Renderer2D::DrawSubTextureQuad({0.5f, -0.5f, 0.2f}, {1.0f, 1.0f}, m_Upstairs);
             }
             Engine::Renderer::Renderer2D::EndScene();
+
+            m_FrameBuffer->Unbind();
         }
     }
     // InstrumentorProfilingEnd();
@@ -116,6 +118,12 @@ void Forest2D::OnImGuiRender()
     int maxQuads = Engine::Renderer::Renderer2D::GetMaxQuads();
     ImGui::Text("Max Quads: %d", maxQuads);
     ImGui::InputInt("Max Quads", &maxQuads);
+    ImGui::End();
+
+    ImGui::Begin("FrameBuffer");
+    uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
+    auto m_Specs = m_FrameBuffer->GetSpecification();
+    ImGui::Image((void *)textureID, ImVec2{(float)m_Specs.Width, (float)m_Specs.Height}, ImVec2{0, 1}, ImVec2{1, 0});
     ImGui::End();
 
     Engine::Renderer::Renderer2D::SetMaxQuads(maxQuads);

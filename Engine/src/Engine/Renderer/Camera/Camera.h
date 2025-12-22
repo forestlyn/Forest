@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
+#include "Engine/Core/Application.h"
 namespace Engine::Renderer
 {
     class Camera
@@ -9,7 +10,11 @@ namespace Engine::Renderer
 
         glm::vec2 ScreenToWorld(glm::vec2 screenPos) const
         {
-            glm::vec4 screenPosVec(screenPos.x, screenPos.y, 0.0f, 1.0f);
+            auto width = Engine::Core::Application::Get().GetWindowWidth();
+            auto height = Engine::Core::Application::Get().GetWindowHeight();
+            float ndc_x = (screenPos.x / (float)width) * 2.0f - 1.0f;
+            float ndc_y = -((screenPos.y / (float)height) * 2.0f - 1.0f);
+            glm::vec4 screenPosVec(ndc_x, ndc_y, 0.0f, 1.0f);
             glm::vec4 worldPos = m_InverseViewProjectionMatrix * screenPosVec;
             worldPos /= worldPos.w;
             return glm::vec2(worldPos.x, worldPos.y);

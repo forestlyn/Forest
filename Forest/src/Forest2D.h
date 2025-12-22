@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include <glm/glm.hpp>
 #include "Particle/ParticleSystem.h"
+#include "Engine/Renderer/FrameBuffer.h"
 class Forest2D : public Engine::Core::Layer
 {
 public:
@@ -25,7 +26,7 @@ private:
     Engine::Ref<Engine::Renderer::SubTexture2D> m_TreeSubTexture;
     Engine::Ref<Engine::Renderer::SubTexture2D> m_Upstairs;
 
-    std::vector<Engine::Profile::ProfileResult> m_Profiles;
+    Engine::Ref<Engine::Renderer::FrameBuffer> m_FrameBuffer;
 
     Engine::Scope<ParticleSystem> m_ParticleSystem;
     ParticleProperties m_ParticleTemplate;
