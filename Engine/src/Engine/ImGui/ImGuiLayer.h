@@ -22,5 +22,7 @@ namespace Engine::MyImGui
 
         void Begin();
         void End();
+
+        void OpenDockSpace();
     };
 }

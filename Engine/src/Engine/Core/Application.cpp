@@ -31,7 +31,7 @@ namespace Engine::Core
 		m_ProfileLayer = new Engine::Profile::ProfileLayer();
 		PushOverlay(m_ProfileLayer);
 #endif
-		m_Window->SetVSync(false);
+		// m_Window->SetVSync(false);
 	}
 
 	Application::~Application()
