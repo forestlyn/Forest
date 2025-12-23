@@ -53,6 +53,16 @@ namespace Engine::MyImGui
         ImGui::DestroyContext();
     }
 
+    bool ImGuiLayer::OnEvent(Engine::Event::Event &event)
+    {
+        if (!m_BlockEvents)
+            return false;
+        ImGuiIO &io = ImGui::GetIO();
+        event.Handled |= event.IsInCategory(Engine::Event::EventCategoryMouse) && io.WantCaptureMouse;
+        event.Handled |= event.IsInCategory(Engine::Event::EventCategoryKeyboard) && io.WantCaptureKeyboard;
+        return false;
+    }
+
     void ImGuiLayer::Begin()
     {
         ENGINE_PROFILING_FUNC();

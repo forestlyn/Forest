@@ -27,6 +27,8 @@ namespace Engine::Core
 		int GetWindowHeight() const { return m_Window->GetHeight(); }
 		void *GetNativeWindow() const { return m_Window->GetNativeWindow(); }
 
+		Engine::MyImGui::ImGuiLayer &GetImGuiLayer() { return *m_ImGuiLayer; }
+
 	private:
 		bool m_Running = true;
 		bool m_Minimized = false;

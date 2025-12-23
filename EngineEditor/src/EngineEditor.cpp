@@ -56,19 +56,21 @@ namespace EngineEditor
         {
             ENGINE_PROFILING_FUNC();
 
-            if (Engine::Core::Input::IsMouseButtonPressed(FOREST_MOUSE_BUTTON_LEFT))
-            {
-                auto [x, y] = Engine::Core::Input::GetMousePosition();
-                glm::vec2 worldPos = m_CameraController.GetCamera().ScreenToWorld({x, y});
-                m_ParticleTemplate.Position = glm::vec3(worldPos.x, worldPos.y, 0.0f);
-                // ENGINE_INFO("Left Mouse Button Pressed - Emitting Particle: Screen Pos: ({}, {}), World Pos: ({}, {})", x, y, worldPos.x, worldPos.y);
-                m_ParticleSystem->Emit(m_ParticleTemplate);
-            }
+            // if (Engine::Core::Input::IsMouseButtonPressed(FOREST_MOUSE_BUTTON_LEFT))
+            // {
+            //     auto [x, y] = Engine::Core::Input::GetMousePosition();
+            //     glm::vec2 worldPos = m_CameraController.GetCamera().ScreenToWorld({x, y});
+            //     m_ParticleTemplate.Position = glm::vec3(worldPos.x, worldPos.y, 0.0f);
+            //     // ENGINE_INFO("Left Mouse Button Pressed - Emitting Particle: Screen Pos: ({}, {}), World Pos: ({}, {})", x, y, worldPos.x, worldPos.y);
+            //     m_ParticleSystem->Emit(m_ParticleTemplate);
+            // }
 
             // Update and Render Particle System
-            m_CameraController.OnUpdate(timestep);
 
-            m_ParticleSystem->OnUpdate(timestep);
+            if (m_FocusScene)
+                m_CameraController.OnUpdate(timestep);
+
+            // m_ParticleSystem->OnUpdate(timestep);
             {
                 ENGINE_PROFILING_SCOPE("EngineEditor::PreRenderer");
 
@@ -85,7 +87,7 @@ namespace EngineEditor
                 Engine::Renderer::Renderer2D::ResetStats();
                 {
                     ENGINE_PROFILING_SCOPE("Renderer2D::DrawQuad");
-                    m_ParticleSystem->OnRender();
+                    // m_ParticleSystem->OnRender();
 
                     for (uint32_t i = 0; i < 100; i++)
                     {
@@ -124,7 +126,15 @@ namespace EngineEditor
         ImGui::InputInt("Max Quads", &maxQuads);
         ImGui::End();
 
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::Begin("Scene");
+
+        m_FocusScene = ImGui::IsWindowFocused();
+        m_HoverScene = ImGui::IsWindowHovered();
+
+        Engine::Core::Application::Get().GetImGuiLayer().BlockEvents(!(m_FocusScene || m_HoverScene));
+        // ENGINE_INFO("m_FocusScene:{},m_HoverScene:{}", m_FocusScene, m_HoverScene);
+
         auto regionAvailSize = ImGui::GetContentRegionAvail();
         if (m_SceneViewportSize.x != (int)regionAvailSize.x || m_SceneViewportSize.y != (int)regionAvailSize.y)
         {
@@ -137,6 +147,7 @@ namespace EngineEditor
         auto m_Specs = m_FrameBuffer->GetSpecification();
         ImGui::Image((void *)textureID, ImVec2{(float)m_Specs.Width, (float)m_Specs.Height}, ImVec2{0, 1}, ImVec2{1, 0});
         ImGui::End();
+        ImGui::PopStyleVar();
 
         Engine::Renderer::Renderer2D::SetMaxQuads(maxQuads);
     }

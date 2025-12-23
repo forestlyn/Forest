@@ -35,6 +35,7 @@ namespace EngineEditor
 
         Engine::Ref<Engine::Renderer::FrameBuffer> m_FrameBuffer;
 
+        bool m_FocusScene = false, m_HoverScene = false;
         glm::ivec2 m_SceneViewportSize = {0, 0};
 
         Engine::Scope<ParticleSystem> m_ParticleSystem;

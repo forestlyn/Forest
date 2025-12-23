@@ -51,7 +51,6 @@ namespace Engine
         if (height == 0.0f)
             return;
         m_AspectRatio = width / height;
-        ENGINE_INFO("Camera Resized: New Aspect Ratio: {}", m_AspectRatio);
         m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
     }
     bool OrthographicCameraController::OnWindowResize(Event::WindowResizeEvent &event)

@@ -19,10 +19,14 @@ namespace Engine::MyImGui
 
         void OnAttach() override;
         void OnDetach() override;
+        bool OnEvent(Engine::Event::Event &event) override;
 
         void Begin();
         void End();
 
-        void OpenDockSpace();
+        void BlockEvents(bool block) { m_BlockEvents = block; }
+
+    private:
+        bool m_BlockEvents = true;
     };
 }
