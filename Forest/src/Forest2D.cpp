@@ -27,12 +27,6 @@ Forest2D::Forest2D(const std::string &name)
     m_ParticleTemplate.SizeEnd = 0.01f;
     m_ParticleTemplate.SizeVariation = 0.05f;
     m_ParticleTemplate.LifeTime = 1.0f;
-
-    // Initialize FrameBuffer
-    Engine::Renderer::FrameBufferSpecification fbSpec;
-    fbSpec.Width = 1280;
-    fbSpec.Height = 720;
-    m_FrameBuffer = Engine::Renderer::FrameBuffer::Create(fbSpec);
 }
 
 Forest2D::~Forest2D()
@@ -69,9 +63,6 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
         m_ParticleSystem->OnUpdate(timestep);
         {
             ENGINE_PROFILING_SCOPE("Forest2D::PreRenderer");
-
-            m_FrameBuffer->Bind();
-
             Engine::Renderer::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
             Engine::Renderer::RenderCommand::Clear();
         }
@@ -96,8 +87,6 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
                 Engine::Renderer::Renderer2D::DrawSubTextureQuad({0.5f, -0.5f, 0.2f}, {1.0f, 1.0f}, m_Upstairs);
             }
             Engine::Renderer::Renderer2D::EndScene();
-
-            m_FrameBuffer->Unbind();
         }
     }
     // InstrumentorProfilingEnd();
@@ -118,12 +107,6 @@ void Forest2D::OnImGuiRender()
     int maxQuads = Engine::Renderer::Renderer2D::GetMaxQuads();
     ImGui::Text("Max Quads: %d", maxQuads);
     ImGui::InputInt("Max Quads", &maxQuads);
-    ImGui::End();
-
-    ImGui::Begin("FrameBuffer");
-    uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
-    auto m_Specs = m_FrameBuffer->GetSpecification();
-    ImGui::Image((void *)textureID, ImVec2{(float)m_Specs.Width, (float)m_Specs.Height}, ImVec2{0, 1}, ImVec2{1, 0});
     ImGui::End();
 
     Engine::Renderer::Renderer2D::SetMaxQuads(maxQuads);

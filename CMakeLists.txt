@@ -26,4 +26,5 @@ endif()
 
 # 添加子目录
 add_subdirectory(Engine)
+add_subdirectory(EngineEditor)
 add_subdirectory(Forest)

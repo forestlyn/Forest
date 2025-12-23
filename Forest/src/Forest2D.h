@@ -26,8 +26,6 @@ private:
     Engine::Ref<Engine::Renderer::SubTexture2D> m_TreeSubTexture;
     Engine::Ref<Engine::Renderer::SubTexture2D> m_Upstairs;
 
-    Engine::Ref<Engine::Renderer::FrameBuffer> m_FrameBuffer;
-
     Engine::Scope<ParticleSystem> m_ParticleSystem;
     ParticleProperties m_ParticleTemplate;
 };

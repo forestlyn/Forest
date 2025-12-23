@@ -1,0 +1,41 @@
+#pragma once
+#include "Engine.h"
+#include <glm/glm.hpp>
+#include "Particle/ParticleSystem.h"
+#include "Engine/Renderer/FrameBuffer.h"
+
+namespace EngineEditor
+{
+
+    class EngineEditor : public Engine::Core::Layer
+    {
+    public:
+        EngineEditor(const std::string &name = "Forest2DLayer");
+        virtual ~EngineEditor();
+
+        virtual void OnAttach() override;
+        virtual void OnDetach() override;
+        virtual void OnUpdate(Engine::Core::Timestep timestep) override;
+        virtual void OnImGuiRender() override;
+        virtual bool OnEvent(Engine::Event::Event &event) override;
+
+    private:
+        void OpenDockSpace();
+
+    private:
+        Engine::OrthographicCameraController m_CameraController;
+
+        glm::vec4 m_SquareColor = {0.2f, 0.3f, 0.8f, 1.0f};
+
+        Engine::Ref<Engine::Renderer::Texture2D> m_CheckerBoardTexture;
+        Engine::Ref<Engine::Renderer::Texture2D> m_SpriteSheetTexture;
+
+        Engine::Ref<Engine::Renderer::SubTexture2D> m_TreeSubTexture;
+        Engine::Ref<Engine::Renderer::SubTexture2D> m_Upstairs;
+
+        Engine::Ref<Engine::Renderer::FrameBuffer> m_FrameBuffer;
+
+        Engine::Scope<ParticleSystem> m_ParticleSystem;
+        ParticleProperties m_ParticleTemplate;
+    };
+}
