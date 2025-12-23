@@ -17,7 +17,7 @@ namespace Engine::MyImGui
         case FOREST_MOUSE_BUTTON_MIDDLE:
             return ImGuiMouseButton_Middle; // ImGui mouse button 2
         default:
-            ENGINE_ASSERT(false, "Unknown mouse button code: {0}", button);
+            ENGINE_ASSERT(false, "Unknown mouse button code");
             return -1; // Unknown button
         }
     }

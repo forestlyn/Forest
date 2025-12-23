@@ -18,7 +18,15 @@
 #define BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1)
 
 #ifdef FOREST_ENABLE_ASSERTS
-#define ENGINE_ASSERT(x, ...)                                   \
+#define ENGINE_ASSERT_1(x)                    \
+    {                                         \
+        if (!(x))                             \
+        {                                     \
+            ENGINE_ERROR("Assertion Failed"); \
+            __debugbreak();                   \
+        }                                     \
+    }
+#define ENGINE_ASSERT_VA(x, ...)                                \
     {                                                           \
         if (!(x))                                               \
         {                                                       \
@@ -26,7 +34,15 @@
             __debugbreak();                                     \
         }                                                       \
     }
-#define ASSERT(x, ...)                                       \
+#define ASSERT_1(x)                        \
+    {                                      \
+        if (!(x))                          \
+        {                                  \
+            LOG_ERROR("Assertion Failed"); \
+            __debugbreak();                \
+        }                                  \
+    }
+#define ASSERT_VA(x, ...)                                    \
     {                                                        \
         if (!(x))                                            \
         {                                                    \
@@ -34,6 +50,10 @@
             __debugbreak();                                  \
         }                                                    \
     }
+#define GET_ASSERT_MACRO(_1, _2, NAME, ...) NAME
+#define EXPAND(x) x
+#define ENGINE_ASSERT(...) EXPAND(GET_ASSERT_MACRO(__VA_ARGS__, ENGINE_ASSERT_VA, ENGINE_ASSERT_1)(__VA_ARGS__))
+#define ASSERT(...) EXPAND(GET_ASSERT_MACRO(__VA_ARGS__, ASSERT_VA, ASSERT_1)(__VA_ARGS__))
 #else
 #define ENGINE_ASSERT(x, ...)
 #define ASSERT(x, ...)
