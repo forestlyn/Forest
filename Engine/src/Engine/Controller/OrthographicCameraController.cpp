@@ -45,13 +45,19 @@ namespace Engine
         dispatcher.Dispatch<Event::WindowResizeEvent>(BIND_EVENT_FN(OrthographicCameraController::OnWindowResize));
         dispatcher.Dispatch<Event::MouseScrolledEvent>(BIND_EVENT_FN(OrthographicCameraController::OnScroll));
     }
+    void OrthographicCameraController::OnResize(float width, float height)
+    {
+        ENGINE_PROFILING_FUNC();
+        if (height == 0.0f)
+            return;
+        m_AspectRatio = width / height;
+        ENGINE_INFO("Camera Resized: New Aspect Ratio: {}", m_AspectRatio);
+        m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
+    }
     bool OrthographicCameraController::OnWindowResize(Event::WindowResizeEvent &event)
     {
         ENGINE_PROFILING_FUNC();
-        if (event.GetHeight() == 0 || event.GetWidth() == 0)
-            return false;
-        m_AspectRatio = (float)event.GetWidth() / (float)event.GetHeight();
-        m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
+        OnResize((float)event.GetWidth(), (float)event.GetHeight());
         return false;
     }
     bool OrthographicCameraController::OnScroll(Event::MouseScrolledEvent &event)

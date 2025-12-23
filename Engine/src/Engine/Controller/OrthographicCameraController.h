@@ -17,6 +17,8 @@ namespace Engine
         void OnUpdate(Core::Timestep timestep);
         void OnEvent(Event::Event &event);
 
+        void OnResize(float width, float height);
+
     private:
         bool OnWindowResize(Event::WindowResizeEvent &event);
         bool OnScroll(Event::MouseScrolledEvent &event);

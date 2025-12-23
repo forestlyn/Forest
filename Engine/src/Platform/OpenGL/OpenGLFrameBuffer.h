@@ -27,6 +27,5 @@ namespace Platform::OpenGL
         uint32_t m_RendererID = 0;
         uint32_t m_ColorAttachment = 0;
         uint32_t m_DepthAttachment = 0;
-        uint32_t m_Width, m_Height;
     };
 }

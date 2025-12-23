@@ -124,7 +124,15 @@ namespace EngineEditor
         ImGui::InputInt("Max Quads", &maxQuads);
         ImGui::End();
 
-        ImGui::Begin("FrameBuffer");
+        ImGui::Begin("Scene");
+        auto regionAvailSize = ImGui::GetContentRegionAvail();
+        if (m_SceneViewportSize.x != (int)regionAvailSize.x || m_SceneViewportSize.y != (int)regionAvailSize.y)
+        {
+            m_SceneViewportSize.x = (int)regionAvailSize.x;
+            m_SceneViewportSize.y = (int)regionAvailSize.y;
+            m_FrameBuffer->Resize(m_SceneViewportSize.x, m_SceneViewportSize.y);
+            m_CameraController.OnResize((float)m_SceneViewportSize.x, (float)m_SceneViewportSize.y);
+        }
         uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
         auto m_Specs = m_FrameBuffer->GetSpecification();
         ImGui::Image((void *)textureID, ImVec2{(float)m_Specs.Width, (float)m_Specs.Height}, ImVec2{0, 1}, ImVec2{1, 0});

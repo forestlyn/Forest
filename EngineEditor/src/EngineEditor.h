@@ -35,6 +35,8 @@ namespace EngineEditor
 
         Engine::Ref<Engine::Renderer::FrameBuffer> m_FrameBuffer;
 
+        glm::ivec2 m_SceneViewportSize = {0, 0};
+
         Engine::Scope<ParticleSystem> m_ParticleSystem;
         ParticleProperties m_ParticleTemplate;
     };
