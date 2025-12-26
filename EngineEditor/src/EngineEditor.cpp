@@ -35,6 +35,13 @@ namespace EngineEditor
         fbSpec.Width = 1280;
         fbSpec.Height = 720;
         m_FrameBuffer = Engine::Renderer::FrameBuffer::Create(fbSpec);
+
+        m_Scene = Engine::CreateScope<Engine::Scene::Scene>();
+
+        auto &registry = m_Scene->GetRegistry();
+        auto entity = registry.create();
+        registry.emplace<Engine::SpriteComponent>(entity, glm::vec4{0.8f, 0.2f, 0.3f, 1.0f});
+        registry.emplace<Engine::TransformComponent>(entity, glm::vec3{2.0f, 0.0f, 0.0f});
     }
 
     EngineEditor::~EngineEditor()
@@ -85,6 +92,9 @@ namespace EngineEditor
 
                 Engine::Renderer::Renderer2D::BeginScene(m_CameraController.GetCamera());
                 Engine::Renderer::Renderer2D::ResetStats();
+
+                m_Scene->OnUpdate(timestep);
+
                 {
                     ENGINE_PROFILING_SCOPE("Renderer2D::DrawQuad");
                     // m_ParticleSystem->OnRender();

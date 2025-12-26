@@ -227,6 +227,26 @@ namespace Engine::Renderer
         DrawQuadInternal(transform, tintColor, TextureIndex, tintFactor, subTexture->GetTexCoords());
     }
 
+    void Renderer2D::DrawQuad(const glm::mat4 &transform, const glm::vec4 &color)
+    {
+        ENGINE_PROFILING_FUNC();
+
+        const float TextureIndex = 0.0f; // White Texture
+        const float TilingFactor = 1.0f;
+
+        DrawQuadInternal(transform, color, TextureIndex, TilingFactor);
+    }
+
+    void Renderer2D::DrawQuad(const glm::mat4 &transform, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor)
+    {
+        ENGINE_PROFILING_FUNC();
+
+        const float TextureIndex = GetTextureIndex(texture);
+        const float TilingFactor = 1.0f;
+
+        DrawQuadInternal(transform, tintColor, TextureIndex, TilingFactor);
+    }
+
 #pragma endregion
     /// @brief get the texture index in slot
     /// if not exist, add it to slot
@@ -270,7 +290,7 @@ namespace Engine::Renderer
     }
 
     /// @brief internal function to draw quad
-    void Renderer2D::DrawQuadInternal(glm::mat4 &transform, const glm::vec4 &color, const float textureIndex, const float tilingFactor, const glm::vec2 *texCoords)
+    void Renderer2D::DrawQuadInternal(const glm::mat4 &transform, const glm::vec4 &color, const float textureIndex, const float tilingFactor, const glm::vec2 *texCoords)
     {
         if (m_SceneData.QuadIndexCount >= m_SceneData.MaxIndices)
         {

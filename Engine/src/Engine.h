@@ -42,6 +42,11 @@
 
 //-------------------------
 
+//-------scene system------
+#include "Engine/Scene/Scene.h"
+#include "Engine/Scene/Component.h"
+//-------------------------
+
 //-------profile system------
 #include "Engine/Profile/Timer.h"
 #include "Engine/Profile/ProfileLayer.h"
