@@ -7,9 +7,12 @@
 namespace Engine
 {
     PerspectiveCameraController::PerspectiveCameraController(float fov, float aspectRatio, glm::bvec3 rotation)
-        : m_AspectRatio(aspectRatio),
-          m_FOV(fov),
-          m_Camera(fov, aspectRatio, 0.1f, 1000.0f),
+        : m_Camera(new Renderer::PerspectiveCamera(fov, aspectRatio, 0.1f, 1000.0f)),
+          m_Rotation(rotation)
+    {
+    }
+    PerspectiveCameraController::PerspectiveCameraController(Renderer::PerspectiveCamera *camera, glm::bvec3 rotation)
+        : m_Camera(camera),
           m_Rotation(rotation)
     {
     }
@@ -27,7 +30,7 @@ namespace Engine
         if (Core::Input::IsKeyPressed(FOREST_KEY_D))
             m_CameraPosition.x += m_CameraMoveSpeed * timestep;
 
-        m_Camera.SetPosition(m_CameraPosition);
+        m_Camera->SetPosition(m_CameraPosition);
 
         if (m_Rotation.x)
         {
@@ -35,7 +38,7 @@ namespace Engine
                 m_CameraRotation.x -= m_CameraRotationSpeed * timestep;
             if (Core::Input::IsKeyPressed(FOREST_KEY_E))
                 m_CameraRotation.x += m_CameraRotationSpeed * timestep;
-            m_Camera.SetRotationDegrees(m_CameraRotation);
+            m_Camera->SetRotationDegrees(m_CameraRotation);
         }
 
         if (m_Rotation.y)
@@ -44,7 +47,7 @@ namespace Engine
                 m_CameraRotation.y -= m_CameraRotationSpeed * timestep;
             if (Core::Input::IsKeyPressed(FOREST_KEY_C))
                 m_CameraRotation.y += m_CameraRotationSpeed * timestep;
-            m_Camera.SetRotationDegrees(m_CameraRotation);
+            m_Camera->SetRotationDegrees(m_CameraRotation);
         }
 
         if (m_Rotation.z)
@@ -53,7 +56,7 @@ namespace Engine
                 m_CameraRotation.z -= m_CameraRotationSpeed * timestep;
             if (Core::Input::IsKeyPressed(FOREST_KEY_Y))
                 m_CameraRotation.z += m_CameraRotationSpeed * timestep;
-            m_Camera.SetRotationDegrees(m_CameraRotation);
+            m_Camera->SetRotationDegrees(m_CameraRotation);
         }
     }
 
@@ -70,18 +73,19 @@ namespace Engine
         ENGINE_PROFILING_FUNC();
         if (event.GetHeight() == 0 || event.GetWidth() == 0)
             return false;
-        m_AspectRatio = (float)event.GetWidth() / (float)event.GetHeight();
-        m_Camera.SetProjection(m_FOV, m_AspectRatio, 0.1f, 1000.0f);
+        float m_AspectRatio = (float)event.GetWidth() / (float)event.GetHeight();
+        m_Camera->SetProjection(m_Camera->GetFOVDegrees(), m_AspectRatio, m_Camera->GetNearClip(), m_Camera->GetFarClip());
         return false;
     }
 
     bool PerspectiveCameraController::OnScroll(Event::MouseScrolledEvent &event)
     {
         ENGINE_PROFILING_FUNC();
+        float m_FOV = m_Camera->GetFOVDegrees();
         m_FOV -= event.GetYOffset();
         m_FOV = std::clamp(m_FOV, 1.0f, 90.0f);
         // ENGINE_INFO("FOV changed to: {}", m_FOV);
-        m_Camera.SetProjection(m_FOV, m_AspectRatio, 0.1f, 1000.0f);
+        m_Camera->SetProjection(m_FOV, m_Camera->GetAspectRatio(), 0.1f, 1000.0f);
         return false;
     }
 }

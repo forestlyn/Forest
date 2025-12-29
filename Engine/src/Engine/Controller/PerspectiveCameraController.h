@@ -10,9 +10,11 @@ namespace Engine
     {
     public:
         PerspectiveCameraController(float fov, float aspectRatio, glm::bvec3 rotation = {false, false, false});
+        PerspectiveCameraController(Renderer::PerspectiveCamera *camera, glm::bvec3 rotation = {false, false, false});
 
-        Renderer::PerspectiveCamera &GetCamera() { return m_Camera; }
-        const Renderer::PerspectiveCamera &GetCamera() const { return m_Camera; }
+        Renderer::PerspectiveCamera &GetCamera() { return *m_Camera; }
+        const Renderer::PerspectiveCamera &GetCamera() const { return *m_Camera; }
+        void SetCamera(Renderer::PerspectiveCamera *camera) { m_Camera = camera; }
 
         void OnUpdate(Core::Timestep timestep);
         void OnEvent(Event::Event &event);
@@ -22,9 +24,7 @@ namespace Engine
         bool OnScroll(Event::MouseScrolledEvent &event);
 
     private:
-        float m_AspectRatio;
-        float m_FOV;
-        Renderer::PerspectiveCamera m_Camera;
+        Renderer::PerspectiveCamera *m_Camera;
         glm::bvec3 m_Rotation;
 
         float m_CameraMoveSpeed = 1.f;

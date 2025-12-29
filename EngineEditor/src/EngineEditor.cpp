@@ -11,7 +11,7 @@ namespace EngineEditor
 {
 
     EngineEditor::EngineEditor(const std::string &name)
-        : Layer(name), m_CameraController(Engine::OrthographicCameraController(16.0f / 9.0f, 1.0f, true))
+        : Layer(name), m_CameraController()
     {
         m_CheckerBoardTexture = Engine::Renderer::Texture2D::Create("assets/textures/Checkerboard.png");
         m_SpriteSheetTexture = Engine::Renderer::Texture2D::Create("assets/game/textures/RPGpack_sheet_2X.png");
@@ -38,9 +38,23 @@ namespace EngineEditor
 
         m_Scene = Engine::CreateScope<Engine::Scene>();
 
-        auto entity = m_Scene->CreateEntity();
-        entity.AddComponent<Engine::SpriteComponent>(glm::vec4{0.8f, 0.2f, 0.3f, 1.0f});
-        entity.AddComponent<Engine::TransformComponent>(glm::vec3{2.0f, 0.0f, 0.0f});
+        m_SquareEntity = m_Scene->CreateEntity("Square");
+        m_SquareEntity.AddComponent<Engine::SpriteComponent>(glm::vec4{0.8f, 0.2f, 0.3f, 1.0f});
+        m_SquareEntity.AddComponent<Engine::TransformComponent>(glm::vec3{2.0f, 0.0f, 0.0f});
+
+        m_MainCameraEntity = m_Scene->CreateEntity("Main Camera");
+        auto &cameraComponent = m_MainCameraEntity.AddComponent<Engine::CameraComponent>();
+        cameraComponent.Camera = Engine::CreateRef<Engine::Renderer::OrthographicCamera>(-16.0f / 9.0f, 16.0f / 9.0f, -1.0f, 1.0f);
+        cameraComponent.Primary = true;
+        m_MainCameraEntity.AddComponent<Engine::TransformComponent>();
+
+        m_CameraController.SetCamera(dynamic_cast<Engine::Renderer::OrthographicCamera *>(cameraComponent.Camera.get()));
+
+        m_SecondCameraEntity = m_Scene->CreateEntity("Second Camera");
+        auto &secondCameraComponent = m_SecondCameraEntity.AddComponent<Engine::CameraComponent>();
+        secondCameraComponent.Camera = Engine::CreateRef<Engine::Renderer::OrthographicCamera>(-2.0f, 2.0f, -1.5f, 1.5f);
+        secondCameraComponent.Primary = false;
+        m_SecondCameraEntity.AddComponent<Engine::TransformComponent>(glm::vec3{0.0f, 0.0f, 0.0f});
     }
 
     EngineEditor::~EngineEditor()
@@ -62,17 +76,6 @@ namespace EngineEditor
         {
             ENGINE_PROFILING_FUNC();
 
-            // if (Engine::Core::Input::IsMouseButtonPressed(FOREST_MOUSE_BUTTON_LEFT))
-            // {
-            //     auto [x, y] = Engine::Core::Input::GetMousePosition();
-            //     glm::vec2 worldPos = m_CameraController.GetCamera().ScreenToWorld({x, y});
-            //     m_ParticleTemplate.Position = glm::vec3(worldPos.x, worldPos.y, 0.0f);
-            //     // ENGINE_INFO("Left Mouse Button Pressed - Emitting Particle: Screen Pos: ({}, {}), World Pos: ({}, {})", x, y, worldPos.x, worldPos.y);
-            //     m_ParticleSystem->Emit(m_ParticleTemplate);
-            // }
-
-            // Update and Render Particle System
-
             if (m_FocusScene)
                 m_CameraController.OnUpdate(timestep);
 
@@ -89,26 +92,7 @@ namespace EngineEditor
             {
                 Timer_Profiling("EngineEditor::Renderer2D Scene");
 
-                Engine::Renderer::Renderer2D::BeginScene(m_CameraController.GetCamera());
-                Engine::Renderer::Renderer2D::ResetStats();
-
                 m_Scene->OnUpdate(timestep);
-
-                {
-                    ENGINE_PROFILING_SCOPE("Renderer2D::DrawQuad");
-                    // m_ParticleSystem->OnRender();
-
-                    for (uint32_t i = 0; i < 100; i++)
-                    {
-                        float x = (i % 100) * 0.11f - 5.0f;
-                        float y = (i / 100) * 0.11f - 5.0f;
-                        Engine::Renderer::Renderer2D::DrawQuad({x, y}, {0.1f, 0.1f}, {i % 255 / 255.0f, 0.3f, i / 255.0f, 1.0f});
-                    }
-
-                    Engine::Renderer::Renderer2D::DrawSubTextureQuad({-0.5f, -0.5f, 0.2f}, {1.0f, 2.0f}, m_TreeSubTexture);
-                    Engine::Renderer::Renderer2D::DrawSubTextureQuad({0.5f, -0.5f, 0.2f}, {1.0f, 1.0f}, m_Upstairs);
-                }
-                Engine::Renderer::Renderer2D::EndScene();
 
                 m_FrameBuffer->Unbind();
             }
@@ -157,6 +141,20 @@ namespace EngineEditor
         ImGui::Image((void *)textureID, ImVec2{(float)m_Specs.Width, (float)m_Specs.Height}, ImVec2{0, 1}, ImVec2{1, 0});
         ImGui::End();
         ImGui::PopStyleVar();
+
+        ImGui::Checkbox("Main Camera", &m_UseMainCamera);
+
+        m_MainCameraEntity.GetComponent<Engine::CameraComponent>().Primary = m_UseMainCamera;
+        m_SecondCameraEntity.GetComponent<Engine::CameraComponent>().Primary = !m_UseMainCamera;
+
+        if (m_UseMainCamera)
+        {
+            m_CameraController.SetCamera(dynamic_cast<Engine::Renderer::OrthographicCamera *>(m_MainCameraEntity.GetComponent<Engine::CameraComponent>().Camera.get()));
+        }
+        else
+        {
+            m_CameraController.SetCamera(dynamic_cast<Engine::Renderer::OrthographicCamera *>(m_SecondCameraEntity.GetComponent<Engine::CameraComponent>().Camera.get()));
+        }
 
         Engine::Renderer::Renderer2D::SetMaxQuads(maxQuads);
     }

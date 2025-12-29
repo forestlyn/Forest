@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
+#include "Engine/Renderer/Camera/Camera.h"
 namespace Engine
 {
     struct SpriteComponent
@@ -45,5 +46,24 @@ namespace Engine
             }
             return TransformMatrix;
         }
+    };
+
+    struct TagComponent
+    {
+        std::string Tag;
+
+        TagComponent() = default;
+        TagComponent(const TagComponent &other) = default;
+        TagComponent(const std::string &tag) : Tag(tag) {}
+    };
+
+    struct CameraComponent
+    {
+        Ref<Renderer::Camera> Camera;
+        bool Primary = true; // Is this the primary camera?
+
+        CameraComponent() = default;
+        CameraComponent(const CameraComponent &other) = default;
+        CameraComponent(const Ref<Renderer::Camera> &camera) : Camera(camera) {}
     };
 } // namespace Engine

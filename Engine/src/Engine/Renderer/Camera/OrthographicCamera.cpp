@@ -6,7 +6,18 @@ namespace Engine::Renderer
 {
     OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top)
     {
+        m_AspectRatio = (right - left) / (top - bottom);
+        m_ZoomLevel = (top - bottom) / 2.0f;
         m_ProjectionMatrix = glm::ortho(left, right, bottom, top, zNear, zFar);
+        m_ViewMatrix = glm::mat4(1.0f);
+        m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
+        m_InverseViewProjectionMatrix = glm::inverse(m_ViewProjectionMatrix);
+    }
+
+    OrthographicCamera::OrthographicCamera(float aspectRatio, float zoomLevel)
+        : m_AspectRatio(aspectRatio), m_ZoomLevel(zoomLevel)
+    {
+        m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel, zNear, zFar);
         m_ViewMatrix = glm::mat4(1.0f);
         m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
         m_InverseViewProjectionMatrix = glm::inverse(m_ViewProjectionMatrix);
@@ -16,6 +27,16 @@ namespace Engine::Renderer
     {
         ENGINE_PROFILING_FUNC();
         m_ProjectionMatrix = glm::ortho(left, right, bottom, top, zNear, zFar);
+        m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
+        m_InverseViewProjectionMatrix = glm::inverse(m_ViewProjectionMatrix);
+    }
+
+    void OrthographicCamera::SetProjection(float aspectRatio, float zoomLevel)
+    {
+        ENGINE_PROFILING_FUNC();
+        m_AspectRatio = aspectRatio;
+        m_ZoomLevel = zoomLevel;
+        m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel, zNear, zFar);
         m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
         m_InverseViewProjectionMatrix = glm::inverse(m_ViewProjectionMatrix);
     }

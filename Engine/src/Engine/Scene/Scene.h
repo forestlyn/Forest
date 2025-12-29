@@ -13,7 +13,7 @@ namespace Engine
         ~Scene() = default;
         void OnUpdate(Core::Timestep deltaTime);
 
-        Entity CreateEntity();
+        Entity CreateEntity(const std::string &name = std::string());
         entt::registry &GetRegistry() { return m_Registry; }
 
     private:

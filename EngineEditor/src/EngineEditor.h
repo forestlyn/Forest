@@ -42,5 +42,9 @@ namespace EngineEditor
         ParticleProperties m_ParticleTemplate;
 
         Engine::Scope<Engine::Scene> m_Scene;
+        Engine::Entity m_SquareEntity;
+        Engine::Entity m_MainCameraEntity;
+        Engine::Entity m_SecondCameraEntity;
+        bool m_UseMainCamera = true;
     };
 }

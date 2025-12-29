@@ -7,9 +7,13 @@
 namespace Engine
 {
     OrthographicCameraController::OrthographicCameraController(float aspectRatio, float zoomLevel, bool rotation)
-        : m_AspectRatio(aspectRatio),
-          m_ZoomLevel(zoomLevel),
-          m_Camera(-aspectRatio * zoomLevel, aspectRatio * zoomLevel, -zoomLevel, zoomLevel),
+        : m_Camera(new Renderer::OrthographicCamera(aspectRatio, zoomLevel)),
+          m_Rotation(rotation)
+    {
+    }
+
+    OrthographicCameraController::OrthographicCameraController(Renderer::OrthographicCamera *camera, bool rotation)
+        : m_Camera(camera),
           m_Rotation(rotation)
     {
     }
@@ -17,7 +21,7 @@ namespace Engine
     void OrthographicCameraController::OnUpdate(Core::Timestep timestep)
     {
         ENGINE_PROFILING_FUNC();
-        m_CameraMoveSpeed = m_ZoomLevel;
+        m_CameraMoveSpeed = m_Camera->GetZoomLevel();
         if (Core::Input::IsKeyPressed(FOREST_KEY_W))
             m_CameraPosition.y -= m_CameraMoveSpeed * timestep;
         if (Core::Input::IsKeyPressed(FOREST_KEY_S))
@@ -27,7 +31,7 @@ namespace Engine
         if (Core::Input::IsKeyPressed(FOREST_KEY_D))
             m_CameraPosition.x += m_CameraMoveSpeed * timestep;
 
-        m_Camera.SetPosition(m_CameraPosition);
+        m_Camera->SetPosition(m_CameraPosition);
 
         if (m_Rotation)
         {
@@ -35,7 +39,7 @@ namespace Engine
                 m_CameraRotation.z -= m_CameraRotationSpeed * timestep;
             if (Core::Input::IsKeyPressed(FOREST_KEY_E))
                 m_CameraRotation.z += m_CameraRotationSpeed * timestep;
-            m_Camera.SetRotationDegrees(m_CameraRotation);
+            m_Camera->SetRotationDegrees(m_CameraRotation);
         }
     }
     void OrthographicCameraController::OnEvent(Event::Event &event)
@@ -50,8 +54,8 @@ namespace Engine
         ENGINE_PROFILING_FUNC();
         if (height == 0.0f)
             return;
-        m_AspectRatio = width / height;
-        m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
+        float m_AspectRatio = width / height;
+        m_Camera->SetProjection(m_AspectRatio, m_Camera->GetZoomLevel());
     }
     bool OrthographicCameraController::OnWindowResize(Event::WindowResizeEvent &event)
     {
@@ -62,9 +66,10 @@ namespace Engine
     bool OrthographicCameraController::OnScroll(Event::MouseScrolledEvent &event)
     {
         ENGINE_PROFILING_FUNC();
+        float m_ZoomLevel = m_Camera->GetZoomLevel();
         m_ZoomLevel -= event.GetYOffset() * 0.1f;
         m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
-        m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
+        m_Camera->SetProjection(m_Camera->GetAspectRatio(), m_ZoomLevel);
         return false;
     }
 }
