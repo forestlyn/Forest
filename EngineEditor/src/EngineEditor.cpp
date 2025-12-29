@@ -36,12 +36,11 @@ namespace EngineEditor
         fbSpec.Height = 720;
         m_FrameBuffer = Engine::Renderer::FrameBuffer::Create(fbSpec);
 
-        m_Scene = Engine::CreateScope<Engine::Scene::Scene>();
+        m_Scene = Engine::CreateScope<Engine::Scene>();
 
-        auto &registry = m_Scene->GetRegistry();
-        auto entity = registry.create();
-        registry.emplace<Engine::SpriteComponent>(entity, glm::vec4{0.8f, 0.2f, 0.3f, 1.0f});
-        registry.emplace<Engine::TransformComponent>(entity, glm::vec3{2.0f, 0.0f, 0.0f});
+        auto entity = m_Scene->CreateEntity();
+        entity.AddComponent<Engine::SpriteComponent>(glm::vec4{0.8f, 0.2f, 0.3f, 1.0f});
+        entity.AddComponent<Engine::TransformComponent>(glm::vec3{2.0f, 0.0f, 0.0f});
     }
 
     EngineEditor::~EngineEditor()

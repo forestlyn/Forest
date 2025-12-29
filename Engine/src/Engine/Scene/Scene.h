@@ -1,10 +1,11 @@
 #pragma once
-#include <entt.hpp>
 #include "Engine/pcheader.h"
 #include "Engine/Scene/Component.h"
 #include "Engine/Core/Timestep.h"
-namespace Engine::Scene
+#include <entt.hpp>
+namespace Engine
 {
+    class Entity;
     class Scene
     {
     public:
@@ -12,9 +13,11 @@ namespace Engine::Scene
         ~Scene() = default;
         void OnUpdate(Core::Timestep deltaTime);
 
+        Entity CreateEntity();
         entt::registry &GetRegistry() { return m_Registry; }
 
     private:
         entt::registry m_Registry;
+        friend class Entity;
     };
 } // namespace Engine::Scene

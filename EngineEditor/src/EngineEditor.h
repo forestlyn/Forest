@@ -41,6 +41,6 @@ namespace EngineEditor
         Engine::Scope<ParticleSystem> m_ParticleSystem;
         ParticleProperties m_ParticleTemplate;
 
-        Engine::Scope<Engine::Scene::Scene> m_Scene;
+        Engine::Scope<Engine::Scene> m_Scene;
     };
 }

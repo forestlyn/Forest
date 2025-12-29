@@ -45,6 +45,7 @@
 //-------scene system------
 #include "Engine/Scene/Scene.h"
 #include "Engine/Scene/Component.h"
+#include "Engine/Scene/Entity.h"
 //-------------------------
 
 //-------profile system------
