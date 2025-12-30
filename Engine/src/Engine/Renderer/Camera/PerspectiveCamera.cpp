@@ -14,14 +14,6 @@ namespace Engine::Renderer
         m_ViewMatrix = glm::mat4(1.0f);
         m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
         m_InverseViewProjectionMatrix = glm::inverse(m_ViewProjectionMatrix);
-        // ENGINE_TRACE("ProjectionMatrix:");
-        // ENGINE_TRACE("{0}", glm::to_string(m_ProjectionMatrix));
-
-        // ENGINE_TRACE("ViewMatrix:");
-        // ENGINE_TRACE("{0}", glm::to_string(m_ViewMatrix));
-
-        // ENGINE_TRACE("ViewProjectionMatrix:");
-        // ENGINE_TRACE("{0}", glm::to_string(m_ViewProjectionMatrix));
     }
 
     void PerspectiveCamera::SetProjection(float fovDegrees, float aspectRatio, float nearClip, float farClip)
@@ -62,18 +54,5 @@ namespace Engine::Renderer
         m_ViewMatrix = glm::inverse(transform);
         m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
         m_InverseViewProjectionMatrix = glm::inverse(m_ViewProjectionMatrix);
-        // ENGINE_TRACE("=== Camera Debug Info ===");
-        // ENGINE_TRACE("Camera Position: ({}, {}, {})", m_Position.x, m_Position.y, m_Position.z);
-        // ENGINE_TRACE("Camera Rotation: ({}, {}, {}) degrees", m_RotationDegrees.x, m_RotationDegrees.y, m_RotationDegrees.z);
-
-        // ENGINE_TRACE("ProjectionMatrix:");
-        // ENGINE_TRACE("{0}", glm::to_string(m_ProjectionMatrix));
-
-        // ENGINE_TRACE("ViewMatrix:");
-        // ENGINE_TRACE("{0}", glm::to_string(m_ViewMatrix));
-
-        // ENGINE_TRACE("ViewProjectionMatrix:");
-        // ENGINE_TRACE("{0}", glm::to_string(m_ViewProjectionMatrix));
-        // ENGINE_TRACE("=== End Camera Debug ===");
     }
 } // namespace Engine::Renderer

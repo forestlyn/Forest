@@ -1,7 +1,8 @@
 #include "Scene.h"
 #include "Engine/Renderer/Renderer2D.h"
 #include "Engine/Scene/Entity.h"
-
+#include "Engine/Renderer/Camera/OrthographicCamera.h"
+#include "Engine/Renderer/Camera/PerspectiveCamera.h"
 namespace Engine
 {
     void Scene::OnUpdate(Core::Timestep deltaTime)
@@ -50,5 +51,23 @@ namespace Engine
         auto entity = Entity(entityHandle, this);
         entity.AddComponent<TagComponent>(name);
         return entity;
+    }
+    void Scene::RecalculateCameraProjections()
+    {
+        auto view = m_Registry.view<CameraComponent>();
+        float aspectRatio = (float)m_ViewportWidth / (float)m_ViewportHeight;
+        for (auto entity : view)
+        {
+            auto &cameraComponent = view.get<CameraComponent>(entity);
+            if (auto orthographicCamera = dynamic_cast<Renderer::OrthographicCamera *>(cameraComponent.Camera.get()))
+            {
+                float zoomLevel = orthographicCamera->GetZoomLevel();
+                orthographicCamera->SetProjection(-zoomLevel * aspectRatio, zoomLevel * aspectRatio, -zoomLevel, zoomLevel);
+            }
+            else if (auto perspectiveCamera = dynamic_cast<Renderer::PerspectiveCamera *>(cameraComponent.Camera.get()))
+            {
+                perspectiveCamera->SetProjection(perspectiveCamera->GetFOVDegrees(), aspectRatio, perspectiveCamera->GetNearClip(), perspectiveCamera->GetFarClip());
+            }
+        }
     }
 }

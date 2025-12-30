@@ -135,6 +135,7 @@ namespace EngineEditor
             m_SceneViewportSize.y = (int)regionAvailSize.y;
             m_FrameBuffer->Resize(m_SceneViewportSize.x, m_SceneViewportSize.y);
             m_CameraController.OnResize((float)m_SceneViewportSize.x, (float)m_SceneViewportSize.y);
+            m_Scene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
         }
         uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
         auto m_Specs = m_FrameBuffer->GetSpecification();
