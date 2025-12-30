@@ -9,21 +9,17 @@ namespace Engine
     {
         glm::vec4 Color{1.0f};
         SpriteComponent() = default;
-        SpriteComponent(const SpriteComponent &other) = default;
+        SpriteComponent(const SpriteComponent &other) = delete;
         SpriteComponent(const glm::vec4 &color) : Color(color) {}
     };
 
     struct TransformComponent
     {
+    private:
         glm::vec3 Position{0.0f, 0.0f, 0.0f};
         glm::vec3 Rotation{0.0f, 0.0f, 0.0f};
         glm::vec3 Scale{1.0f, 1.0f, 1.0f};
 
-        TransformComponent() = default;
-        TransformComponent(const TransformComponent &other) = default;
-        TransformComponent(const glm::vec3 &position) : Position(position) {}
-
-    private:
         bool dirty = true;
         glm::mat4 TransformMatrix{1.0f};
 
@@ -37,6 +33,32 @@ namespace Engine
         }
 
     public:
+        TransformComponent() = default;
+        TransformComponent(const TransformComponent &other) = delete;
+        TransformComponent(const glm::vec3 &position) : Position(position), dirty(true) {}
+
+        glm::vec3 GetPosition() const { return Position; }
+        glm::vec3 GetRotation() const { return Rotation; }
+        glm::vec3 GetScale() const { return Scale; }
+
+        void SetPosition(glm::vec3 pos)
+        {
+            Position = pos;
+            dirty = true;
+        }
+
+        void SetRotation(glm::vec3 rotation)
+        {
+            Rotation = rotation;
+            dirty = true;
+        }
+
+        void SetScale(glm::vec3 scale)
+        {
+            Scale = scale;
+            dirty = true;
+        }
+
         glm::mat4 GetTransform()
         {
             if (dirty)
@@ -53,7 +75,7 @@ namespace Engine
         std::string Tag;
 
         TagComponent() = default;
-        TagComponent(const TagComponent &other) = default;
+        TagComponent(const TagComponent &other) = delete;
         TagComponent(const std::string &tag) : Tag(tag) {}
     };
 
@@ -63,7 +85,7 @@ namespace Engine
         bool Primary = true; // Is this the primary camera?
 
         CameraComponent() = default;
-        CameraComponent(const CameraComponent &other) = default;
+        CameraComponent(const CameraComponent &other) = delete;
         CameraComponent(const Ref<Renderer::Camera> &camera) : Camera(camera) {}
     };
 } // namespace Engine

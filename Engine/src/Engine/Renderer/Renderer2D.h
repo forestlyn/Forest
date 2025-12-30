@@ -1,7 +1,6 @@
 #pragma once
 #include "Engine/pcheader.h"
 #include <glm/glm.hpp>
-#include "Engine/Renderer/Camera/Camera.h"
 #include "Engine/Renderer/Shader/Shader.h"
 #include "Engine/Renderer/Shader/Texture.h"
 #include "Engine/Renderer/Shader/SubTexture.h"
@@ -25,7 +24,7 @@ namespace Engine::Renderer
         static void Init();
         static void Shutdown();
 
-        static void BeginScene(const Camera &camera);
+        static void BeginScene(glm::mat4 viewProjectionMatrix);
         static void EndScene();
 
         static void Flush();

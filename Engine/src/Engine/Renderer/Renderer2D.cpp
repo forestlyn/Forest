@@ -79,12 +79,11 @@ namespace Engine::Renderer
         ENGINE_PROFILING_FUNC();
     }
 
-    void Renderer2D::BeginScene(const Camera &camera)
+    void Renderer2D::BeginScene(glm::mat4 viewProjectionMatrix)
     {
         ENGINE_PROFILING_FUNC();
 
-        m_SceneData.ViewProjectionMatrix = camera.GetViewProjectionMatrix();
-
+        m_SceneData.ViewProjectionMatrix = viewProjectionMatrix;
         m_SceneData.QuadTextureShader->Bind();
         m_SceneData.QuadTextureShader->SetMat4("u_ViewProjection", m_SceneData.ViewProjectionMatrix);
 

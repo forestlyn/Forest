@@ -20,9 +20,9 @@ namespace Engine::Renderer
         Renderer2D::Shutdown();
     }
 
-    void Renderer::BeginScene(const Camera &camera)
+    void Renderer::BeginScene(glm::mat4 viewProjectionMatrix)
     {
-        m_SceneData->ViewProjectionMatrix = camera.GetViewProjectionMatrix();
+        m_SceneData->ViewProjectionMatrix = viewProjectionMatrix;
     }
 
     void Renderer::EndScene()

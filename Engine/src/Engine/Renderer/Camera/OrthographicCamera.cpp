@@ -8,64 +8,19 @@ namespace Engine::Renderer
     {
         m_AspectRatio = (right - left) / (top - bottom);
         m_ZoomLevel = (top - bottom) / 2.0f;
-        m_ProjectionMatrix = glm::ortho(left, right, bottom, top, zNear, zFar);
-        m_ViewMatrix = glm::mat4(1.0f);
-        m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
-        m_InverseViewProjectionMatrix = glm::inverse(m_ViewProjectionMatrix);
+        RecalculateProjectMatrix();
     }
 
     OrthographicCamera::OrthographicCamera(float aspectRatio, float zoomLevel)
         : m_AspectRatio(aspectRatio), m_ZoomLevel(zoomLevel)
     {
-        m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel, zNear, zFar);
-        m_ViewMatrix = glm::mat4(1.0f);
-        m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
-        m_InverseViewProjectionMatrix = glm::inverse(m_ViewProjectionMatrix);
+        RecalculateProjectMatrix();
     }
 
-    void OrthographicCamera::SetProjection(float left, float right, float bottom, float top)
+    void OrthographicCamera::RecalculateProjectMatrix()
     {
         ENGINE_PROFILING_FUNC();
-        m_ProjectionMatrix = glm::ortho(left, right, bottom, top, zNear, zFar);
-        m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
-        m_InverseViewProjectionMatrix = glm::inverse(m_ViewProjectionMatrix);
+        m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel, m_NearClip, m_FarClip);
     }
 
-    void OrthographicCamera::SetProjection(float aspectRatio, float zoomLevel)
-    {
-        ENGINE_PROFILING_FUNC();
-        m_AspectRatio = aspectRatio;
-        m_ZoomLevel = zoomLevel;
-        m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel, zNear, zFar);
-        m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
-        m_InverseViewProjectionMatrix = glm::inverse(m_ViewProjectionMatrix);
-    }
-
-    void OrthographicCamera::SetPosition(const glm::vec3 &position)
-    {
-        ENGINE_PROFILING_FUNC();
-        m_Position = position;
-        RecalculateViewMatrix();
-    }
-
-    void OrthographicCamera::SetRotationDegrees(const glm::vec3 &rotation)
-    {
-        ENGINE_PROFILING_FUNC();
-        m_RotationDegrees = rotation;
-        if (m_RotationDegrees.x != 0.0f || m_RotationDegrees.y != 0.0f)
-        {
-            ENGINE_WARN("OrthographicCamera only supports rotation around Z axis. X and Y rotations will be ignored.");
-        }
-        RecalculateViewMatrix();
-    }
-
-    void OrthographicCamera::RecalculateViewMatrix()
-    {
-        glm::mat4 transform = glm::translate(glm::mat4(1.0f), m_Position) *
-                              glm::rotate(glm::mat4(1.0f), glm::radians(m_RotationDegrees.z), glm::vec3(0, 0, 1));
-
-        m_ViewMatrix = glm::inverse(transform);
-        m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
-        m_InverseViewProjectionMatrix = glm::inverse(m_ViewProjectionMatrix);
-    }
 } // namespace Engine::Renderer

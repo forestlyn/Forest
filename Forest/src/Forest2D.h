@@ -28,4 +28,7 @@ private:
 
     Engine::Scope<ParticleSystem> m_ParticleSystem;
     ParticleProperties m_ParticleTemplate;
+
+    Engine::Scope<Engine::Scene> m_Scene;
+    Engine::Entity m_CameraEntity;
 };

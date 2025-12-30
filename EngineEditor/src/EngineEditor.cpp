@@ -48,7 +48,7 @@ namespace EngineEditor
         cameraComponent.Primary = true;
         m_MainCameraEntity.AddComponent<Engine::TransformComponent>();
 
-        m_CameraController.SetCamera(dynamic_cast<Engine::Renderer::OrthographicCamera *>(cameraComponent.Camera.get()));
+        m_CameraController.SetCameraEntity(&m_MainCameraEntity);
 
         m_SecondCameraEntity = m_Scene->CreateEntity("Second Camera");
         auto &secondCameraComponent = m_SecondCameraEntity.AddComponent<Engine::CameraComponent>();
@@ -97,7 +97,6 @@ namespace EngineEditor
                 m_FrameBuffer->Unbind();
             }
         }
-        // InstrumentorProfilingEnd();
     }
     void EngineEditor::OnImGuiRender()
     {
@@ -150,11 +149,11 @@ namespace EngineEditor
 
         if (m_UseMainCamera)
         {
-            m_CameraController.SetCamera(dynamic_cast<Engine::Renderer::OrthographicCamera *>(m_MainCameraEntity.GetComponent<Engine::CameraComponent>().Camera.get()));
+            m_CameraController.SetCameraEntity(&m_MainCameraEntity);
         }
         else
         {
-            m_CameraController.SetCamera(dynamic_cast<Engine::Renderer::OrthographicCamera *>(m_SecondCameraEntity.GetComponent<Engine::CameraComponent>().Camera.get()));
+            m_CameraController.SetCameraEntity(&m_SecondCameraEntity);
         }
 
         Engine::Renderer::Renderer2D::SetMaxQuads(maxQuads);

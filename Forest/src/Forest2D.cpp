@@ -9,7 +9,7 @@
 #include "Engine/Profile/Instrumentor.h"
 
 Forest2D::Forest2D(const std::string &name)
-    : Layer(name), m_CameraController(Engine::OrthographicCameraController(16.0f / 9.0f, 1.0f, true))
+    : Layer(name)
 {
     m_CheckerBoardTexture = Engine::Renderer::Texture2D::Create("assets/textures/Checkerboard.png");
     m_SpriteSheetTexture = Engine::Renderer::Texture2D::Create("assets/game/textures/RPGpack_sheet_2X.png");
@@ -27,6 +27,15 @@ Forest2D::Forest2D(const std::string &name)
     m_ParticleTemplate.SizeEnd = 0.01f;
     m_ParticleTemplate.SizeVariation = 0.05f;
     m_ParticleTemplate.LifeTime = 1.0f;
+
+    m_Scene = Engine::CreateScope<Engine::Scene>();
+    m_CameraEntity = m_Scene->CreateEntity("Camera");
+    auto &cameraComponent = m_CameraEntity.AddComponent<Engine::CameraComponent>();
+    cameraComponent.Camera = Engine::CreateRef<Engine::Renderer::OrthographicCamera>(-16.0f / 9.0f, 16.0f / 9.0f, -1.0f, 1.0f);
+    cameraComponent.Primary = true;
+    m_CameraEntity.AddComponent<Engine::TransformComponent>();
+
+    m_CameraController.SetCameraEntity(&m_CameraEntity);
 }
 
 Forest2D::~Forest2D()
@@ -51,7 +60,9 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
         if (Engine::Core::Input::IsMouseButtonPressed(FOREST_MOUSE_BUTTON_LEFT))
         {
             auto [x, y] = Engine::Core::Input::GetMousePosition();
-            glm::vec2 worldPos = m_CameraController.GetCamera().ScreenToWorld({x, y});
+            auto width = Engine::Core::Application::Get().GetWindowWidth();
+            auto height = Engine::Core::Application::Get().GetWindowHeight();
+            glm::vec2 worldPos = m_CameraController.ScreenToWorld({x, y}, {(float)width, (float)height});
             m_ParticleTemplate.Position = glm::vec3(worldPos.x, worldPos.y, 0.0f);
             // ENGINE_INFO("Left Mouse Button Pressed - Emitting Particle: Screen Pos: ({}, {}), World Pos: ({}, {})", x, y, worldPos.x, worldPos.y);
             m_ParticleSystem->Emit(m_ParticleTemplate);
@@ -59,6 +70,7 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
 
         // Update and Render Particle System
         m_CameraController.OnUpdate(timestep);
+        m_Scene->OnUpdate(timestep);
 
         m_ParticleSystem->OnUpdate(timestep);
         {
@@ -70,7 +82,7 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
         {
             Timer_Profiling("Forest2D::Renderer2D Scene");
 
-            Engine::Renderer::Renderer2D::BeginScene(m_CameraController.GetCamera());
+            Engine::Renderer::Renderer2D::BeginScene(m_CameraController.GetViewProjectionMatrix());
             Engine::Renderer::Renderer2D::ResetStats();
             {
                 ENGINE_PROFILING_SCOPE("Renderer2D::DrawQuad");

@@ -8,7 +8,7 @@ namespace Engine
     void Scene::OnUpdate(Core::Timestep deltaTime)
     {
         // Update Cameras
-        Renderer::Camera *mainCamera = nullptr;
+        entt::entity mainCameraEntity = entt::null;
         {
             auto view = m_Registry.view<TransformComponent, CameraComponent>();
             for (auto entity : view)
@@ -16,23 +16,31 @@ namespace Engine
                 auto &cameraComponent = view.get<CameraComponent>(entity);
                 auto &transformComponent = view.get<TransformComponent>(entity);
 
-                cameraComponent.Camera->SetPosition(transformComponent.Position);
-                cameraComponent.Camera->SetRotationDegrees(transformComponent.Rotation);
-
                 if (cameraComponent.Primary)
                 {
-                    mainCamera = cameraComponent.Camera.get();
+                    mainCameraEntity = entity;
                 }
             }
         }
 
-        if (!mainCamera)
+        if (mainCameraEntity == entt::null)
         {
             LOG_WARN("No primary camera found in the scene!");
             return;
         }
 
-        Renderer::Renderer2D::BeginScene(*mainCamera);
+        // Calaculate camera view projection matrix
+        glm::mat4 mainCameraViewProjection = glm::mat4(1.0f);
+        {
+            auto &cameraComponent = m_Registry.get<CameraComponent>(mainCameraEntity);
+            auto &transformComponent = m_Registry.get<TransformComponent>(mainCameraEntity);
+
+            glm::mat4 transform = transformComponent.GetTransform();
+            glm::mat4 viewMatrix = glm::inverse(transform);
+            mainCameraViewProjection = cameraComponent.Camera->GetProjectionMatrix() * viewMatrix;
+        }
+
+        Renderer::Renderer2D::BeginScene(mainCameraViewProjection);
         Renderer::Renderer2D::ResetStats();
         auto view = m_Registry.view<SpriteComponent, TransformComponent>();
         for (auto entity : view)
@@ -61,12 +69,11 @@ namespace Engine
             auto &cameraComponent = view.get<CameraComponent>(entity);
             if (auto orthographicCamera = dynamic_cast<Renderer::OrthographicCamera *>(cameraComponent.Camera.get()))
             {
-                float zoomLevel = orthographicCamera->GetZoomLevel();
-                orthographicCamera->SetProjection(-zoomLevel * aspectRatio, zoomLevel * aspectRatio, -zoomLevel, zoomLevel);
+                orthographicCamera->SetAspectRatio(aspectRatio);
             }
             else if (auto perspectiveCamera = dynamic_cast<Renderer::PerspectiveCamera *>(cameraComponent.Camera.get()))
             {
-                perspectiveCamera->SetProjection(perspectiveCamera->GetFOVDegrees(), aspectRatio, perspectiveCamera->GetNearClip(), perspectiveCamera->GetFarClip());
+                perspectiveCamera->SetAspectRatio(aspectRatio);
             }
         }
     }

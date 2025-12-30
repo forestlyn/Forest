@@ -4,27 +4,37 @@
 #include "Engine/Events/WindowEvent.h"
 #include "Engine/Events/MouseEvent.h"
 #include <glm/glm.hpp>
+#include "Engine/Scene/Entity.h"
 namespace Engine
 {
     class PerspectiveCameraController
     {
     public:
-        PerspectiveCameraController(float fov, float aspectRatio, glm::bvec3 rotation = {false, false, false});
-        PerspectiveCameraController(Renderer::PerspectiveCamera *camera, glm::bvec3 rotation = {false, false, false});
+        PerspectiveCameraController() = default;
+        PerspectiveCameraController(Entity *camera, glm::bvec3 rotation = {false, false, false});
 
-        Renderer::PerspectiveCamera &GetCamera() { return *m_Camera; }
-        const Renderer::PerspectiveCamera &GetCamera() const { return *m_Camera; }
-        void SetCamera(Renderer::PerspectiveCamera *camera) { m_Camera = camera; }
+        Renderer::PerspectiveCamera &GetCamera() { return *m_PerspectiveCamera; }
+        const Renderer::PerspectiveCamera &GetCamera() const { return *m_PerspectiveCamera; }
+        void SetCameraEntity(Entity *camera);
 
         void OnUpdate(Core::Timestep timestep);
         void OnEvent(Event::Event &event);
+        glm::vec2 ScreenToWorld(const glm::vec2 &screenPos, const glm::vec2 &viewportSize);
+
+        glm::mat4 GetViewProjectionMatrix();
 
     private:
         bool OnWindowResize(Event::WindowResizeEvent &event);
         bool OnScroll(Event::MouseScrolledEvent &event);
 
     private:
-        Renderer::PerspectiveCamera *m_Camera;
+        Entity *m_CameraEntity;
+
+        TransformComponent *m_CameraTransform;
+        CameraComponent *m_CameraComponent;
+
+        Renderer::PerspectiveCamera *m_PerspectiveCamera;
+
         glm::bvec3 m_Rotation;
 
         float m_CameraMoveSpeed = 1.f;

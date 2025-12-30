@@ -3,6 +3,7 @@
 #include "Engine/Core/Timestep.h"
 #include "Engine/Events/WindowEvent.h"
 #include "Engine/Events/MouseEvent.h"
+#include "Engine/Scene/Entity.h"
 
 namespace Engine
 {
@@ -10,25 +11,30 @@ namespace Engine
     {
     public:
         OrthographicCameraController() = default;
-        OrthographicCameraController(float aspectRatio, float zoomLevel = 1.0f, bool rotation = false);
-        OrthographicCameraController(Renderer::OrthographicCamera *camera, bool rotation = false);
+        OrthographicCameraController(Entity *camera, bool rotation = false);
 
-        Renderer::OrthographicCamera &GetCamera() { return *m_Camera; }
-        const Renderer::OrthographicCamera &GetCamera() const { return *m_Camera; }
-        void SetCamera(Renderer::OrthographicCamera *camera) { m_Camera = camera; }
+        Renderer::OrthographicCamera &GetCamera() { return *m_OrthoCamera; }
+        const Renderer::OrthographicCamera &GetCamera() const { return *m_OrthoCamera; }
 
+        void SetCameraEntity(Entity *camera);
         void OnUpdate(Core::Timestep timestep);
         void OnEvent(Event::Event &event);
 
         void OnResize(float width, float height);
+        glm::vec2 ScreenToWorld(const glm::vec2 &screenPos, const glm::vec2 &viewportSize);
+        glm::mat4 GetViewProjectionMatrix();
 
     private:
         bool OnWindowResize(Event::WindowResizeEvent &event);
         bool OnScroll(Event::MouseScrolledEvent &event);
 
     private:
-        Renderer::OrthographicCamera *m_Camera;
+        Entity *m_CameraEntity;
         bool m_Rotation = false;
+
+        Renderer::OrthographicCamera *m_OrthoCamera;
+        TransformComponent *m_CameraTransform;
+        CameraComponent *m_CameraComponent;
 
         float m_CameraMoveSpeed = 1.f;
         float m_CameraRotationSpeed = 20.0f;
