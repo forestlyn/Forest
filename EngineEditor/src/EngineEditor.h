@@ -27,19 +27,10 @@ namespace EngineEditor
 
         glm::vec4 m_SquareColor = {0.2f, 0.3f, 0.8f, 1.0f};
 
-        Engine::Ref<Engine::Renderer::Texture2D> m_CheckerBoardTexture;
-        Engine::Ref<Engine::Renderer::Texture2D> m_SpriteSheetTexture;
-
-        Engine::Ref<Engine::Renderer::SubTexture2D> m_TreeSubTexture;
-        Engine::Ref<Engine::Renderer::SubTexture2D> m_Upstairs;
-
         Engine::Ref<Engine::Renderer::FrameBuffer> m_FrameBuffer;
 
         bool m_FocusScene = false, m_HoverScene = false;
         glm::ivec2 m_SceneViewportSize = {0, 0};
-
-        Engine::Scope<ParticleSystem> m_ParticleSystem;
-        ParticleProperties m_ParticleTemplate;
 
         Engine::Scope<Engine::Scene> m_Scene;
         Engine::Entity m_SquareEntity;

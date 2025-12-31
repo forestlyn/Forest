@@ -13,23 +13,6 @@ namespace EngineEditor
     EngineEditor::EngineEditor(const std::string &name)
         : Layer(name), m_CameraController()
     {
-        m_CheckerBoardTexture = Engine::Renderer::Texture2D::Create("assets/textures/Checkerboard.png");
-        m_SpriteSheetTexture = Engine::Renderer::Texture2D::Create("assets/game/textures/RPGpack_sheet_2X.png");
-        m_TreeSubTexture = Engine::Renderer::SubTexture2D::CreateFromCoords(m_SpriteSheetTexture, {128.0f, 128.0f}, {1, 1}, {1, 2});
-        m_Upstairs = Engine::Renderer::SubTexture2D::CreateFromCoords(m_SpriteSheetTexture, {128.0f, 128.0f}, {7, 6});
-
-        // Initialize Particle System
-        m_ParticleSystem = std::make_unique<ParticleSystem>();
-        m_ParticleTemplate = ParticleProperties();
-        m_ParticleTemplate.Velocity = {0.0f, 0.0f, 0.0f};
-        m_ParticleTemplate.VelocityVariation = {0.5f, 0.5f, 0.0f};
-        m_ParticleTemplate.ColorBegin = {1.0f, 0.5f, 0.2f, 1.0f};
-        m_ParticleTemplate.ColorEnd = {0.2f, 0.3f, 0.8f, 0.0f};
-        m_ParticleTemplate.SizeBegin = 0.1f;
-        m_ParticleTemplate.SizeEnd = 0.01f;
-        m_ParticleTemplate.SizeVariation = 0.05f;
-        m_ParticleTemplate.LifeTime = 1.0f;
-
         // Initialize FrameBuffer
         Engine::Renderer::FrameBufferSpecification fbSpec;
         fbSpec.Width = 1280;
@@ -55,6 +38,29 @@ namespace EngineEditor
         secondCameraComponent.Camera = Engine::CreateRef<Engine::Renderer::OrthographicCamera>(-2.0f, 2.0f, -1.5f, 1.5f);
         secondCameraComponent.Primary = false;
         m_SecondCameraEntity.AddComponent<Engine::TransformComponent>(glm::vec3{0.0f, 0.0f, 0.0f});
+
+        class SquareScript
+        {
+        public:
+            SquareScript() = default;
+            void OnCreate()
+            {
+                ENGINE_INFO("SquareScript::OnCreate");
+            }
+
+            void OnUpdate(float ts)
+            {
+                ENGINE_INFO("SquareScript::OnUpdate: {0}", ts);
+            }
+
+            void OnDestroy()
+            {
+                ENGINE_INFO("SquareScript::OnDestroy");
+            }
+        };
+
+        auto &nativeScript = m_SquareEntity.AddComponent<Engine::NativeScriptComponent>();
+        nativeScript.Bind<SquareScript>();
     }
 
     EngineEditor::~EngineEditor()

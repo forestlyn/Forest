@@ -7,6 +7,23 @@ namespace Engine
 {
     void Scene::OnUpdate(Core::Timestep deltaTime)
     {
+
+        // update scripts
+        {
+            auto view = m_Registry.view<NativeScriptComponent>();
+            for (auto entity : view)
+            {
+                NativeScriptComponent &nsc = view.get<NativeScriptComponent>(entity);
+                if (!nsc.Instance)
+                {
+                    nsc.Instance = nsc.Instantiate();
+                    nsc.OnCreate(&nsc);
+                }
+
+                nsc.OnUpdate(&nsc, deltaTime.GetSeconds());
+            }
+        }
+
         // Update Cameras
         entt::entity mainCameraEntity = entt::null;
         {

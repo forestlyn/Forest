@@ -1,5 +1,6 @@
 #pragma once
 #include "Engine/pcheader.h"
+#include "Engine/Scene/NativeScriptComponent.h"
 #include "Engine/Scene/Component.h"
 #include "Engine/Core/Timestep.h"
 #include <entt.hpp>

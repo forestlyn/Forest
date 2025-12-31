@@ -44,6 +44,7 @@
 
 //-------scene system------
 #include "Engine/Scene/Scene.h"
+#include "Engine/Scene/NativeScriptComponent.h"
 #include "Engine/Scene/Component.h"
 #include "Engine/Scene/Entity.h"
 //-------------------------
