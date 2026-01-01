@@ -1,6 +1,7 @@
 #include "Scene.h"
 #include "Engine/Renderer/Renderer2D.h"
 #include "Engine/Scene/Entity.h"
+#include "Engine/Scene/NativeScriptComponent.h"
 #include "Engine/Renderer/Camera/OrthographicCamera.h"
 #include "Engine/Renderer/Camera/PerspectiveCamera.h"
 namespace Engine
@@ -10,18 +11,15 @@ namespace Engine
 
         // update scripts
         {
-            auto view = m_Registry.view<NativeScriptComponent>();
-            for (auto entity : view)
-            {
-                NativeScriptComponent &nsc = view.get<NativeScriptComponent>(entity);
+            m_Registry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent &nsc)
+                                                          {
                 if (!nsc.Instance)
                 {
                     nsc.Instance = nsc.Instantiate();
-                    nsc.OnCreate(&nsc);
+                    nsc.Instance->m_Entity = Entity(entity, this);
+                    nsc.Instance->OnCreate();
                 }
-
-                nsc.OnUpdate(&nsc, deltaTime.GetSeconds());
-            }
+                nsc.Instance->OnUpdate(deltaTime); });
         }
 
         // Update Cameras

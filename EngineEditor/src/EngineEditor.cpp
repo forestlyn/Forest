@@ -39,21 +39,28 @@ namespace EngineEditor
         secondCameraComponent.Primary = false;
         m_SecondCameraEntity.AddComponent<Engine::TransformComponent>(glm::vec3{0.0f, 0.0f, 0.0f});
 
-        class SquareScript
+        class SquareScript : public Engine::ScriptEntity
         {
         public:
             SquareScript() = default;
-            void OnCreate()
+            virtual void OnCreate() override
             {
                 ENGINE_INFO("SquareScript::OnCreate");
             }
 
-            void OnUpdate(float ts)
+            virtual void OnUpdate(Engine::Core::Timestep ts) override
             {
-                ENGINE_INFO("SquareScript::OnUpdate: {0}", ts);
+                // ENGINE_INFO("SquareScript::OnUpdate: {0}", ts.GetSeconds());
+                auto &transform = GetComponent<Engine::TransformComponent>();
+                float speed = 2.0f;
+                auto position = transform.GetPosition();
+                position.x += speed * ts.GetSeconds();
+                if (position.x > 5.0f)
+                    position.x = -5.0f;
+                transform.SetPosition(position);
             }
 
-            void OnDestroy()
+            virtual void OnDestroy() override
             {
                 ENGINE_INFO("SquareScript::OnDestroy");
             }

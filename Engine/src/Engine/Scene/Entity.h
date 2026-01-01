@@ -5,6 +5,10 @@ namespace Engine
 {
     class Entity
     {
+    private:
+        entt::entity m_EntityHandle{entt::null};
+        Scene *m_Scene = nullptr;
+
     public:
         Entity() = default;
         Entity(entt::entity handle, Scene *scene);
@@ -35,9 +39,5 @@ namespace Engine
 
         operator bool() const { return m_EntityHandle != entt::null; }
         operator entt::entity() const { return m_EntityHandle; }
-
-    private:
-        entt::entity m_EntityHandle{entt::null};
-        Scene *m_Scene = nullptr;
     };
 }
