@@ -34,7 +34,6 @@ namespace EngineEditor
         Engine::Entity m_SquareEntity;
         Engine::Entity m_MainCameraEntity;
         Engine::Entity m_SecondCameraEntity;
-        bool m_UseMainCamera = true;
 
         SceneHierarchyPanel m_SceneHierarchyPanel;
     };

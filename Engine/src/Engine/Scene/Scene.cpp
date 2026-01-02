@@ -110,6 +110,8 @@ namespace Engine
         for (auto entity : view)
         {
             auto &cameraComponent = view.get<CameraComponent>(entity);
+            if (cameraComponent.FixedAspectRatio)
+                continue;
             cameraComponent.Camera->SetAspectRatio(aspectRatio);
         }
     }

@@ -128,6 +128,23 @@ namespace EngineEditor
                     sceneCamera->SetProjectionType((Engine::SceneCamera::ProjectionType)currentProjectionType);
                 }
 
+                bool isPrimary = cameraComp.Primary;
+                if (ImGui::Checkbox("Primary Camera", &isPrimary))
+                {
+                    cameraComp.Primary = isPrimary;
+                }
+                bool fixedAspectRatio = cameraComp.FixedAspectRatio;
+                if (ImGui::Checkbox("Fixed Aspect Ratio", &fixedAspectRatio))
+                {
+                    cameraComp.FixedAspectRatio = fixedAspectRatio;
+                }
+
+                float aspectRatio = sceneCamera->GetAspectRatio();
+                if (ImGui::DragFloat("Aspect Ratio", &aspectRatio, 0.01f, 0.1f, 10.0f))
+                {
+                    sceneCamera->SetAspectRatio(aspectRatio);
+                }
+
                 if (sceneCamera->GetProjectionType() == Engine::SceneCamera::ProjectionType::Orthographic)
                 {
                     float orthoSize = sceneCamera->GetOrthographicSize();

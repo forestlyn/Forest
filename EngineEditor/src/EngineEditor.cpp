@@ -127,8 +127,6 @@ namespace EngineEditor
         ImGui::Text("Max Quads: %d", maxQuads);
         ImGui::InputInt("Max Quads", &maxQuads);
 
-        ImGui::Checkbox("Main Camera", &m_UseMainCamera);
-
         ImGui::End();
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
@@ -154,9 +152,6 @@ namespace EngineEditor
 
         ImGui::End();
         ImGui::PopStyleVar();
-
-        m_MainCameraEntity.GetComponent<Engine::CameraComponent>().Primary = m_UseMainCamera;
-        m_SecondCameraEntity.GetComponent<Engine::CameraComponent>().Primary = !m_UseMainCamera;
 
         Engine::Renderer::Renderer2D::SetMaxQuads(maxQuads);
 
