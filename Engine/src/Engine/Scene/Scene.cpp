@@ -25,7 +25,7 @@ namespace Engine
         }
 
         // Update Cameras
-        entt::entity mainCameraEntity = entt::null;
+        m_CameraEntity = nullptr;
         {
             auto view = m_Registry.view<TransformComponent, CameraComponent>();
             for (auto entity : view)
@@ -35,12 +35,12 @@ namespace Engine
 
                 if (cameraComponent.Primary)
                 {
-                    mainCameraEntity = entity;
+                    m_CameraEntity = CreateRef<Entity>(entity, this);
                 }
             }
         }
 
-        if (mainCameraEntity == entt::null)
+        if (m_CameraEntity == nullptr)
         {
             LOG_WARN("No primary camera found in the scene!");
             return;
@@ -49,8 +49,8 @@ namespace Engine
         // Calaculate camera view projection matrix
         glm::mat4 mainCameraViewProjection = glm::mat4(1.0f);
         {
-            auto &cameraComponent = m_Registry.get<CameraComponent>(mainCameraEntity);
-            auto &transformComponent = m_Registry.get<TransformComponent>(mainCameraEntity);
+            auto &cameraComponent = m_CameraEntity->GetComponent<CameraComponent>();
+            auto &transformComponent = m_CameraEntity->GetComponent<TransformComponent>();
 
             glm::mat4 transform = transformComponent.GetTransform();
             glm::mat4 viewMatrix = glm::inverse(transform);
@@ -77,6 +77,32 @@ namespace Engine
         entity.AddComponent<TagComponent>(name);
         return entity;
     }
+    glm::vec2 Scene::ScreenToWorld(const glm::vec2 &screenPos)
+    {
+        if (m_CameraEntity == nullptr)
+        {
+            LOG_WARN("No primary camera found in the scene!");
+            return glm::vec2(0.0f);
+        }
+
+        auto &cameraComponent = m_CameraEntity->GetComponent<CameraComponent>();
+        auto &transformComponent = m_CameraEntity->GetComponent<TransformComponent>();
+
+        glm::mat4 transform = transformComponent.GetTransform();
+        glm::mat4 viewMatrix = glm::inverse(transform);
+        glm::mat4 viewProjection = cameraComponent.Camera->GetProjectionMatrix() * viewMatrix;
+        glm::mat4 inverseViewProjection = glm::inverse(viewProjection);
+
+        // Normalized Device Coordinates
+        float x = (2.0f * screenPos.x) / m_ViewportWidth - 1.0f;
+        float y = 1.0f - (2.0f * screenPos.y) / m_ViewportHeight;
+        glm::vec4 ndcPos = glm::vec4(x, y, 1.0f, 1.0f);
+
+        glm::vec4 worldPos = inverseViewProjection * ndcPos;
+        worldPos /= worldPos.w;
+
+        return glm::vec2(worldPos);
+    }
     void Scene::RecalculateCameraProjections()
     {
         auto view = m_Registry.view<CameraComponent>();
@@ -84,14 +110,7 @@ namespace Engine
         for (auto entity : view)
         {
             auto &cameraComponent = view.get<CameraComponent>(entity);
-            if (auto orthographicCamera = dynamic_cast<Renderer::OrthographicCamera *>(cameraComponent.Camera.get()))
-            {
-                orthographicCamera->SetAspectRatio(aspectRatio);
-            }
-            else if (auto perspectiveCamera = dynamic_cast<Renderer::PerspectiveCamera *>(cameraComponent.Camera.get()))
-            {
-                perspectiveCamera->SetAspectRatio(aspectRatio);
-            }
+            cameraComponent.Camera->SetAspectRatio(aspectRatio);
         }
     }
 }

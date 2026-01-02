@@ -2,7 +2,7 @@
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
-#include "Engine/Renderer/Camera/Camera.h"
+#include "Engine/Scene/SceneCamera.h"
 namespace EngineEditor
 {
     class SceneHierarchyPanel;
@@ -88,11 +88,11 @@ namespace Engine
 
     struct CameraComponent
     {
-        Ref<Renderer::Camera> Camera;
+        Ref<SceneCamera> Camera;
         bool Primary = true; // Is this the primary camera?
 
         CameraComponent() = default;
         CameraComponent(const CameraComponent &other) = delete;
-        CameraComponent(const Ref<Renderer::Camera> &camera) : Camera(camera) {}
+        CameraComponent(const Ref<SceneCamera> &camera) : Camera(camera) {}
     };
 } // namespace Engine

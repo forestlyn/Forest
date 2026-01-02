@@ -11,7 +11,7 @@ namespace EngineEditor
 {
 
     EngineEditor::EngineEditor(const std::string &name)
-        : Layer(name), m_CameraController()
+        : Layer(name)
     {
         // Initialize FrameBuffer
         Engine::Renderer::FrameBufferSpecification fbSpec;
@@ -27,15 +27,13 @@ namespace EngineEditor
 
         m_MainCameraEntity = m_Scene->CreateEntity("Main Camera");
         auto &cameraComponent = m_MainCameraEntity.AddComponent<Engine::CameraComponent>();
-        cameraComponent.Camera = Engine::CreateRef<Engine::Renderer::OrthographicCamera>(-16.0f / 9.0f, 16.0f / 9.0f, -1.0f, 1.0f);
+        cameraComponent.Camera = Engine::CreateRef<Engine::SceneCamera>();
         cameraComponent.Primary = true;
         m_MainCameraEntity.AddComponent<Engine::TransformComponent>();
 
-        m_CameraController.SetCameraEntity(&m_MainCameraEntity);
-
         m_SecondCameraEntity = m_Scene->CreateEntity("Second Camera");
         auto &secondCameraComponent = m_SecondCameraEntity.AddComponent<Engine::CameraComponent>();
-        secondCameraComponent.Camera = Engine::CreateRef<Engine::Renderer::OrthographicCamera>(-2.0f, 2.0f, -1.5f, 1.5f);
+        secondCameraComponent.Camera = Engine::CreateRef<Engine::SceneCamera>();
         secondCameraComponent.Primary = false;
         m_SecondCameraEntity.AddComponent<Engine::TransformComponent>(glm::vec3{0.0f, 0.0f, 0.0f});
 
@@ -90,9 +88,6 @@ namespace EngineEditor
     {
         {
             ENGINE_PROFILING_FUNC();
-
-            if (m_FocusScene)
-                m_CameraController.OnUpdate(timestep);
 
             // m_ParticleSystem->OnUpdate(timestep);
             {
@@ -151,7 +146,6 @@ namespace EngineEditor
             m_SceneViewportSize.x = (int)regionAvailSize.x;
             m_SceneViewportSize.y = (int)regionAvailSize.y;
             m_FrameBuffer->Resize(m_SceneViewportSize.x, m_SceneViewportSize.y);
-            m_CameraController.OnResize((float)m_SceneViewportSize.x, (float)m_SceneViewportSize.y);
             m_Scene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
         }
         uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
@@ -164,15 +158,6 @@ namespace EngineEditor
         m_MainCameraEntity.GetComponent<Engine::CameraComponent>().Primary = m_UseMainCamera;
         m_SecondCameraEntity.GetComponent<Engine::CameraComponent>().Primary = !m_UseMainCamera;
 
-        if (m_UseMainCamera)
-        {
-            m_CameraController.SetCameraEntity(&m_MainCameraEntity);
-        }
-        else
-        {
-            m_CameraController.SetCameraEntity(&m_SecondCameraEntity);
-        }
-
         Engine::Renderer::Renderer2D::SetMaxQuads(maxQuads);
 
         m_SceneHierarchyPanel.OnImGuiRender();
@@ -180,7 +165,6 @@ namespace EngineEditor
 
     bool EngineEditor::OnEvent(Engine::Event::Event &event)
     {
-        m_CameraController.OnEvent(event);
         return false;
     }
 

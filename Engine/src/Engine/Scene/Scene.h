@@ -24,12 +24,16 @@ namespace Engine
             RecalculateCameraProjections();
         }
 
+        glm::vec2 ScreenToWorld(const glm::vec2 &screenPos);
+
     private:
         void RecalculateCameraProjections();
 
     private:
         entt::registry m_Registry;
         uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
+        Ref<Entity> m_CameraEntity = nullptr;
+
         friend class Entity;
         friend class EngineEditor::SceneHierarchyPanel;
     };
