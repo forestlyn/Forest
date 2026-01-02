@@ -14,6 +14,7 @@ namespace EngineEditor
 
     private:
         void DrawEntityNode(Engine::Entity entity);
+        void DrawComponents(Engine::Entity entity);
 
     private:
         Engine::Ref<Engine::Scene> m_Context;

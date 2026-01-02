@@ -156,7 +156,7 @@ namespace EngineEditor
         }
         uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
         auto m_Specs = m_FrameBuffer->GetSpecification();
-        ImGui::Image((void *)textureID, ImVec2{(float)m_Specs.Width, (float)m_Specs.Height}, ImVec2{0, 1}, ImVec2{1, 0});
+        ImGui::Image((void *)(uint64_t)textureID, ImVec2{(float)m_Specs.Width, (float)m_Specs.Height}, ImVec2{0, 1}, ImVec2{1, 0});
 
         ImGui::End();
         ImGui::PopStyleVar();

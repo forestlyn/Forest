@@ -3,8 +3,13 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include "Engine/Renderer/Camera/Camera.h"
+namespace EngineEditor
+{
+    class SceneHierarchyPanel;
+}
 namespace Engine
 {
+
     struct SpriteComponent
     {
         glm::vec4 Color{1.0f};
@@ -16,11 +21,10 @@ namespace Engine
     struct TransformComponent
     {
     private:
-        glm::vec3 Position{0.0f, 0.0f, 0.0f};
-        glm::vec3 Rotation{0.0f, 0.0f, 0.0f};
-        glm::vec3 Scale{1.0f, 1.0f, 1.0f};
+        friend class EngineEditor::SceneHierarchyPanel;
 
         bool dirty = true;
+
         glm::mat4 TransformMatrix{1.0f};
 
         glm::mat4 CalculateTransform()
@@ -32,32 +36,14 @@ namespace Engine
                    glm::scale(glm::mat4(1.0f), Scale);
         }
 
+        glm::vec3 Position = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 Rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 Scale = glm::vec3(1.0f, 1.0f, 1.0f);
+
     public:
         TransformComponent() = default;
         TransformComponent(const TransformComponent &other) = delete;
-        TransformComponent(const glm::vec3 &position) : Position(position), dirty(true) {}
-
-        glm::vec3 GetPosition() const { return Position; }
-        glm::vec3 GetRotation() const { return Rotation; }
-        glm::vec3 GetScale() const { return Scale; }
-
-        void SetPosition(glm::vec3 pos)
-        {
-            Position = pos;
-            dirty = true;
-        }
-
-        void SetRotation(glm::vec3 rotation)
-        {
-            Rotation = rotation;
-            dirty = true;
-        }
-
-        void SetScale(glm::vec3 scale)
-        {
-            Scale = scale;
-            dirty = true;
-        }
+        TransformComponent(const glm::vec3 &position) : Position(position) {}
 
         glm::mat4 GetTransform()
         {
@@ -68,6 +54,27 @@ namespace Engine
             }
             return TransformMatrix;
         }
+
+        void SetPosition(const glm::vec3 &position)
+        {
+            Position = position;
+            dirty = true;
+        }
+        glm::vec3 GetPosition() const { return Position; }
+
+        void SetRotation(const glm::vec3 &rotation)
+        {
+            Rotation = rotation;
+            dirty = true;
+        }
+        glm::vec3 GetRotation() const { return Rotation; }
+
+        void SetScale(const glm::vec3 &scale)
+        {
+            Scale = scale;
+            dirty = true;
+        }
+        glm::vec3 GetScale() const { return Scale; }
     };
 
     struct TagComponent

@@ -3,10 +3,7 @@
 #include "Engine/Scene/Component.h"
 #include "Engine/Core/Timestep.h"
 #include <entt.hpp>
-namespace EngineEditor
-{
-    class SceneHierarchyPanel;
-}
+
 namespace Engine
 {
     class Entity;
