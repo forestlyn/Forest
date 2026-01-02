@@ -33,7 +33,7 @@ namespace Engine
     void SceneCamera::SetPerspectiveFOV(float fov)
     {
         m_PerspectiveFOV = fov;
-        m_PerspectiveCamera->SetFOVDegrees(glm::degrees(m_PerspectiveFOV));
+        m_PerspectiveCamera->SetFOVDegrees(m_PerspectiveFOV);
     }
     void SceneCamera::SetPerspectiveNearClip(float nearClip)
     {

@@ -79,9 +79,21 @@ namespace EngineEditor
             {
                 ImGui::Separator();
                 auto &transform = entity.GetComponent<Engine::TransformComponent>();
-                ImGui::DragFloat3("Position", glm::value_ptr(transform.Position), 0.1f);
-                ImGui::DragFloat3("Rotation", glm::value_ptr(transform.Rotation), 0.1f);
-                ImGui::DragFloat3("Scale", glm::value_ptr(transform.Scale), 0.1f);
+                auto position = transform.Position;
+                auto rotation = transform.Rotation;
+                auto scale = transform.Scale;
+                if (ImGui::DragFloat3("Position", glm::value_ptr(position), 0.1f))
+                {
+                    transform.SetPosition(position);
+                }
+                if (ImGui::DragFloat3("Rotation", glm::value_ptr(rotation), 0.1f))
+                {
+                    transform.SetRotation(rotation);
+                }
+                if (ImGui::DragFloat3("Scale", glm::value_ptr(scale), 0.1f))
+                {
+                    transform.SetScale(scale);
+                }
                 ImGui::TreePop();
             }
         }
@@ -95,6 +107,63 @@ namespace EngineEditor
                 ImGui::Separator();
                 auto &sprite = entity.GetComponent<Engine::SpriteComponent>();
                 ImGui::ColorEdit4("Color", glm::value_ptr(sprite.Color));
+                ImGui::TreePop();
+            }
+        }
+
+        if (entity.HasComponent<Engine::CameraComponent>())
+        {
+            bool opened = ImGui::TreeNodeEx("Camera", ImGuiTreeNodeFlags_DefaultOpen);
+
+            if (opened)
+            {
+                ImGui::Separator();
+                auto &cameraComp = entity.GetComponent<Engine::CameraComponent>();
+                auto &sceneCamera = cameraComp.Camera;
+
+                const char *projectionTypeStrings[] = {"Orthographic", "Perspective"};
+                int currentProjectionType = (int)sceneCamera->GetProjectionType();
+                if (ImGui::Combo("Projection Type", &currentProjectionType, projectionTypeStrings, IM_ARRAYSIZE(projectionTypeStrings)))
+                {
+                    sceneCamera->SetProjectionType((Engine::SceneCamera::ProjectionType)currentProjectionType);
+                }
+
+                if (sceneCamera->GetProjectionType() == Engine::SceneCamera::ProjectionType::Orthographic)
+                {
+                    float orthoSize = sceneCamera->GetOrthographicSize();
+                    if (ImGui::DragFloat("Orthographic Size", &orthoSize, 0.1f, 0.01f))
+                    {
+                        sceneCamera->SetOrthographicSize(orthoSize);
+                    }
+                    float nearClip = sceneCamera->GetOrthographicNearClip();
+                    if (ImGui::DragFloat("Near Clip", &nearClip, 0.1f, 0.01f))
+                    {
+                        sceneCamera->SetOrthographicNearClip(nearClip);
+                    }
+                    float farClip = sceneCamera->GetOrthographicFarClip();
+                    if (ImGui::DragFloat("Far Clip", &farClip, 0.1f))
+                    {
+                        sceneCamera->SetOrthographicFarClip(farClip);
+                    }
+                }
+                else if (sceneCamera->GetProjectionType() == Engine::SceneCamera::ProjectionType::Perspective)
+                {
+                    float fov = glm::degrees(sceneCamera->GetPerspectiveFOV());
+                    if (ImGui::DragFloat("Field of View", &fov))
+                    {
+                        sceneCamera->SetPerspectiveFOV(fov);
+                    }
+                    float nearClip = sceneCamera->GetPerspectiveNearClip();
+                    if (ImGui::DragFloat("Near Clip", &nearClip))
+                    {
+                        sceneCamera->SetPerspectiveNearClip(nearClip);
+                    }
+                    float farClip = sceneCamera->GetPerspectiveFarClip();
+                    if (ImGui::DragFloat("Far Clip", &farClip))
+                    {
+                        sceneCamera->SetPerspectiveFarClip(farClip);
+                    }
+                }
                 ImGui::TreePop();
             }
         }
