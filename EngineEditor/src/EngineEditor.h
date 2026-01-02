@@ -1,8 +1,8 @@
 #pragma once
 #include "Engine.h"
 #include <glm/glm.hpp>
-#include "Particle/ParticleSystem.h"
 #include "Engine/Renderer/FrameBuffer.h"
+#include "Panels/SceneHierarchyPanel.h"
 
 namespace EngineEditor
 {
@@ -32,10 +32,12 @@ namespace EngineEditor
         bool m_FocusScene = false, m_HoverScene = false;
         glm::ivec2 m_SceneViewportSize = {0, 0};
 
-        Engine::Scope<Engine::Scene> m_Scene;
+        Engine::Ref<Engine::Scene> m_Scene;
         Engine::Entity m_SquareEntity;
         Engine::Entity m_MainCameraEntity;
         Engine::Entity m_SecondCameraEntity;
         bool m_UseMainCamera = true;
+
+        SceneHierarchyPanel m_SceneHierarchyPanel;
     };
 }

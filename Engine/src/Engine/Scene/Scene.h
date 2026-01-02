@@ -3,6 +3,10 @@
 #include "Engine/Scene/Component.h"
 #include "Engine/Core/Timestep.h"
 #include <entt.hpp>
+namespace EngineEditor
+{
+    class SceneHierarchyPanel;
+}
 namespace Engine
 {
     class Entity;
@@ -30,5 +34,6 @@ namespace Engine
         entt::registry m_Registry;
         uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
         friend class Entity;
+        friend class EngineEditor::SceneHierarchyPanel;
     };
-} // namespace Engine::Scene
+} // namespace Engine

@@ -25,6 +25,7 @@ namespace Engine::Profile
     void ProfileLayer::OnImGuiRender()
     {
         ENGINE_PROFILING_FUNC();
+#if FOREST_ENABLE_PROFILING == 1 && ENGINE_ENABLE_PROFILING == 1
         ImGui::Begin("Profile Results");
         for (auto result : ProfileResults)
         {
@@ -35,5 +36,6 @@ namespace Engine::Profile
         }
         ProfileResults.clear();
         ImGui::End();
+#endif
     }
 } // namespace Engine::Profile

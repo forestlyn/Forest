@@ -4,11 +4,13 @@
 #include "Engine/Scene/NativeScriptComponent.h"
 #include "Engine/Renderer/Camera/OrthographicCamera.h"
 #include "Engine/Renderer/Camera/PerspectiveCamera.h"
+#include "Engine/Profile/Instrumentor.h"
+
 namespace Engine
 {
     void Scene::OnUpdate(Core::Timestep deltaTime)
     {
-
+        ENGINE_PROFILING_FUNC();
         // update scripts
         {
             m_Registry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent &nsc)

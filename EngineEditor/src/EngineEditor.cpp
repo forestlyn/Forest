@@ -19,7 +19,7 @@ namespace EngineEditor
         fbSpec.Height = 720;
         m_FrameBuffer = Engine::Renderer::FrameBuffer::Create(fbSpec);
 
-        m_Scene = Engine::CreateScope<Engine::Scene>();
+        m_Scene = Engine::CreateRef<Engine::Scene>();
 
         m_SquareEntity = m_Scene->CreateEntity("Square");
         m_SquareEntity.AddComponent<Engine::SpriteComponent>(glm::vec4{0.8f, 0.2f, 0.3f, 1.0f});
@@ -68,6 +68,8 @@ namespace EngineEditor
 
         auto &nativeScript = m_SquareEntity.AddComponent<Engine::NativeScriptComponent>();
         nativeScript.Bind<SquareScript>();
+
+        m_SceneHierarchyPanel = SceneHierarchyPanel(m_Scene);
     }
 
     EngineEditor::~EngineEditor()
@@ -129,6 +131,9 @@ namespace EngineEditor
         int maxQuads = Engine::Renderer::Renderer2D::GetMaxQuads();
         ImGui::Text("Max Quads: %d", maxQuads);
         ImGui::InputInt("Max Quads", &maxQuads);
+
+        ImGui::Checkbox("Main Camera", &m_UseMainCamera);
+
         ImGui::End();
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
@@ -152,10 +157,9 @@ namespace EngineEditor
         uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
         auto m_Specs = m_FrameBuffer->GetSpecification();
         ImGui::Image((void *)textureID, ImVec2{(float)m_Specs.Width, (float)m_Specs.Height}, ImVec2{0, 1}, ImVec2{1, 0});
+
         ImGui::End();
         ImGui::PopStyleVar();
-
-        ImGui::Checkbox("Main Camera", &m_UseMainCamera);
 
         m_MainCameraEntity.GetComponent<Engine::CameraComponent>().Primary = m_UseMainCamera;
         m_SecondCameraEntity.GetComponent<Engine::CameraComponent>().Primary = !m_UseMainCamera;
@@ -170,6 +174,8 @@ namespace EngineEditor
         }
 
         Engine::Renderer::Renderer2D::SetMaxQuads(maxQuads);
+
+        m_SceneHierarchyPanel.OnImGuiRender();
     }
 
     bool EngineEditor::OnEvent(Engine::Event::Event &event)
