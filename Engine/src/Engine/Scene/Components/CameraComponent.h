@@ -1,8 +1,9 @@
 #pragma once
 #include "Engine/Scene/SceneCamera.h"
+#include "BaseComponent.h"
 namespace Engine
 {
-    struct CameraComponent
+    struct CameraComponent : public BaseComponent
     {
         Ref<SceneCamera> Camera;
         bool Primary = true; // Is this the primary camera?

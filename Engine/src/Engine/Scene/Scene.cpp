@@ -24,6 +24,35 @@ namespace Engine
                 nsc.Instance->OnUpdate(deltaTime); });
         }
 
+        // Remove entities marked for deletion
+        {
+            auto view = m_Registry.view<TagComponent>();
+            std::vector<entt::entity> entitiesToRemove;
+            for (auto entity : view)
+            {
+                if (view.get<TagComponent>(entity).IsRemove())
+                {
+                    entitiesToRemove.push_back(entity);
+                }
+            }
+
+            for (auto entity : entitiesToRemove)
+            {
+                Entity e{entity, this};
+                ENGINE_INFO("Really Removing entity {}", e.GetComponent<TagComponent>().Tag);
+                if (e.HasComponent<NativeScriptComponent>())
+                {
+                    auto &nsc = e.GetComponent<NativeScriptComponent>();
+                    if (nsc.Instance)
+                    {
+                        nsc.Instance->OnDestroy();
+                        nsc.Destroy(&nsc);
+                    }
+                }
+                m_Registry.destroy(entity);
+            }
+        }
+
         // Update Cameras
         m_CameraEntity = nullptr;
         {
@@ -75,6 +104,7 @@ namespace Engine
         entt::entity entityHandle = m_Registry.create();
         auto entity = Entity(entityHandle, this);
         entity.AddComponent<TagComponent>(name);
+        entity.AddComponent<TransformComponent>();
         return entity;
     }
     glm::vec2 Scene::ScreenToWorld(const glm::vec2 &screenPos)

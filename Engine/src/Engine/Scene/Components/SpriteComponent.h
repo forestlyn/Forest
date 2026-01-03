@@ -1,8 +1,9 @@
 #pragma once
 #include <glm/glm.hpp>
+#include "BaseComponent.h"
 namespace Engine
 {
-    struct SpriteComponent
+    struct SpriteComponent : public BaseComponent
     {
         glm::vec4 Color{1.0f};
         SpriteComponent() = default;

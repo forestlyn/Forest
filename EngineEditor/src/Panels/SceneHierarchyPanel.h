@@ -13,8 +13,6 @@ namespace EngineEditor
         void OnImGuiRender();
 
     private:
-        static bool DrawVector3Control(const std::string &label, glm::vec3 &values, float resetValue = 0.0f, float columnWidth = 100.0f);
-
         void DrawEntityNode(Engine::Entity entity);
         void DrawComponents(Engine::Entity entity);
 

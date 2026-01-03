@@ -3,7 +3,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
-
+#include "BaseComponent.h"
 namespace EngineEditor
 {
     class SceneHierarchyPanel;
@@ -11,7 +11,7 @@ namespace EngineEditor
 
 namespace Engine
 {
-    struct TransformComponent
+    struct TransformComponent : public BaseComponent
     {
     private:
         friend class EngineEditor::SceneHierarchyPanel;

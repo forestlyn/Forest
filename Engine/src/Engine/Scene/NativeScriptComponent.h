@@ -10,10 +10,10 @@ namespace Engine
         ScriptEntity *Instance = nullptr;
 
         using InstantiateFn = ScriptEntity *(*)();
-        using DestoryFn = void (*)(NativeScriptComponent *);
+        using DestroyFn = void (*)(NativeScriptComponent *);
 
         InstantiateFn Instantiate = nullptr;
-        DestoryFn Destory = nullptr;
+        DestroyFn Destroy = nullptr;
 
         template <typename T>
         void Bind()
@@ -22,7 +22,7 @@ namespace Engine
             {
                 return static_cast<ScriptEntity *>(new T());
             };
-            Destory = [](NativeScriptComponent *nsc)
+            Destroy = [](NativeScriptComponent *nsc)
             {
                 delete nsc->Instance;
                 nsc->Instance = nullptr;

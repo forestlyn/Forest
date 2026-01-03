@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <glm/gtc/type_ptr.hpp>
+#include "UIUtils.h"
 namespace EngineEditor
 {
     SceneHierarchyPanel::SceneHierarchyPanel(const Engine::Ref<Engine::Scene> &context)
@@ -21,6 +22,15 @@ namespace EngineEditor
             m_SelectionContext = {};
         }
 
+        if (ImGui::BeginPopupContextWindow("HierarchyContextMenu", ImGuiPopupFlags_MouseButtonRight))
+        {
+            if (ImGui::MenuItem("Create Empty Entity"))
+            {
+                m_Context->CreateEntity("Empty Entity");
+            }
+            ImGui::EndPopup();
+        }
+
         auto view = m_Context->m_Registry.view<Engine::TagComponent>();
         for (auto entity : view)
         {
@@ -37,69 +47,6 @@ namespace EngineEditor
         ImGui::End();
     }
 
-    bool SceneHierarchyPanel::DrawVector3Control(const std::string &label, glm::vec3 &values, float resetValue, float columnWidth)
-    {
-        bool changed = false;
-        ImGui::PushID(label.c_str());
-
-        ImGui::Columns(2);
-        ImGui::SetColumnWidth(0, columnWidth);
-        ImGui::TextUnformatted(label.c_str());
-        ImGui::NextColumn();
-        ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
-        float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
-        ImVec2 buttonSize = {lineHeight + 3.0f, lineHeight};
-        // X
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
-        if (ImGui::Button("X", buttonSize))
-        {
-            values.x = resetValue;
-            changed = true;
-        }
-        ImGui::PopStyleColor();
-        ImGui::SameLine();
-        if (ImGui::DragFloat("##X", &values.x, 0.1f))
-        {
-            changed = true;
-        }
-        ImGui::PopItemWidth();
-        ImGui::SameLine();
-        // Y
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.2f, 0.7f, 0.2f, 1.0f});
-        if (ImGui::Button("Y", buttonSize))
-        {
-            values.y = resetValue;
-            changed = true;
-        }
-        ImGui::PopStyleColor();
-        ImGui::SameLine();
-        if (ImGui::DragFloat("##Y", &values.y, 0.1f))
-        {
-            changed = true;
-        }
-        ImGui::PopItemWidth();
-        ImGui::SameLine();
-        // Z
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.15f, 0.25f, 0.8f, 1.0f});
-        if (ImGui::Button("Z", buttonSize))
-        {
-            values.z = resetValue;
-            changed = true;
-        }
-        ImGui::PopStyleColor();
-        ImGui::SameLine();
-        if (ImGui::DragFloat("##Z", &values.z, 0.1f))
-        {
-            changed = true;
-        }
-        ImGui::PopItemWidth();
-        ImGui::PopStyleVar();
-        ImGui::Columns(1);
-        ImGui::PopID();
-        return changed;
-    }
-
     void SceneHierarchyPanel::DrawEntityNode(Engine::Entity entity)
     {
         const auto &tag = entity.GetComponent<Engine::TagComponent>().Tag;
@@ -109,6 +56,19 @@ namespace EngineEditor
         if (ImGui::IsItemClicked())
         {
             m_SelectionContext = entity;
+        }
+
+        if (ImGui::BeginPopupContextItem())
+        {
+            if (ImGui::MenuItem("Delete Entity"))
+            {
+                entity.GetComponent<Engine::TagComponent>().SetRemove(true);
+                if (m_SelectionContext == entity)
+                {
+                    m_SelectionContext = {};
+                }
+            }
+            ImGui::EndPopup();
         }
 
         if (opened)
@@ -147,15 +107,15 @@ namespace EngineEditor
                 auto position = transform.Position;
                 auto rotation = transform.Rotation;
                 auto scale = transform.Scale;
-                if (DrawVector3Control("Position", position))
+                if (UIUtils::DrawVector3Control("Position", position))
                 {
                     transform.SetPosition(position);
                 }
-                if (DrawVector3Control("Rotation", rotation))
+                if (UIUtils::DrawVector3Control("Rotation", rotation))
                 {
                     transform.SetRotation(rotation);
                 }
-                if (DrawVector3Control("Scale", scale, 1.0f))
+                if (UIUtils::DrawVector3Control("Scale", scale, 1.0f))
                 {
                     transform.SetScale(scale);
                 }
@@ -166,24 +126,55 @@ namespace EngineEditor
         if (entity.HasComponent<Engine::SpriteComponent>())
         {
             bool opened = ImGui::TreeNodeEx("Sprite Renderer", ImGuiTreeNodeFlags_DefaultOpen);
+            auto &sprite = entity.GetComponent<Engine::SpriteComponent>();
 
+            ImGui::SameLine(ImGui::GetColumnWidth() - 20);
+            if (ImGui::Button("+"))
+            {
+                ImGui::OpenPopup("RemoveComponent");
+            }
+            if (ImGui::BeginPopup("RemoveComponent"))
+            {
+                if (ImGui::MenuItem("Remove Component"))
+                {
+                    sprite.SetRemove(true);
+                }
+                ImGui::EndPopup();
+            }
             if (opened)
             {
                 ImGui::Separator();
-                auto &sprite = entity.GetComponent<Engine::SpriteComponent>();
                 ImGui::ColorEdit4("Color", glm::value_ptr(sprite.Color));
                 ImGui::TreePop();
+            }
+
+            if (sprite.IsRemove())
+            {
+                entity.RemoveComponent<Engine::SpriteComponent>();
             }
         }
 
         if (entity.HasComponent<Engine::CameraComponent>())
         {
             bool opened = ImGui::TreeNodeEx("Camera", ImGuiTreeNodeFlags_DefaultOpen);
+            auto &cameraComp = entity.GetComponent<Engine::CameraComponent>();
+            ImGui::SameLine(ImGui::GetColumnWidth() - 20);
+            if (ImGui::Button("+"))
+            {
+                ImGui::OpenPopup("RemoveComponent");
+            }
+            if (ImGui::BeginPopup("RemoveComponent"))
+            {
+                if (ImGui::MenuItem("Remove Component"))
+                {
+                    cameraComp.SetRemove(true);
+                }
+                ImGui::EndPopup();
+            }
 
             if (opened)
             {
                 ImGui::Separator();
-                auto &cameraComp = entity.GetComponent<Engine::CameraComponent>();
                 auto &sceneCamera = cameraComp.Camera;
 
                 const char *projectionTypeStrings[] = {"Orthographic", "Perspective"};
@@ -248,6 +239,38 @@ namespace EngineEditor
                 }
                 ImGui::TreePop();
             }
+
+            if (cameraComp.IsRemove())
+            {
+                entity.RemoveComponent<Engine::CameraComponent>();
+            }
+        }
+
+        // Add Component
+        ImGui::Separator();
+        if (ImGui::Button("Add Component"))
+        {
+            ImGui::OpenPopup("AddComponent");
+        }
+        if (ImGui::BeginPopup("AddComponent"))
+        {
+            if (!entity.HasComponent<Engine::CameraComponent>())
+            {
+                if (ImGui::MenuItem("Camera"))
+                {
+                    entity.AddComponent<Engine::CameraComponent>();
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+            if (!entity.HasComponent<Engine::SpriteComponent>())
+            {
+                if (ImGui::MenuItem("Sprite Renderer"))
+                {
+                    entity.AddComponent<Engine::SpriteComponent>();
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+            ImGui::EndPopup();
         }
     }
 }
