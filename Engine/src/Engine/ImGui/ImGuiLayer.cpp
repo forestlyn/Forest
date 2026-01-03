@@ -25,6 +25,9 @@ namespace Engine::MyImGui
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;   // Enable Multi-Viewport
 
+        io.Fonts->AddFontFromFileTTF("assets/fonts/googlesans/static/OpenSans-Bold.ttf", 18.0f);
+        io.FontDefault = io.Fonts->AddFontFromFileTTF("assets/fonts/googlesans/static/GoogleSans-Regular.ttf", 18.0f);
+
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
         ImGuiStyle &style = ImGui::GetStyle();

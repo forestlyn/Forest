@@ -96,155 +96,91 @@ namespace EngineEditor
             }
         }
 
-        if (entity.HasComponent<Engine::TransformComponent>())
-        {
-            bool opened = ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen);
+        UIUtils::DrawComponent<Engine::TransformComponent>("Transform", entity, [](Engine::TransformComponent &transform)
+                                                           {
+                                                               auto position = transform.Position;
+                                                               auto rotation = transform.Rotation;
+                                                               auto scale = transform.Scale;
+                                                               if (UIUtils::DrawVector3Control("Position", position))
+                                                               {
+                                                                   transform.SetPosition(position);
+                                                               }
+                                                               if (UIUtils::DrawVector3Control("Rotation", rotation))
+                                                               {
+                                                                   transform.SetRotation(rotation);
+                                                               }
+                                                               if (UIUtils::DrawVector3Control("Scale", scale, 1.0f))
+                                                               {
+                                                                   transform.SetScale(scale);
+                                                               } });
 
-            if (opened)
-            {
-                ImGui::Separator();
-                auto &transform = entity.GetComponent<Engine::TransformComponent>();
-                auto position = transform.Position;
-                auto rotation = transform.Rotation;
-                auto scale = transform.Scale;
-                if (UIUtils::DrawVector3Control("Position", position))
-                {
-                    transform.SetPosition(position);
-                }
-                if (UIUtils::DrawVector3Control("Rotation", rotation))
-                {
-                    transform.SetRotation(rotation);
-                }
-                if (UIUtils::DrawVector3Control("Scale", scale, 1.0f))
-                {
-                    transform.SetScale(scale);
-                }
-                ImGui::TreePop();
-            }
-        }
+        UIUtils::DrawComponent<Engine::SpriteComponent>("Sprite Renderer", entity, [](Engine::SpriteComponent &sprite)
+                                                        { ImGui::ColorEdit4("Color", glm::value_ptr(sprite.Color)); });
 
-        if (entity.HasComponent<Engine::SpriteComponent>())
-        {
-            bool opened = ImGui::TreeNodeEx("Sprite Renderer", ImGuiTreeNodeFlags_DefaultOpen);
-            auto &sprite = entity.GetComponent<Engine::SpriteComponent>();
+        UIUtils::DrawComponent<Engine::CameraComponent>("Camera", entity, [](Engine::CameraComponent &cameraComp)
+                                                        {
+                                                            auto &sceneCamera = cameraComp.Camera;
 
-            ImGui::SameLine(ImGui::GetColumnWidth() - 20);
-            if (ImGui::Button("+"))
-            {
-                ImGui::OpenPopup("RemoveComponent");
-            }
-            if (ImGui::BeginPopup("RemoveComponent"))
-            {
-                if (ImGui::MenuItem("Remove Component"))
-                {
-                    sprite.SetRemove(true);
-                }
-                ImGui::EndPopup();
-            }
-            if (opened)
-            {
-                ImGui::Separator();
-                ImGui::ColorEdit4("Color", glm::value_ptr(sprite.Color));
-                ImGui::TreePop();
-            }
+                                                            const char *projectionTypeStrings[] = {"Orthographic", "Perspective"};
+                                                            int currentProjectionType = (int)sceneCamera->GetProjectionType();
+                                                            if (ImGui::Combo("Projection Type", &currentProjectionType, projectionTypeStrings, IM_ARRAYSIZE(projectionTypeStrings)))
+                                                            {
+                                                                sceneCamera->SetProjectionType((Engine::SceneCamera::ProjectionType)currentProjectionType);
+                                                            }
 
-            if (sprite.IsRemove())
-            {
-                entity.RemoveComponent<Engine::SpriteComponent>();
-            }
-        }
+                                                            bool isPrimary = cameraComp.Primary;
+                                                            if (ImGui::Checkbox("Primary Camera", &isPrimary))
+                                                            {
+                                                                cameraComp.Primary = isPrimary;
+                                                            }
+                                                            bool fixedAspectRatio = cameraComp.FixedAspectRatio;
+                                                            if (ImGui::Checkbox("Fixed Aspect Ratio", &fixedAspectRatio))
+                                                            {
+                                                                cameraComp.FixedAspectRatio = fixedAspectRatio;
+                                                            }
 
-        if (entity.HasComponent<Engine::CameraComponent>())
-        {
-            bool opened = ImGui::TreeNodeEx("Camera", ImGuiTreeNodeFlags_DefaultOpen);
-            auto &cameraComp = entity.GetComponent<Engine::CameraComponent>();
-            ImGui::SameLine(ImGui::GetColumnWidth() - 20);
-            if (ImGui::Button("+"))
-            {
-                ImGui::OpenPopup("RemoveComponent");
-            }
-            if (ImGui::BeginPopup("RemoveComponent"))
-            {
-                if (ImGui::MenuItem("Remove Component"))
-                {
-                    cameraComp.SetRemove(true);
-                }
-                ImGui::EndPopup();
-            }
+                                                            float aspectRatio = sceneCamera->GetAspectRatio();
+                                                            if (ImGui::DragFloat("Aspect Ratio", &aspectRatio, 0.01f, 0.1f, 10.0f))
+                                                            {
+                                                                sceneCamera->SetAspectRatio(aspectRatio);
+                                                            }
 
-            if (opened)
-            {
-                ImGui::Separator();
-                auto &sceneCamera = cameraComp.Camera;
-
-                const char *projectionTypeStrings[] = {"Orthographic", "Perspective"};
-                int currentProjectionType = (int)sceneCamera->GetProjectionType();
-                if (ImGui::Combo("Projection Type", &currentProjectionType, projectionTypeStrings, IM_ARRAYSIZE(projectionTypeStrings)))
-                {
-                    sceneCamera->SetProjectionType((Engine::SceneCamera::ProjectionType)currentProjectionType);
-                }
-
-                bool isPrimary = cameraComp.Primary;
-                if (ImGui::Checkbox("Primary Camera", &isPrimary))
-                {
-                    cameraComp.Primary = isPrimary;
-                }
-                bool fixedAspectRatio = cameraComp.FixedAspectRatio;
-                if (ImGui::Checkbox("Fixed Aspect Ratio", &fixedAspectRatio))
-                {
-                    cameraComp.FixedAspectRatio = fixedAspectRatio;
-                }
-
-                float aspectRatio = sceneCamera->GetAspectRatio();
-                if (ImGui::DragFloat("Aspect Ratio", &aspectRatio, 0.01f, 0.1f, 10.0f))
-                {
-                    sceneCamera->SetAspectRatio(aspectRatio);
-                }
-
-                if (sceneCamera->GetProjectionType() == Engine::SceneCamera::ProjectionType::Orthographic)
-                {
-                    float orthoSize = sceneCamera->GetOrthographicSize();
-                    if (ImGui::DragFloat("Orthographic Size", &orthoSize, 0.1f, 0.01f))
-                    {
-                        sceneCamera->SetOrthographicSize(orthoSize);
-                    }
-                    float nearClip = sceneCamera->GetOrthographicNearClip();
-                    if (ImGui::DragFloat("Near Clip", &nearClip, 0.1f, 0.01f))
-                    {
-                        sceneCamera->SetOrthographicNearClip(nearClip);
-                    }
-                    float farClip = sceneCamera->GetOrthographicFarClip();
-                    if (ImGui::DragFloat("Far Clip", &farClip, 0.1f))
-                    {
-                        sceneCamera->SetOrthographicFarClip(farClip);
-                    }
-                }
-                else if (sceneCamera->GetProjectionType() == Engine::SceneCamera::ProjectionType::Perspective)
-                {
-                    float fov = glm::degrees(sceneCamera->GetPerspectiveFOV());
-                    if (ImGui::DragFloat("Field of View", &fov))
-                    {
-                        sceneCamera->SetPerspectiveFOV(fov);
-                    }
-                    float nearClip = sceneCamera->GetPerspectiveNearClip();
-                    if (ImGui::DragFloat("Near Clip", &nearClip))
-                    {
-                        sceneCamera->SetPerspectiveNearClip(nearClip);
-                    }
-                    float farClip = sceneCamera->GetPerspectiveFarClip();
-                    if (ImGui::DragFloat("Far Clip", &farClip))
-                    {
-                        sceneCamera->SetPerspectiveFarClip(farClip);
-                    }
-                }
-                ImGui::TreePop();
-            }
-
-            if (cameraComp.IsRemove())
-            {
-                entity.RemoveComponent<Engine::CameraComponent>();
-            }
-        }
+                                                            if (sceneCamera->GetProjectionType() == Engine::SceneCamera::ProjectionType::Orthographic)
+                                                            {
+                                                                float orthoSize = sceneCamera->GetOrthographicSize();
+                                                                if (ImGui::DragFloat("Orthographic Size", &orthoSize, 0.1f, 0.01f))
+                                                                {
+                                                                    sceneCamera->SetOrthographicSize(orthoSize);
+                                                                }
+                                                                float nearClip = sceneCamera->GetOrthographicNearClip();
+                                                                if (ImGui::DragFloat("Near Clip", &nearClip, 0.1f, 0.01f))
+                                                                {
+                                                                    sceneCamera->SetOrthographicNearClip(nearClip);
+                                                                }
+                                                                float farClip = sceneCamera->GetOrthographicFarClip();
+                                                                if (ImGui::DragFloat("Far Clip", &farClip, 0.1f))
+                                                                {
+                                                                    sceneCamera->SetOrthographicFarClip(farClip);
+                                                                }
+                                                            }
+                                                            else if (sceneCamera->GetProjectionType() == Engine::SceneCamera::ProjectionType::Perspective)
+                                                            {
+                                                                float fov = glm::degrees(sceneCamera->GetPerspectiveFOV());
+                                                                if (ImGui::DragFloat("Field of View", &fov))
+                                                                {
+                                                                    sceneCamera->SetPerspectiveFOV(fov);
+                                                                }
+                                                                float nearClip = sceneCamera->GetPerspectiveNearClip();
+                                                                if (ImGui::DragFloat("Near Clip", &nearClip))
+                                                                {
+                                                                    sceneCamera->SetPerspectiveNearClip(nearClip);
+                                                                }
+                                                                float farClip = sceneCamera->GetPerspectiveFarClip();
+                                                                if (ImGui::DragFloat("Far Clip", &farClip))
+                                                                {
+                                                                    sceneCamera->SetPerspectiveFarClip(farClip);
+                                                                }
+                                                            } });
 
         // Add Component
         ImGui::Separator();

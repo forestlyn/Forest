@@ -2,6 +2,8 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <functional>
+#include "Engine/Scene/Component.h"
 namespace EngineEditor
 {
     bool UIUtils::DrawVector3Control(const std::string &label, glm::vec3 &values, float resetValue, float columnWidth)
@@ -66,4 +68,42 @@ namespace EngineEditor
         ImGui::PopID();
         return changed;
     }
+    template <typename T>
+    void UIUtils::DrawComponent(const std::string &name, Engine::Entity entity, const std::function<void(T &)> &uiFunction)
+    {
+        if (!entity.HasComponent<T>())
+            return;
+        auto &component = entity.GetComponent<T>();
+        ImGui::Separator();
+        bool opened = ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_DefaultOpen);
+        ImGui::SameLine(ImGui::GetColumnWidth() - 20);
+        if (ImGui::Button("+"))
+        {
+            ImGui::OpenPopup("RemoveComponent");
+        }
+        if (ImGui::BeginPopup("RemoveComponent"))
+        {
+            if (ImGui::MenuItem("Remove Component"))
+            {
+                entity.GetComponent<T>().SetRemove(true);
+            }
+            ImGui::EndPopup();
+        }
+
+        if (opened)
+        {
+            ImGui::Separator();
+            uiFunction(component);
+            ImGui::TreePop();
+        }
+
+        if (entity.GetComponent<T>().IsRemove())
+        {
+            entity.RemoveComponent<T>();
+        }
+    }
+
+    template void UIUtils::DrawComponent<Engine::TransformComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::TransformComponent &)> &uiFunction);
+    template void UIUtils::DrawComponent<Engine::SpriteComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::SpriteComponent &)> &uiFunction);
+    template void UIUtils::DrawComponent<Engine::CameraComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::CameraComponent &)> &uiFunction);
 }
