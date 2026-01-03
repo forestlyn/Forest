@@ -8,7 +8,7 @@ namespace Engine
         Ref<SceneCamera> Camera;
         bool Primary = true; // Is this the primary camera?
         bool FixedAspectRatio = false;
-        CameraComponent() = default;
+        CameraComponent() : Camera(Engine::CreateRef<SceneCamera>()) {}
         CameraComponent(const CameraComponent &other) = delete;
         CameraComponent(const Ref<SceneCamera> &camera) : Camera(camera) {}
     };

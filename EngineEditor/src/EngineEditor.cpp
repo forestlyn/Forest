@@ -23,19 +23,14 @@ namespace EngineEditor
 
         m_SquareEntity = m_Scene->CreateEntity("Square");
         m_SquareEntity.AddComponent<Engine::SpriteComponent>(glm::vec4{0.8f, 0.2f, 0.3f, 1.0f});
-        m_SquareEntity.AddComponent<Engine::TransformComponent>(glm::vec3{2.0f, 0.0f, 0.0f});
 
         m_MainCameraEntity = m_Scene->CreateEntity("Main Camera");
         auto &cameraComponent = m_MainCameraEntity.AddComponent<Engine::CameraComponent>();
-        cameraComponent.Camera = Engine::CreateRef<Engine::SceneCamera>();
         cameraComponent.Primary = true;
-        m_MainCameraEntity.AddComponent<Engine::TransformComponent>();
 
         m_SecondCameraEntity = m_Scene->CreateEntity("Second Camera");
         auto &secondCameraComponent = m_SecondCameraEntity.AddComponent<Engine::CameraComponent>();
-        secondCameraComponent.Camera = Engine::CreateRef<Engine::SceneCamera>();
         secondCameraComponent.Primary = false;
-        m_SecondCameraEntity.AddComponent<Engine::TransformComponent>(glm::vec3{0.0f, 0.0f, 0.0f});
 
         class SquareScript : public Engine::ScriptEntity
         {

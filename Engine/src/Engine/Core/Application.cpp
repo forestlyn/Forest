@@ -26,6 +26,7 @@ namespace Engine::Core
 		// imgui init needs to be after window creation and s_Instance assignment
 		m_ImGuiLayer = new MyImGui::ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
+		m_ImGuiLayer->SetDarkThemeColors();
 
 #if defined(ENGINE_ENABLE_PROFILELAYER)
 		m_ProfileLayer = new Engine::Profile::ProfileLayer();

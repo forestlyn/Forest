@@ -52,6 +52,7 @@ namespace EngineEditor
         const auto &tag = entity.GetComponent<Engine::TagComponent>().Tag;
 
         ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+        flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
         bool opened = ImGui::TreeNodeEx((void *)(uint64_t)(uint32_t)(entt::entity)entity, flags, tag.c_str());
         if (ImGui::IsItemClicked())
         {
@@ -105,14 +106,16 @@ namespace EngineEditor
                                                                {
                                                                    transform.SetPosition(position);
                                                                }
+                                                               ImGui::Separator();
                                                                if (UIUtils::DrawVector3Control("Rotation", rotation))
                                                                {
                                                                    transform.SetRotation(rotation);
                                                                }
+                                                                ImGui::Separator();
                                                                if (UIUtils::DrawVector3Control("Scale", scale, 1.0f))
                                                                {
                                                                    transform.SetScale(scale);
-                                                               } });
+                                                               } }, false);
 
         UIUtils::DrawComponent<Engine::SpriteComponent>("Sprite Renderer", entity, [](Engine::SpriteComponent &sprite)
                                                         { ImGui::ColorEdit4("Color", glm::value_ptr(sprite.Color)); });
