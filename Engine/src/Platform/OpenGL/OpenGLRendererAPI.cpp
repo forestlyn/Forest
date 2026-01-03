@@ -34,7 +34,7 @@ namespace Engine::Platform::OpenGL
     void OpenGLRendererAPI::DrawIndexed(Ref<Renderer::VertexArray> &vertexArray, uint32_t indexCount)
     {
         ENGINE_PROFILING_FUNC();
-        uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
+        uint32_t count = indexCount == -1 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
         glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
     }
 } // namespace Engine::Platform::OpenGL
