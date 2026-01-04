@@ -9,7 +9,11 @@ namespace EngineEditor
         SceneHierarchyPanel(const Engine::Ref<Engine::Scene> &context);
         ~SceneHierarchyPanel() = default;
 
-        void SetContext(const Engine::Ref<Engine::Scene> &context) { m_Context = context; }
+        void SetContext(const Engine::Ref<Engine::Scene> &context)
+        {
+            m_Context = context;
+            m_SelectionContext = {};
+        }
         void OnImGuiRender();
 
     private:

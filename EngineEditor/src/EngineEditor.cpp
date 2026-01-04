@@ -7,6 +7,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "Engine/Profile/ProfileLayer.h"
 #include "Engine/Profile/Instrumentor.h"
+#include "Engine/Serialization/SceneSerialize.h"
+
 namespace EngineEditor
 {
 
@@ -20,7 +22,7 @@ namespace EngineEditor
         m_FrameBuffer = Engine::Renderer::FrameBuffer::Create(fbSpec);
 
         m_Scene = Engine::CreateRef<Engine::Scene>();
-
+#if 0
         m_SquareEntity = m_Scene->CreateEntity("Square");
         m_SquareEntity.AddComponent<Engine::SpriteComponent>(glm::vec4{0.8f, 0.2f, 0.3f, 1.0f});
 
@@ -62,6 +64,7 @@ namespace EngineEditor
         auto &nativeScript = m_SquareEntity.AddComponent<Engine::NativeScriptComponent>();
         nativeScript.Bind<SquareScript>();
 
+#endif
         m_SceneHierarchyPanel = SceneHierarchyPanel(m_Scene);
     }
 
@@ -108,6 +111,37 @@ namespace EngineEditor
         OpenDockSpace();
 
         ENGINE_PROFILING_FUNC();
+
+        if (ImGui::BeginMainMenuBar())
+        {
+            if (ImGui::BeginMenu("File"))
+            {
+                if (ImGui::MenuItem("New Scene"))
+                {
+                    LOG_INFO("New Scene created.");
+                    m_Scene = Engine::CreateRef<Engine::Scene>();
+                    m_SceneHierarchyPanel.SetContext(m_Scene);
+                }
+                if (ImGui::MenuItem("Load Scene"))
+                {
+                    LOG_INFO("Load Scene dialog opened.");
+                    m_Scene = Engine::CreateRef<Engine::Scene>();
+                    m_SceneHierarchyPanel.SetContext(m_Scene);
+                    Engine::Serialization::SceneSerialize sceneSerialize(m_Scene);
+                    sceneSerialize.Deserialize("assets/scenes/ExampleScene.yaml");
+                }
+                if (ImGui::MenuItem("Save Scene"))
+                {
+                    LOG_INFO("Save Scene dialog opened.");
+                    Engine::Serialization::SceneSerialize sceneSerialize(m_Scene);
+                    sceneSerialize.Serialize("assets/scenes/ExampleScene.yaml");
+                }
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMainMenuBar();
+        }
+
         ImGui::Begin("Settings");
         ImGui::ColorEdit4("Square Color", glm::value_ptr(m_SquareColor));
 

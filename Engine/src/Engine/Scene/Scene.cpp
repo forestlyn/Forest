@@ -5,7 +5,6 @@
 #include "Engine/Renderer/Camera/OrthographicCamera.h"
 #include "Engine/Renderer/Camera/PerspectiveCamera.h"
 #include "Engine/Profile/Instrumentor.h"
-
 namespace Engine
 {
     void Scene::OnUpdate(Core::Timestep deltaTime)
@@ -71,7 +70,6 @@ namespace Engine
 
         if (m_CameraEntity == nullptr)
         {
-            LOG_WARN("No primary camera found in the scene!");
             return;
         }
 
@@ -107,6 +105,14 @@ namespace Engine
         entity.AddComponent<TransformComponent>();
         return entity;
     }
+
+    Entity Scene::CreateEntityWithID(int handle)
+    {
+        entt::entity entityHandle = m_Registry.create(static_cast<entt::entity>(handle));
+        Entity entity = Entity(entityHandle, this);
+        return entity;
+    }
+
     glm::vec2 Scene::ScreenToWorld(const glm::vec2 &screenPos)
     {
         if (m_CameraEntity == nullptr)

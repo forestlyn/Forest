@@ -11,10 +11,16 @@ namespace Engine
     {
     public:
         Scene() = default;
-        ~Scene() = default;
+        ~Scene()
+        {
+            LOG_INFO("Scene destroyed.");
+        }
         void OnUpdate(Core::Timestep deltaTime);
 
+        // Create an entity with a specific name,will add TagComponent and TransformComponent by default
         Entity CreateEntity(const std::string &name = std::string());
+        // Create an entity with a specific ID (for deserialization) no default components
+        Entity CreateEntityWithID(int handle);
         entt::registry &GetRegistry() { return m_Registry; }
 
         void SetViewportSize(uint32_t width, uint32_t height)
