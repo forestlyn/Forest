@@ -15,6 +15,7 @@ list(APPEND ENGINE_HEADERS "ThirdParty/stb_image/stb_image.h")
 add_subdirectory("ThirdParty/glfw")
 add_subdirectory("ThirdParty/glad")
 add_subdirectory("ThirdParty/imgui")
+add_subdirectory("ThirdParty/yaml-cpp")
 
 # Configure Profiling
 set(SOURCE_FILES ${ENGINE_SOURCES})
@@ -30,6 +31,7 @@ target_include_directories(Engine
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glm>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imgui>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/entt/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/yaml-cpp/include>
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glfw/include>
@@ -37,7 +39,7 @@ target_include_directories(Engine
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/stb_image>
 )
 
-target_link_libraries(Engine PUBLIC glfw glad opengl32 imgui)
+target_link_libraries(Engine PUBLIC glfw glad opengl32 imgui yaml-cpp)
 
 # 设置编译器特性
 target_compile_features(Engine PUBLIC cxx_std_20)
