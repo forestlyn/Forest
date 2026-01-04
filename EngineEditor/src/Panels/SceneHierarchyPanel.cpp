@@ -81,19 +81,40 @@ namespace EngineEditor
     {
         if (entity.HasComponent<Engine::TagComponent>())
         {
-            bool opened = ImGui::TreeNodeEx("Tag", ImGuiTreeNodeFlags_DefaultOpen);
-
-            if (opened)
+            auto &tag = entity.GetComponent<Engine::TagComponent>().Tag;
+            char buffer[256];
+            memset(buffer, 0, sizeof(buffer));
+            strcpy_s(buffer, sizeof(buffer), tag.c_str());
+            if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
             {
-                auto &tag = entity.GetComponent<Engine::TagComponent>().Tag;
-                char buffer[256];
-                memset(buffer, 0, sizeof(buffer));
-                strcpy_s(buffer, sizeof(buffer), tag.c_str());
-                if (ImGui::InputText("Tag", buffer, sizeof(buffer)))
+                tag = std::string(buffer);
+            }
+
+            // Add Component
+            ImGui::SameLine();
+            if (ImGui::Button("Add Component"))
+            {
+                ImGui::OpenPopup("AddComponent");
+            }
+            if (ImGui::BeginPopup("AddComponent"))
+            {
+                if (!entity.HasComponent<Engine::CameraComponent>())
                 {
-                    tag = std::string(buffer);
+                    if (ImGui::MenuItem("Camera"))
+                    {
+                        entity.AddComponent<Engine::CameraComponent>();
+                        ImGui::CloseCurrentPopup();
+                    }
                 }
-                ImGui::TreePop();
+                if (!entity.HasComponent<Engine::SpriteComponent>())
+                {
+                    if (ImGui::MenuItem("Sprite Renderer"))
+                    {
+                        entity.AddComponent<Engine::SpriteComponent>();
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
+                ImGui::EndPopup();
             }
         }
 
@@ -184,32 +205,5 @@ namespace EngineEditor
                                                                     sceneCamera->SetPerspectiveFarClip(farClip);
                                                                 }
                                                             } });
-
-        // Add Component
-        ImGui::Separator();
-        if (ImGui::Button("Add Component"))
-        {
-            ImGui::OpenPopup("AddComponent");
-        }
-        if (ImGui::BeginPopup("AddComponent"))
-        {
-            if (!entity.HasComponent<Engine::CameraComponent>())
-            {
-                if (ImGui::MenuItem("Camera"))
-                {
-                    entity.AddComponent<Engine::CameraComponent>();
-                    ImGui::CloseCurrentPopup();
-                }
-            }
-            if (!entity.HasComponent<Engine::SpriteComponent>())
-            {
-                if (ImGui::MenuItem("Sprite Renderer"))
-                {
-                    entity.AddComponent<Engine::SpriteComponent>();
-                    ImGui::CloseCurrentPopup();
-                }
-            }
-            ImGui::EndPopup();
-        }
     }
 }
