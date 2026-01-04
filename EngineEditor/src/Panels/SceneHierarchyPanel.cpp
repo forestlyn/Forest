@@ -189,7 +189,7 @@ namespace EngineEditor
                                                             }
                                                             else if (sceneCamera->GetProjectionType() == Engine::SceneCamera::ProjectionType::Perspective)
                                                             {
-                                                                float fov = glm::degrees(sceneCamera->GetPerspectiveFOV());
+                                                                float fov = sceneCamera->GetPerspectiveFOV();
                                                                 if (ImGui::DragFloat("Field of View", &fov))
                                                                 {
                                                                     sceneCamera->SetPerspectiveFOV(fov);
