@@ -8,6 +8,7 @@
 #include "Engine/Profile/ProfileLayer.h"
 #include "Engine/Profile/Instrumentor.h"
 #include "Engine/Serialization/SceneSerialize.h"
+#include "Engine/Utils/FilePlatformUtils.h"
 
 namespace EngineEditor
 {
@@ -118,23 +119,15 @@ namespace EngineEditor
             {
                 if (ImGui::MenuItem("New Scene"))
                 {
-                    LOG_INFO("New Scene created.");
-                    m_Scene = Engine::CreateRef<Engine::Scene>();
-                    m_SceneHierarchyPanel.SetContext(m_Scene);
+                    NewScene();
                 }
                 if (ImGui::MenuItem("Load Scene"))
                 {
-                    LOG_INFO("Load Scene dialog opened.");
-                    m_Scene = Engine::CreateRef<Engine::Scene>();
-                    m_SceneHierarchyPanel.SetContext(m_Scene);
-                    Engine::Serialization::SceneSerialize sceneSerialize(m_Scene);
-                    sceneSerialize.Deserialize("assets/scenes/ExampleScene.yaml");
+                    LoadScene();
                 }
                 if (ImGui::MenuItem("Save Scene"))
                 {
-                    LOG_INFO("Save Scene dialog opened.");
-                    Engine::Serialization::SceneSerialize sceneSerialize(m_Scene);
-                    sceneSerialize.Serialize("assets/scenes/ExampleScene.yaml");
+                    SaveScene();
                 }
                 ImGui::EndMenu();
             }
@@ -251,4 +244,34 @@ namespace EngineEditor
 
         ImGui::End();
     }
+
+    void EngineEditor::NewScene()
+    {
+        m_Scene = Engine::CreateRef<Engine::Scene>();
+        m_SceneHierarchyPanel.SetContext(m_Scene);
+    }
+
+    void EngineEditor::LoadScene()
+    {
+        std::string scenePath = Engine::FileDialog::OpenFileDialog("YAML Files\0*.yaml\0All Files\0*.*\0");
+        if (!scenePath.empty())
+        {
+            m_Scene = Engine::CreateRef<Engine::Scene>();
+            m_SceneHierarchyPanel.SetContext(m_Scene);
+            Engine::Serialization::SceneSerialize sceneSerialize(m_Scene);
+            sceneSerialize.Deserialize(scenePath);
+        }
+    }
+
+    void EngineEditor::SaveScene()
+    {
+        std::string scenePath = Engine::FileDialog::SaveFileDialog("YAML Files\0*.yaml\0All Files\0*.*\0");
+        if (!scenePath.empty())
+        {
+            Engine::Serialization::SceneSerialize sceneSerialize(m_Scene);
+            sceneSerialize.Serialize(scenePath);
+            return;
+        }
+    }
+
 }
