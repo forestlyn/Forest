@@ -60,10 +60,10 @@ namespace Engine
             {
                 auto &cameraComponent = view.get<CameraComponent>(entity);
                 auto &transformComponent = view.get<TransformComponent>(entity);
-
                 if (cameraComponent.Primary)
                 {
                     m_CameraEntity = CreateRef<Entity>(entity, this);
+                    break;
                 }
             }
         }

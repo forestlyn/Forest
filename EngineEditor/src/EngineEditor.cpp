@@ -249,6 +249,7 @@ namespace EngineEditor
     {
         m_Scene = Engine::CreateRef<Engine::Scene>();
         m_SceneHierarchyPanel.SetContext(m_Scene);
+        m_Scene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
     }
 
     void EngineEditor::LoadScene()
@@ -257,9 +258,10 @@ namespace EngineEditor
         if (!scenePath.empty())
         {
             m_Scene = Engine::CreateRef<Engine::Scene>();
-            m_SceneHierarchyPanel.SetContext(m_Scene);
             Engine::Serialization::SceneSerialize sceneSerialize(m_Scene);
             sceneSerialize.Deserialize(scenePath);
+            m_SceneHierarchyPanel.SetContext(m_Scene);
+            m_Scene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
         }
     }
 
