@@ -7,7 +7,7 @@
 #include "Engine/Profile/Instrumentor.h"
 namespace Engine
 {
-    void Scene::OnUpdate(Core::Timestep deltaTime)
+    void Scene::OnUpdateRuntime(Core::Timestep deltaTime)
     {
         ENGINE_PROFILING_FUNC();
         // update scripts
@@ -87,6 +87,26 @@ namespace Engine
         }
 
         Renderer::Renderer2D::BeginScene(mainCameraViewProjection);
+        Renderer::Renderer2D::ResetStats();
+        auto view = m_Registry.view<SpriteComponent, TransformComponent>();
+        for (auto entity : view)
+        {
+            auto &spriteComponent = view.get<SpriteComponent>(entity);
+            auto &transformComponent = view.get<TransformComponent>(entity);
+            Renderer::Renderer2D::DrawQuad(transformComponent.GetTransform(), spriteComponent.Color);
+        }
+
+        Engine::Renderer::Renderer2D::EndScene();
+    }
+
+    void Scene::OnUpdateEditor(Engine::Core::Timestep timestep, Renderer::EditorCamera &editorCamera)
+    {
+        ENGINE_PROFILING_FUNC();
+        // Update Editor Camera
+
+        glm::mat4 editorCameraViewProjection = editorCamera.GetViewProjectionMatrix();
+
+        Renderer::Renderer2D::BeginScene(editorCameraViewProjection);
         Renderer::Renderer2D::ResetStats();
         auto view = m_Registry.view<SpriteComponent, TransformComponent>();
         for (auto entity : view)

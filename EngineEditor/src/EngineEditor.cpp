@@ -15,7 +15,7 @@ namespace EngineEditor
 {
 
     EngineEditor::EngineEditor(const std::string &name)
-        : Layer(name)
+        : Layer(name), m_EditorCamera(Engine::Renderer::EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f))
     {
         // Initialize FrameBuffer
         Engine::Renderer::FrameBufferSpecification fbSpec;
@@ -45,7 +45,7 @@ namespace EngineEditor
     {
         {
             ENGINE_PROFILING_FUNC();
-
+            m_EditorCamera.OnUpdate(timestep);
             // m_ParticleSystem->OnUpdate(timestep);
             {
                 ENGINE_PROFILING_SCOPE("EngineEditor::PreRenderer");
@@ -59,8 +59,14 @@ namespace EngineEditor
             {
                 Timer_Profiling("EngineEditor::Renderer2D Scene");
 
-                m_Scene->OnUpdate(timestep);
-
+                if (false) // Runtime update
+                {
+                    m_Scene->OnUpdateRuntime(timestep);
+                }
+                else // Editor update
+                {
+                    m_Scene->OnUpdateEditor(timestep, m_EditorCamera);
+                }
                 m_FrameBuffer->Unbind();
             }
         }
@@ -124,6 +130,7 @@ namespace EngineEditor
             m_SceneViewportSize.y = (int)regionAvailSize.y;
             m_FrameBuffer->Resize(m_SceneViewportSize.x, m_SceneViewportSize.y);
             m_Scene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
+            m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
         }
         uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
         auto m_Specs = m_FrameBuffer->GetSpecification();

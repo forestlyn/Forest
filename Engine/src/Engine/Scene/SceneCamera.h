@@ -57,7 +57,7 @@ namespace Engine
 
         // Perspective
         Ref<Renderer::PerspectiveCamera> m_PerspectiveCamera;
-        float m_PerspectiveFOV = glm::radians(45.0f);
+        float m_PerspectiveFOV = 45.0f;
         float m_PerspectiveNear = 0.1f;
         float m_PerspectiveFar = 1000.0f;
 

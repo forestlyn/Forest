@@ -74,7 +74,7 @@ void Forest2D::OnUpdate(Engine::Core::Timestep timestep)
             Engine::Renderer::RenderCommand::Clear();
         }
 
-        m_Scene->OnUpdate(timestep);
+        m_Scene->OnUpdateRuntime(timestep);
 
         m_ParticleSystem->OnUpdate(timestep);
         // InstrumentorProfilingEnd();

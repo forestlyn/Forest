@@ -3,7 +3,7 @@
 #include "Engine/Scene/Component.h"
 #include "Engine/Core/Timestep.h"
 #include <entt.hpp>
-
+#include "Engine/Renderer/Camera/EditorCamera.h"
 namespace Engine
 {
     class Entity;
@@ -15,7 +15,8 @@ namespace Engine
         {
             LOG_INFO("Scene destroyed.");
         }
-        void OnUpdate(Core::Timestep deltaTime);
+        void OnUpdateRuntime(Engine::Core::Timestep timestep);
+        void OnUpdateEditor(Engine::Core::Timestep timestep, Renderer::EditorCamera &editorCamera);
 
         // Create an entity with a specific name,will add TagComponent and TransformComponent by default
         Entity CreateEntity(const std::string &name = std::string());
@@ -24,8 +25,8 @@ namespace Engine
         entt::registry &GetRegistry() { return m_Registry; }
 
         void SetViewportSize(uint32_t width, uint32_t height);
-        Entity GetPrimaryCameraEntity();
 
+        Entity GetPrimaryCameraEntity();
         glm::vec2 ScreenToWorld(const glm::vec2 &screenPos);
 
     private:

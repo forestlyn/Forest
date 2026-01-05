@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include "Engine/Renderer/FrameBuffer.h"
 #include "Panels/SceneHierarchyPanel.h"
-
+#include "Engine/Renderer/Camera/EditorCamera.h"
 namespace EngineEditor
 {
 
@@ -36,6 +36,7 @@ namespace EngineEditor
         bool m_FocusScene = false, m_HoverScene = false;
         glm::ivec2 m_SceneViewportSize = {0, 0};
 
+        Engine::Renderer::EditorCamera m_EditorCamera;
         Engine::Ref<Engine::Scene> m_Scene;
 
         int ImGuizmo_operation = -1;
