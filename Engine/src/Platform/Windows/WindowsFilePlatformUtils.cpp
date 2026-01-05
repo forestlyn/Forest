@@ -45,6 +45,7 @@ namespace Engine
         ofn.nMaxFile = sizeof(szFile);
         ofn.lpstrFilter = filter;
         ofn.nFilterIndex = 1;
+        ofn.lpstrDefExt = "yaml";
         ofn.lpstrInitialDir = initialPath.empty() ? nullptr : initialPath.c_str();
         ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
 
