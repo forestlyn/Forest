@@ -113,6 +113,13 @@ namespace Engine
         return entity;
     }
 
+    void Scene::SetViewportSize(uint32_t width, uint32_t height)
+    {
+        m_ViewportWidth = width;
+        m_ViewportHeight = height;
+        RecalculateCameraProjections();
+    }
+
     glm::vec2 Scene::ScreenToWorld(const glm::vec2 &screenPos)
     {
         if (m_CameraEntity == nullptr)

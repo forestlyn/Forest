@@ -23,12 +23,7 @@ namespace Engine
         Entity CreateEntityWithID(int handle);
         entt::registry &GetRegistry() { return m_Registry; }
 
-        void SetViewportSize(uint32_t width, uint32_t height)
-        {
-            m_ViewportWidth = width;
-            m_ViewportHeight = height;
-            RecalculateCameraProjections();
-        }
+        void SetViewportSize(uint32_t width, uint32_t height);
 
         glm::vec2 ScreenToWorld(const glm::vec2 &screenPos);
 

@@ -117,15 +117,15 @@ namespace EngineEditor
         {
             if (ImGui::BeginMenu("File"))
             {
-                if (ImGui::MenuItem("New Scene"))
+                if (ImGui::MenuItem("New Scene Ctrl+N"))
                 {
                     NewScene();
                 }
-                if (ImGui::MenuItem("Load Scene"))
+                if (ImGui::MenuItem("Load Scene Ctrl+Shift+O"))
                 {
                     LoadScene();
                 }
-                if (ImGui::MenuItem("Save Scene"))
+                if (ImGui::MenuItem("Save Scene Ctrl+Shift+S"))
                 {
                     SaveScene();
                 }
@@ -182,6 +182,39 @@ namespace EngineEditor
 
     bool EngineEditor::OnEvent(Engine::Event::Event &event)
     {
+        Engine::Event::EventDispatcher dispatcher(event);
+        event.Handled = dispatcher.Dispatch<Engine::Event::KeyPressedEvent>(BIND_EVENT_FN(EngineEditor::KeyPressedEventHandler));
+        return false;
+    }
+
+    bool EngineEditor::KeyPressedEventHandler(Engine::Event::KeyPressedEvent &event)
+    {
+        bool isCtrlPressed = Engine::Core::Input::IsKeyPressed(FOREST_KEY_LEFT_CONTROL) || Engine::Core::Input::IsKeyPressed(FOREST_KEY_RIGHT_CONTROL);
+        bool isShiftPressed = Engine::Core::Input::IsKeyPressed(FOREST_KEY_LEFT_SHIFT) || Engine::Core::Input::IsKeyPressed(FOREST_KEY_RIGHT_SHIFT);
+
+        switch (event.GetKeyCode())
+        {
+        case FOREST_KEY_N:
+            if (isCtrlPressed)
+            {
+                NewScene();
+                return true;
+            }
+        case FOREST_KEY_O:
+            if (isCtrlPressed && isShiftPressed)
+            {
+                LoadScene();
+                return true;
+            }
+        case FOREST_KEY_S:
+            if (isCtrlPressed && isShiftPressed)
+            {
+                SaveScene();
+                return true;
+            }
+        default:
+            break;
+        }
         return false;
     }
 
