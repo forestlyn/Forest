@@ -24,6 +24,7 @@ namespace Engine
         entt::registry &GetRegistry() { return m_Registry; }
 
         void SetViewportSize(uint32_t width, uint32_t height);
+        Entity GetPrimaryCameraEntity();
 
         glm::vec2 ScreenToWorld(const glm::vec2 &screenPos);
 

@@ -16,6 +16,8 @@ namespace EngineEditor
         }
         void OnImGuiRender();
 
+        Engine::Entity GetSelectedEntity() const { return m_SelectionContext; }
+
     private:
         void DrawEntityNode(Engine::Entity entity);
         void DrawComponents(Engine::Entity entity);

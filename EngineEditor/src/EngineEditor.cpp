@@ -24,49 +24,6 @@ namespace EngineEditor
         m_FrameBuffer = Engine::Renderer::FrameBuffer::Create(fbSpec);
 
         m_Scene = Engine::CreateRef<Engine::Scene>();
-#if 0
-        m_SquareEntity = m_Scene->CreateEntity("Square");
-        m_SquareEntity.AddComponent<Engine::SpriteComponent>(glm::vec4{0.8f, 0.2f, 0.3f, 1.0f});
-
-        m_MainCameraEntity = m_Scene->CreateEntity("Main Camera");
-        auto &cameraComponent = m_MainCameraEntity.AddComponent<Engine::CameraComponent>();
-        cameraComponent.Primary = true;
-
-        m_SecondCameraEntity = m_Scene->CreateEntity("Second Camera");
-        auto &secondCameraComponent = m_SecondCameraEntity.AddComponent<Engine::CameraComponent>();
-        secondCameraComponent.Primary = false;
-
-        class SquareScript : public Engine::ScriptEntity
-        {
-        public:
-            SquareScript() = default;
-            virtual void OnCreate() override
-            {
-                ENGINE_INFO("SquareScript::OnCreate");
-            }
-
-            virtual void OnUpdate(Engine::Core::Timestep ts) override
-            {
-                // ENGINE_INFO("SquareScript::OnUpdate: {0}", ts.GetSeconds());
-                auto &transform = GetComponent<Engine::TransformComponent>();
-                float speed = 2.0f;
-                auto position = transform.GetPosition();
-                position.x += speed * ts.GetSeconds();
-                if (position.x > 5.0f)
-                    position.x = -5.0f;
-                transform.SetPosition(position);
-            }
-
-            virtual void OnDestroy() override
-            {
-                ENGINE_INFO("SquareScript::OnDestroy");
-            }
-        };
-
-        auto &nativeScript = m_SquareEntity.AddComponent<Engine::NativeScriptComponent>();
-        nativeScript.Bind<SquareScript>();
-
-#endif
         m_SceneHierarchyPanel = SceneHierarchyPanel(m_Scene);
     }
 
@@ -113,7 +70,6 @@ namespace EngineEditor
         OpenDockSpace();
 
         ENGINE_PROFILING_FUNC();
-
         if (ImGui::BeginMainMenuBar())
         {
             if (ImGui::BeginMenu("File"))
@@ -154,7 +110,6 @@ namespace EngineEditor
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::Begin("Scene");
-        ImGuizmo::BeginFrame();
 
         m_FocusScene = ImGui::IsWindowFocused();
         m_HoverScene = ImGui::IsWindowHovered();
@@ -173,6 +128,80 @@ namespace EngineEditor
         uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
         auto m_Specs = m_FrameBuffer->GetSpecification();
         ImGui::Image((void *)(uint64_t)textureID, ImVec2{(float)m_Specs.Width, (float)m_Specs.Height}, ImVec2{0, 1}, ImVec2{1, 0});
+
+        // Gizmos
+        {
+
+            Engine::Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+            if (selectedEntity && ImGuizmo_operation != -1)
+            {
+                ImGuizmo::SetDrawlist();
+                float windowWidth = (float)ImGui::GetWindowWidth();
+                float windowHeight = (float)ImGui::GetWindowHeight();
+                ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
+
+                auto &tc = selectedEntity.GetComponent<Engine::TransformComponent>();
+                glm::mat4 transform = tc.GetTransform();
+
+                ImGuizmo::OPERATION guizmoOperation = static_cast<ImGuizmo::OPERATION>(ImGuizmo_operation);
+                ImGuizmo::MODE guizmoMode = ImGuizmo::MODE::LOCAL;
+
+                Engine::Entity cameraEntity = m_Scene->GetPrimaryCameraEntity();
+                if (cameraEntity)
+                {
+                    auto &cameraComponent = cameraEntity.GetComponent<Engine::CameraComponent>();
+                    auto &cameraTc = cameraEntity.GetComponent<Engine::TransformComponent>();
+                    glm::mat4 cameraTransform = glm::inverse(cameraTc.GetTransform());
+
+                    bool isOrthographic = cameraComponent.Camera->GetProjectionType() == Engine::SceneCamera::ProjectionType::Orthographic;
+                    ImGuizmo::SetOrthographic(isOrthographic);
+
+                    float tcsnap[3] = {0.5f, 0.5f, 0.5f};
+                    float rotationSnap = 45.0f;
+                    float scaleSnap = 0.5f;
+                    float *snapPtr = nullptr;
+                    if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_LEFT_CONTROL))
+                    {
+                        switch (guizmoOperation)
+                        {
+                        case ImGuizmo::OPERATION::TRANSLATE:
+                            snapPtr = tcsnap;
+                            break;
+                        case ImGuizmo::OPERATION::ROTATE:
+                            snapPtr = &rotationSnap;
+                            break;
+                        case ImGuizmo::OPERATION::SCALE:
+                            snapPtr = &scaleSnap;
+                            break;
+                        default:
+                            snapPtr = nullptr;
+                            break;
+                        }
+                    }
+
+                    ImGuizmo::Manipulate(glm::value_ptr(cameraTransform),
+                                         glm::value_ptr(cameraComponent.Camera->GetProjectionMatrix()),
+                                         guizmoOperation,
+                                         guizmoMode,
+                                         glm::value_ptr(transform), 0,
+                                         snapPtr);
+
+                    if (ImGuizmo::IsUsing())
+                    {
+                        glm::vec3 translation, rotation, scale;
+                        Engine::Math::DecomposeTransform(transform, translation, rotation, scale);
+
+                        auto deltaRotation = rotation - tc.GetRotation();
+
+                        rotation = tc.GetRotation() + deltaRotation;
+
+                        tc.SetPosition(translation);
+                        tc.SetRotation(rotation);
+                        tc.SetScale(scale);
+                    }
+                }
+            }
+        }
 
         ImGui::End();
         ImGui::PopStyleVar();
@@ -214,6 +243,15 @@ namespace EngineEditor
                 SaveScene();
                 return true;
             }
+        case FOREST_KEY_Q:
+            ImGuizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
+            break;
+        case FOREST_KEY_W:
+            ImGuizmo_operation = ImGuizmo::OPERATION::ROTATE;
+            break;
+        case FOREST_KEY_E:
+            ImGuizmo_operation = ImGuizmo::OPERATION::SCALE;
+            break;
         default:
             break;
         }

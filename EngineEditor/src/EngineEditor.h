@@ -37,9 +37,8 @@ namespace EngineEditor
         glm::ivec2 m_SceneViewportSize = {0, 0};
 
         Engine::Ref<Engine::Scene> m_Scene;
-        Engine::Entity m_SquareEntity;
-        Engine::Entity m_MainCameraEntity;
-        Engine::Entity m_SecondCameraEntity;
+
+        int ImGuizmo_operation = -1;
 
         SceneHierarchyPanel m_SceneHierarchyPanel;
     };

@@ -53,7 +53,7 @@ namespace Engine
         }
 
         // Update Cameras
-        m_CameraEntity = nullptr;
+        bool foundPrimary = false;
         {
             auto view = m_Registry.view<TransformComponent, CameraComponent>();
             for (auto entity : view)
@@ -62,14 +62,16 @@ namespace Engine
                 auto &transformComponent = view.get<TransformComponent>(entity);
                 if (cameraComponent.Primary)
                 {
+                    foundPrimary = true;
                     m_CameraEntity = CreateRef<Entity>(entity, this);
                     break;
                 }
             }
         }
 
-        if (m_CameraEntity == nullptr)
+        if (!foundPrimary)
         {
+            m_CameraEntity = nullptr;
             return;
         }
 
@@ -118,6 +120,11 @@ namespace Engine
         m_ViewportWidth = width;
         m_ViewportHeight = height;
         RecalculateCameraProjections();
+    }
+
+    Entity Scene::GetPrimaryCameraEntity()
+    {
+        return m_CameraEntity ? *m_CameraEntity : Entity{};
     }
 
     glm::vec2 Scene::ScreenToWorld(const glm::vec2 &screenPos)
