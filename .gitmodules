@@ -13,3 +13,6 @@
 [submodule "Engine/ThirdParty/yaml-cpp"]
 	path = Engine/ThirdParty/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp.git
+[submodule "Engine/ThirdParty/ImGuizmo"]
+	path = Engine/ThirdParty/ImGuizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo.git

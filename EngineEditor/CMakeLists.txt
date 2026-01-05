@@ -17,6 +17,7 @@ target_include_directories(EngineEditor
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/../Engine/src
         ${CMAKE_CURRENT_SOURCE_DIR}/../Engine/src/ThirdParty/spdlog/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../Engine/ThirdParty/ImGuizmo
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 

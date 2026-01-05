@@ -1,5 +1,6 @@
 #include "EngineEditor.h"
 #include "imgui.h"
+#include "ImGuizmo.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 #include <glm/gtc/matrix_transform.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -153,6 +154,7 @@ namespace EngineEditor
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::Begin("Scene");
+        ImGuizmo::BeginFrame();
 
         m_FocusScene = ImGui::IsWindowFocused();
         m_HoverScene = ImGui::IsWindowHovered();

@@ -5,12 +5,14 @@ file(GLOB_RECURSE ENGINE_SOURCES
     "src/Platform/*.cpp"
 )
 list(APPEND ENGINE_SOURCES "ThirdParty/stb_image/stb_image.cpp")
+list(APPEND ENGINE_SOURCES "ThirdParty/ImGuizmo/ImGuizmo.cpp")
 
 file(GLOB_RECURSE ENGINE_HEADERS 
     "src/Engine/*.h" 
     "src/Platform/*.h"
 )
 list(APPEND ENGINE_HEADERS "ThirdParty/stb_image/stb_image.h")
+list(APPEND ENGINE_HEADERS "ThirdParty/ImGuizmo/ImGuizmo.h")
 
 add_subdirectory("ThirdParty/glfw")
 add_subdirectory("ThirdParty/glad")
@@ -37,9 +39,10 @@ target_include_directories(Engine
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glfw/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glad/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/stb_image>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/ImGuizmo>
 )
 
-target_link_libraries(Engine PUBLIC glfw glad opengl32 imgui yaml-cpp)
+target_link_libraries(Engine PUBLIC glfw glad opengl32 imgui yaml-cpp )
 
 # 设置编译器特性
 target_compile_features(Engine PUBLIC cxx_std_20)
