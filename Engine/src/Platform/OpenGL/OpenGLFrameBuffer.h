@@ -15,6 +15,8 @@ namespace Platform::OpenGL
         virtual void Resize(uint32_t width, uint32_t height) override;
 
         virtual int GetColorAttachmentRendererID(int index = 0) const override { return m_ColorAttachments[index]; }
+        virtual const int GetPixelData(int index, int x, int y) const override;
+        void ClearAttachment(int index, int value) override;
 
         virtual const Engine::Renderer::FrameBufferSpecification &GetSpecification() const override { return m_Spec; }
 

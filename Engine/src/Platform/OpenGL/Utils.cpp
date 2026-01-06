@@ -12,8 +12,26 @@ namespace Platform::OpenGL::Utils
         {
         case Engine::Renderer::TextureFormat::RGBA8:
             return GL_RGBA8;
+        case Engine::Renderer::TextureFormat::RED_INTEGER_32:
+            return GL_R32I;
         case Engine::Renderer::TextureFormat::DEPTH24STENCIL8:
             return GL_DEPTH24_STENCIL8;
+        default:
+            ENGINE_ASSERT(false, "Unknown TextureFormat!");
+            return 0;
+        }
+    }
+
+    GLenum TextureFormatToGLBaseFormat(Engine::Renderer::TextureFormat format)
+    {
+        switch (format)
+        {
+        case Engine::Renderer::TextureFormat::RGBA8:
+            return GL_RGBA;
+        case Engine::Renderer::TextureFormat::RED_INTEGER_32:
+            return GL_RED_INTEGER;
+        case Engine::Renderer::TextureFormat::DEPTH24STENCIL8:
+            return GL_DEPTH_STENCIL;
         default:
             ENGINE_ASSERT(false, "Unknown TextureFormat!");
             return 0;
@@ -42,7 +60,7 @@ namespace Platform::OpenGL::Utils
         glBindTexture(TextureTarget(multisample), id);
     }
 
-    void GLAttachColorTexture(uint32_t id, int samples, GLenum internalFormat, uint32_t width, uint32_t height, int index)
+    void GLAttachColorTexture(uint32_t id, int samples, GLenum internalFormat, GLenum format, uint32_t width, uint32_t height, int index)
     {
         if (samples > 1)
         {
@@ -50,10 +68,11 @@ namespace Platform::OpenGL::Utils
         }
         else
         {
-            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, nullptr);
 
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            GLint filter = (format == GL_RED_INTEGER) ? GL_NEAREST : GL_LINEAR;
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

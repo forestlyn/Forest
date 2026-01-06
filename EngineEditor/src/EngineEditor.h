@@ -39,6 +39,8 @@ namespace EngineEditor
         Engine::Renderer::EditorCamera m_EditorCamera;
         Engine::Ref<Engine::Scene> m_Scene;
 
+        glm::vec2 m_SceneViewportBounds[2];
+
         int ImGuizmo_operation = -1;
 
         SceneHierarchyPanel m_SceneHierarchyPanel;

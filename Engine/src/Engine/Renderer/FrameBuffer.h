@@ -10,6 +10,9 @@ namespace Engine::Renderer
         // Color
         RGBA8,
 
+        // Integer
+        RED_INTEGER_32,
+
         // Depth/Stencil
         DEPTH24STENCIL8,
 
@@ -53,6 +56,11 @@ namespace Engine::Renderer
         virtual int GetColorAttachmentRendererID(int index = 0) const = 0;
 
         virtual const FrameBufferSpecification &GetSpecification() const = 0;
+
+        // should make sure the framebuffer is bind before calling this function
+        virtual const int GetPixelData(int index, int x, int y) const = 0;
+        // should make sure the framebuffer is bind before calling this function
+        virtual void ClearAttachment(int index, int value) = 0;
 
         static Ref<FrameBuffer> Create(const FrameBufferSpecification &spec);
     };

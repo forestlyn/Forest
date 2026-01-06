@@ -21,7 +21,7 @@ namespace EngineEditor
         Engine::Renderer::FrameBufferSpecification fbSpec;
         fbSpec.Attachments = {Engine::Renderer::TextureFormat::RGBA8,
                               Engine::Renderer::TextureFormat::DEPTH24STENCIL8,
-                              Engine::Renderer::TextureFormat::RGBA8};
+                              Engine::Renderer::TextureFormat::RED_INTEGER_32};
         fbSpec.Width = 1280;
         fbSpec.Height = 720;
         m_FrameBuffer = Engine::Renderer::FrameBuffer::Create(fbSpec);
@@ -57,6 +57,8 @@ namespace EngineEditor
 
                 Engine::Renderer::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
                 Engine::Renderer::RenderCommand::Clear();
+
+                m_FrameBuffer->ClearAttachment(1, -1); // Clear entityID attachment
             }
 
             {
@@ -70,6 +72,20 @@ namespace EngineEditor
                 {
                     m_Scene->OnUpdateEditor(timestep, m_EditorCamera);
                 }
+
+                auto mousePos = ImGui::GetMousePos();
+
+                if (mousePos.x >= m_SceneViewportBounds[0].x && mousePos.x <= m_SceneViewportBounds[1].x &&
+                    mousePos.y >= m_SceneViewportBounds[0].y && mousePos.y <= m_SceneViewportBounds[1].y)
+                {
+                    int mouseX = (int)(mousePos.x - m_SceneViewportBounds[0].x);
+                    int mouseY = (int)(mousePos.y - m_SceneViewportBounds[0].y);
+                    mouseY = m_SceneViewportSize.y - mouseY; // Flip Y coordinate
+
+                    int pixelData = m_FrameBuffer->GetPixelData(1, mouseX, mouseY);
+                    ENGINE_INFO("pos:{} {} pixelData:{}", mouseX, mouseY, pixelData);
+                }
+
                 m_FrameBuffer->Unbind();
             }
         }
@@ -135,7 +151,7 @@ namespace EngineEditor
             m_Scene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
             m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
         }
-        uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID(1);
+        uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID(0);
         auto m_Specs = m_FrameBuffer->GetSpecification();
         ImGui::Image((void *)(uint64_t)textureID, ImVec2{(float)m_Specs.Width, (float)m_Specs.Height}, ImVec2{0, 1}, ImVec2{1, 0});
 
@@ -212,6 +228,14 @@ namespace EngineEditor
                 }
             }
         }
+
+        // Set Scene Viewport bounds
+        auto windowPos = ImGui::GetWindowPos();
+        auto viewportMin = ImGui::GetWindowContentRegionMin();
+        auto viewportMax = ImGui::GetWindowContentRegionMax();
+
+        m_SceneViewportBounds[0] = {windowPos.x + viewportMin.x, windowPos.y + viewportMin.y};
+        m_SceneViewportBounds[1] = {windowPos.x + viewportMax.x, windowPos.y + viewportMax.y};
 
         ImGui::End();
         ImGui::PopStyleVar();

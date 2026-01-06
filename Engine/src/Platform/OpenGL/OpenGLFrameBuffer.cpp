@@ -54,6 +54,25 @@ namespace Platform::OpenGL
         Invalidate();
     }
 
+    const int OpenGLFrameBuffer::GetPixelData(int index, int x, int y) const
+    {
+        ENGINE_PROFILING_FUNC();
+        ENGINE_ASSERT(index < m_ColorAttachments.size(), "Color attachment index out of bounds!");
+
+        glReadBuffer(GL_COLOR_ATTACHMENT0 + index);
+        int pixelData = 0;
+        glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
+        return pixelData;
+    }
+
+    void OpenGLFrameBuffer::ClearAttachment(int index, int value)
+    {
+        ENGINE_PROFILING_FUNC();
+        ENGINE_ASSERT(index < m_ColorAttachments.size(), "Color attachment index out of bounds!");
+
+        glClearBufferiv(GL_COLOR, index, &value);
+    }
+
     void OpenGLFrameBuffer::Invalidate()
     {
         if (m_RendererID)
@@ -74,14 +93,16 @@ namespace Platform::OpenGL
             uint32_t colorAttachment;
             Utils::GLCreateTexture(m_Spec.Samples > 1, colorAttachment, 1);
             Utils::GLBindTexture(m_Spec.Samples > 1, colorAttachment);
-            Utils::GLAttachColorTexture(colorAttachment, m_Spec.Samples, Utils::TextureFormatToGLFormat(spec.Format), m_Spec.Width, m_Spec.Height, index);
+            Utils::GLAttachColorTexture(colorAttachment, m_Spec.Samples, Utils::TextureFormatToGLFormat(spec.Format),
+                                        Utils::TextureFormatToGLBaseFormat(spec.Format), m_Spec.Width, m_Spec.Height, index);
             m_ColorAttachments.push_back(colorAttachment);
         }
         if (Utils::IsDepthFormat(m_DepthAttachmentSpecification.Format))
         {
             Utils::GLCreateTexture(m_Spec.Samples > 1, m_DepthAttachment, 1);
             Utils::GLBindTexture(m_Spec.Samples > 1, m_DepthAttachment);
-            Utils::GLAttachDepthTexture(m_DepthAttachment, m_Spec.Samples, Utils::TextureFormatToGLFormat(m_DepthAttachmentSpecification.Format), GL_DEPTH_STENCIL_ATTACHMENT, m_Spec.Width, m_Spec.Height);
+            Utils::GLAttachDepthTexture(m_DepthAttachment, m_Spec.Samples, Utils::TextureFormatToGLFormat(m_DepthAttachmentSpecification.Format),
+                                        Utils::TextureFormatToGLBaseFormat(m_DepthAttachmentSpecification.Format), m_Spec.Width, m_Spec.Height);
             m_DepthAttachment = m_DepthAttachment;
         }
 
