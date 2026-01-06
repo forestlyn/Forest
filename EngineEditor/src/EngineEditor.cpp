@@ -19,6 +19,9 @@ namespace EngineEditor
     {
         // Initialize FrameBuffer
         Engine::Renderer::FrameBufferSpecification fbSpec;
+        fbSpec.Attachments = {Engine::Renderer::TextureFormat::RGBA8,
+                              Engine::Renderer::TextureFormat::DEPTH24STENCIL8,
+                              Engine::Renderer::TextureFormat::RGBA8};
         fbSpec.Width = 1280;
         fbSpec.Height = 720;
         m_FrameBuffer = Engine::Renderer::FrameBuffer::Create(fbSpec);
@@ -132,7 +135,7 @@ namespace EngineEditor
             m_Scene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
             m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
         }
-        uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
+        uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID(1);
         auto m_Specs = m_FrameBuffer->GetSpecification();
         ImGui::Image((void *)(uint64_t)textureID, ImVec2{(float)m_Specs.Width, (float)m_Specs.Height}, ImVec2{0, 1}, ImVec2{1, 0});
 

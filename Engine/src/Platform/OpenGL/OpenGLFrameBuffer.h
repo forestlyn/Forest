@@ -14,7 +14,7 @@ namespace Platform::OpenGL
 
         virtual void Resize(uint32_t width, uint32_t height) override;
 
-        virtual int GetColorAttachmentRendererID() const override { return m_ColorAttachment; }
+        virtual int GetColorAttachmentRendererID(int index = 0) const override { return m_ColorAttachments[index]; }
 
         virtual const Engine::Renderer::FrameBufferSpecification &GetSpecification() const override { return m_Spec; }
 
@@ -25,7 +25,11 @@ namespace Platform::OpenGL
         Engine::Renderer::FrameBufferSpecification m_Spec;
 
         uint32_t m_RendererID = 0;
-        uint32_t m_ColorAttachment = 0;
+
+        std::vector<Engine::Renderer::FrameBufferTextureSpecification> m_ColorAttachmentSpecifications;
+        Engine::Renderer::FrameBufferTextureSpecification m_DepthAttachmentSpecification = Engine::Renderer::TextureFormat::None;
+
+        std::vector<uint32_t> m_ColorAttachments;
         uint32_t m_DepthAttachment = 0;
     };
 }
