@@ -38,7 +38,8 @@ namespace Engine::Renderer
                                                  {ShaderDataType::Float4, "a_Color"},
                                                  {ShaderDataType::Float2, "a_TexCoord"},
                                                  {ShaderDataType::Float, "a_TexIndex"},
-                                                 {ShaderDataType::Float, "a_TilingFactor"}});
+                                                 {ShaderDataType::Float, "a_TilingFactor"},
+                                                 {ShaderDataType::Int, "a_EntityID"}});
         m_SceneData.QuadVertexArray->AddVertexBuffer(m_SceneData.QuadVertexBuffer);
 
         uint32_t *quadIndices = new uint32_t[m_SceneData.MaxIndices];
@@ -112,12 +113,12 @@ namespace Engine::Renderer
         RenderCommand::DrawIndexed(m_SceneData.QuadVertexArray, m_SceneData.QuadIndexCount);
     }
 #pragma region DrawQuadImplementations
-    void Renderer2D::DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color)
+    void Renderer2D::DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color, int entityID)
     {
-        DrawQuad(glm::vec3(position, 0.0f), size, color);
+        DrawQuad(glm::vec3(position, 0.0f), size, color, entityID);
     }
 
-    void Renderer2D::DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color)
+    void Renderer2D::DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color, int entityID)
     {
         ENGINE_PROFILING_FUNC();
 
@@ -127,15 +128,15 @@ namespace Engine::Renderer
         glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
                               glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
 
-        DrawQuadInternal(transform, color, TextureIndex, TilingFactor);
+        DrawQuadInternal(transform, color, TextureIndex, TilingFactor, entityID);
     }
 
-    void Renderer2D::DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor)
+    void Renderer2D::DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor, int entityID)
     {
-        DrawQuad(glm::vec3(position, 0.0f), size, texture, tintFactor, tintColor);
+        DrawQuad(glm::vec3(position, 0.0f), size, texture, tintFactor, tintColor, entityID);
     }
 
-    void Renderer2D::DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor)
+    void Renderer2D::DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor, int entityID)
     {
         ENGINE_PROFILING_FUNC();
 
@@ -144,15 +145,15 @@ namespace Engine::Renderer
         glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
                               glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
 
-        DrawQuadInternal(transform, tintColor, TextureIndex, tintFactor);
+        DrawQuadInternal(transform, tintColor, TextureIndex, tintFactor, entityID);
     }
 
-    void Renderer2D::DrawRotateQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color, const float z_degrees)
+    void Renderer2D::DrawRotateQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color, const float z_degrees, int entityID)
     {
-        DrawRotateQuad(glm::vec3(position, 0.0f), size, color, z_degrees);
+        DrawRotateQuad(glm::vec3(position, 0.0f), size, color, z_degrees, entityID);
     }
 
-    void Renderer2D::DrawRotateQuad(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color, const float z_degrees)
+    void Renderer2D::DrawRotateQuad(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color, const float z_degrees, int entityID)
     {
         ENGINE_PROFILING_FUNC();
 
@@ -162,15 +163,15 @@ namespace Engine::Renderer
 
         const float TextureIndex = 0.0f; // White Texture
         const float TilingFactor = 1.0f;
-        DrawQuadInternal(transform, color, TextureIndex, TilingFactor);
+        DrawQuadInternal(transform, color, TextureIndex, TilingFactor, entityID);
     }
 
-    void Renderer2D::DrawRotateQuad(const glm::vec2 &position, const glm::vec2 &size, const float z_degrees, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor)
+    void Renderer2D::DrawRotateQuad(const glm::vec2 &position, const glm::vec2 &size, const float z_degrees, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor, int entityID)
     {
-        DrawRotateQuad(glm::vec3(position, 0.0f), size, z_degrees, texture, tintFactor, tintColor);
+        DrawRotateQuad(glm::vec3(position, 0.0f), size, z_degrees, texture, tintFactor, tintColor, entityID);
     }
 
-    void Renderer2D::DrawRotateQuad(const glm::vec3 &position, const glm::vec2 &size, const float z_degrees, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor)
+    void Renderer2D::DrawRotateQuad(const glm::vec3 &position, const glm::vec2 &size, const float z_degrees, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor, int entityID)
     {
         ENGINE_PROFILING_FUNC();
 
@@ -181,16 +182,16 @@ namespace Engine::Renderer
         const float TextureIndex = GetTextureIndex(texture);
         const float TilingFactor = 1.0f;
 
-        DrawQuadInternal(transform, tintColor, TextureIndex, TilingFactor);
+        DrawQuadInternal(transform, tintColor, TextureIndex, TilingFactor, entityID);
     }
 
-    void Renderer2D::DrawSubTextureQuad(const glm::vec2 &position, const glm::vec2 &size, const Ref<SubTexture2D> &texture, const float tintFactor, const glm::vec4 &tintColor)
+    void Renderer2D::DrawSubTextureQuad(const glm::vec2 &position, const glm::vec2 &size, const Ref<SubTexture2D> &texture, const float tintFactor, const glm::vec4 &tintColor, int entityID)
     {
         ENGINE_PROFILING_FUNC();
-        DrawSubTextureQuad(glm::vec3(position, 0.0f), size, texture, tintFactor, tintColor);
+        DrawSubTextureQuad(glm::vec3(position, 0.0f), size, texture, tintFactor, tintColor, entityID);
     }
 
-    void Renderer2D::DrawSubTextureQuad(const glm::vec3 &position, const glm::vec2 &size, const Ref<SubTexture2D> &subTexture, const float tintFactor, const glm::vec4 &tintColor)
+    void Renderer2D::DrawSubTextureQuad(const glm::vec3 &position, const glm::vec2 &size, const Ref<SubTexture2D> &subTexture, const float tintFactor, const glm::vec4 &tintColor, int entityID)
     {
         ENGINE_PROFILING_FUNC();
 
@@ -203,15 +204,15 @@ namespace Engine::Renderer
 
         const float TilingFactor = 1.0f;
 
-        DrawQuadInternal(transform, tintColor, TextureIndex, tintFactor, subTexture->GetTexCoords());
+        DrawQuadInternal(transform, tintColor, TextureIndex, tintFactor, entityID, subTexture->GetTexCoords());
     }
 
-    void Renderer2D::DrawRotateSubTextureQuad(const glm::vec2 &position, const glm::vec2 &size, const float z_degrees, const Ref<SubTexture2D> &subTexture, const float tintFactor, const glm::vec4 &tintColor)
+    void Renderer2D::DrawRotateSubTextureQuad(const glm::vec2 &position, const glm::vec2 &size, const float z_degrees, const Ref<SubTexture2D> &subTexture, const float tintFactor, const glm::vec4 &tintColor, int entityID)
     {
-        DrawRotateSubTextureQuad(glm::vec3(position, 0.0f), size, z_degrees, subTexture, tintFactor, tintColor);
+        DrawRotateSubTextureQuad(glm::vec3(position, 0.0f), size, z_degrees, subTexture, tintFactor, tintColor, entityID);
     }
 
-    void Renderer2D::DrawRotateSubTextureQuad(const glm::vec3 &position, const glm::vec2 &size, const float z_degrees, const Ref<SubTexture2D> &subTexture, const float tintFactor, const glm::vec4 &tintColor)
+    void Renderer2D::DrawRotateSubTextureQuad(const glm::vec3 &position, const glm::vec2 &size, const float z_degrees, const Ref<SubTexture2D> &subTexture, const float tintFactor, const glm::vec4 &tintColor, int entityID)
     {
         ENGINE_PROFILING_FUNC();
 
@@ -223,27 +224,27 @@ namespace Engine::Renderer
 
         const float TilingFactor = 1.0f;
 
-        DrawQuadInternal(transform, tintColor, TextureIndex, tintFactor, subTexture->GetTexCoords());
+        DrawQuadInternal(transform, tintColor, TextureIndex, tintFactor, entityID, subTexture->GetTexCoords());
     }
 
-    void Renderer2D::DrawQuad(const glm::mat4 &transform, const glm::vec4 &color)
+    void Renderer2D::DrawQuad(const glm::mat4 &transform, const glm::vec4 &color, int entityID)
     {
         ENGINE_PROFILING_FUNC();
 
         const float TextureIndex = 0.0f; // White Texture
         const float TilingFactor = 1.0f;
 
-        DrawQuadInternal(transform, color, TextureIndex, TilingFactor);
+        DrawQuadInternal(transform, color, TextureIndex, TilingFactor, entityID);
     }
 
-    void Renderer2D::DrawQuad(const glm::mat4 &transform, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor)
+    void Renderer2D::DrawQuad(const glm::mat4 &transform, const Ref<Texture2D> &texture, const float tintFactor, const glm::vec4 &tintColor, int entityID)
     {
         ENGINE_PROFILING_FUNC();
 
         const float TextureIndex = GetTextureIndex(texture);
         const float TilingFactor = 1.0f;
 
-        DrawQuadInternal(transform, tintColor, TextureIndex, TilingFactor);
+        DrawQuadInternal(transform, tintColor, TextureIndex, TilingFactor, entityID);
     }
 
 #pragma endregion
@@ -289,7 +290,7 @@ namespace Engine::Renderer
     }
 
     /// @brief internal function to draw quad
-    void Renderer2D::DrawQuadInternal(const glm::mat4 &transform, const glm::vec4 &color, const float textureIndex, const float tilingFactor, const glm::vec2 *texCoords)
+    void Renderer2D::DrawQuadInternal(const glm::mat4 &transform, const glm::vec4 &color, const float textureIndex, const float tilingFactor, int entityID, const glm::vec2 *texCoords)
     {
         if (m_SceneData.QuadIndexCount >= m_SceneData.MaxIndices)
         {
@@ -305,6 +306,7 @@ namespace Engine::Renderer
             m_SceneData.QuadVertexBufferPtr->TexCoord = texCoords[i];
             m_SceneData.QuadVertexBufferPtr->TexIndex = textureIndex;
             m_SceneData.QuadVertexBufferPtr->TilingFactor = tilingFactor;
+            m_SceneData.QuadVertexBufferPtr->EntityID = entityID;
             m_SceneData.QuadVertexBufferPtr++;
         }
 

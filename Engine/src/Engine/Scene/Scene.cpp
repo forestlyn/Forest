@@ -113,7 +113,7 @@ namespace Engine
         {
             auto &spriteComponent = view.get<SpriteComponent>(entity);
             auto &transformComponent = view.get<TransformComponent>(entity);
-            Renderer::Renderer2D::DrawQuad(transformComponent.GetTransform(), spriteComponent.Color);
+            Renderer::Renderer2D::DrawQuad(transformComponent.GetTransform(), spriteComponent.Color, (int)entity);
         }
 
         Engine::Renderer::Renderer2D::EndScene();

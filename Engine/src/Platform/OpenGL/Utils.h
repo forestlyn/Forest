@@ -1,8 +1,15 @@
 #pragma once
 #include "Engine/Renderer/FrameBuffer.h"
+#include "Engine/Renderer/Shader/Buffer.h"
 #include <glad/glad.h>
 namespace Platform::OpenGL::Utils
 {
+
+    // Vertex Array utility
+    bool IsInteger(Engine::Renderer::ShaderDataType type);
+    GLenum GetGLenumFromShaderDataType(Engine::Renderer::ShaderDataType type);
+
+    // Utility functions for framebuffer management
     GLenum TextureTarget(bool multisample);
     GLenum TextureFormatToGLFormat(Engine::Renderer::TextureFormat format);
     GLenum TextureFormatToGLBaseFormat(Engine::Renderer::TextureFormat format);

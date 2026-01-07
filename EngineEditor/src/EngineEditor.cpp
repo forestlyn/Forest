@@ -83,7 +83,6 @@ namespace EngineEditor
                     mouseY = m_SceneViewportSize.y - mouseY; // Flip Y coordinate
 
                     int pixelData = m_FrameBuffer->GetPixelData(1, mouseX, mouseY);
-                    ENGINE_INFO("pos:{} {} pixelData:{}", mouseX, mouseY, pixelData);
                 }
 
                 m_FrameBuffer->Unbind();

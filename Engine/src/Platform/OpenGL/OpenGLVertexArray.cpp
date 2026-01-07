@@ -2,31 +2,9 @@
 #include "Engine/pcheader.h"
 #include <glad/glad.h>
 #include "Engine/Profile/Instrumentor.h"
+#include "Utils.h"
 namespace Platform::OpenGL
 {
-    GLenum GetGLenumFromShaderDataType(Engine::Renderer::ShaderDataType type)
-    {
-        switch (type)
-        {
-        case Engine::Renderer::ShaderDataType::Float:
-        case Engine::Renderer::ShaderDataType::Float2:
-        case Engine::Renderer::ShaderDataType::Float3:
-        case Engine::Renderer::ShaderDataType::Float4:
-        case Engine::Renderer::ShaderDataType::Mat3:
-        case Engine::Renderer::ShaderDataType::Mat4:
-            return GL_FLOAT;
-        case Engine::Renderer::ShaderDataType::Int:
-        case Engine::Renderer::ShaderDataType::Int2:
-        case Engine::Renderer::ShaderDataType::Int3:
-        case Engine::Renderer::ShaderDataType::Int4:
-            return GL_INT;
-        case Engine::Renderer::ShaderDataType::Bool:
-            return GL_BOOL;
-        default:
-            ENGINE_ASSERT(false, "Unknown ShaderDataType!");
-            return 0;
-        }
-    }
 
     OpenGLVertexArray::OpenGLVertexArray()
     {
@@ -69,12 +47,24 @@ namespace Platform::OpenGL
         for (const auto &element : layout)
         {
             glEnableVertexAttribArray(index);
-            glVertexAttribPointer(index,
-                                  element.GetComponentCount(),
-                                  GetGLenumFromShaderDataType(element.Type),
-                                  element.Normalized ? GL_TRUE : GL_FALSE,
-                                  layout.GetStride(),
-                                  reinterpret_cast<const void *>((uint64_t)element.Offset));
+            if (Platform::OpenGL::Utils::IsInteger(element.Type))
+            {
+                glVertexAttribIPointer(index,
+                                       element.GetComponentCount(),
+                                       Utils::GetGLenumFromShaderDataType(element.Type),
+                                       layout.GetStride(),
+                                       reinterpret_cast<const void *>((uint64_t)element.Offset));
+            }
+            else
+            {
+                glVertexAttribPointer(index,
+                                      element.GetComponentCount(),
+                                      Utils::GetGLenumFromShaderDataType(element.Type),
+                                      element.Normalized ? GL_TRUE : GL_FALSE,
+                                      layout.GetStride(),
+                                      reinterpret_cast<const void *>((uint64_t)element.Offset));
+            }
+
             index++;
         }
         m_VertexBuffers.push_back(vertexBuffer);

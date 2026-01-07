@@ -1,6 +1,45 @@
 #include "Utils.h"
 namespace Platform::OpenGL::Utils
 {
+    bool IsInteger(Engine::Renderer::ShaderDataType type)
+    {
+        switch (type)
+        {
+        case Engine::Renderer::ShaderDataType::Int:
+        case Engine::Renderer::ShaderDataType::Int2:
+        case Engine::Renderer::ShaderDataType::Int3:
+        case Engine::Renderer::ShaderDataType::Int4:
+            return true;
+        default:
+            break;
+        }
+        return false;
+    }
+
+    GLenum GetGLenumFromShaderDataType(Engine::Renderer::ShaderDataType type)
+    {
+        switch (type)
+        {
+        case Engine::Renderer::ShaderDataType::Float:
+        case Engine::Renderer::ShaderDataType::Float2:
+        case Engine::Renderer::ShaderDataType::Float3:
+        case Engine::Renderer::ShaderDataType::Float4:
+        case Engine::Renderer::ShaderDataType::Mat3:
+        case Engine::Renderer::ShaderDataType::Mat4:
+            return GL_FLOAT;
+        case Engine::Renderer::ShaderDataType::Int:
+        case Engine::Renderer::ShaderDataType::Int2:
+        case Engine::Renderer::ShaderDataType::Int3:
+        case Engine::Renderer::ShaderDataType::Int4:
+            return GL_INT;
+        case Engine::Renderer::ShaderDataType::Bool:
+            return GL_BOOL;
+        default:
+            ENGINE_ASSERT(false, "Unknown ShaderDataType!");
+            return 0;
+        }
+    }
+
     GLenum TextureTarget(bool multisample)
     {
         return multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
