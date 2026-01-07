@@ -164,8 +164,8 @@ namespace EngineEditor
                 float windowHeight = (float)ImGui::GetWindowHeight();
                 ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
 
-                auto &tc = selectedEntity.GetComponent<Engine::TransformComponent>();
-                glm::mat4 selectedTransform = tc.GetTransform();
+                auto &selectedTc = selectedEntity.GetComponent<Engine::TransformComponent>();
+                glm::mat4 selectedTransform = selectedTc.GetTransform();
 
                 ImGuizmo::OPERATION guizmoOperation = static_cast<ImGuizmo::OPERATION>(ImGuizmo_operation);
                 ImGuizmo::MODE guizmoMode = ImGuizmo::MODE::LOCAL;
@@ -208,13 +208,13 @@ namespace EngineEditor
                     glm::vec3 translation, rotation, scale;
                     Engine::Math::DecomposeTransform(selectedTransform, translation, rotation, scale);
 
-                    auto deltaRotation = rotation - tc.GetRotation();
+                    auto deltaRotation = rotation - selectedTc.GetRotation();
 
-                    rotation = tc.GetRotation() + deltaRotation;
+                    rotation = selectedTc.GetRotation() + deltaRotation;
 
-                    tc.SetPosition(translation);
-                    tc.SetRotation(rotation);
-                    tc.SetScale(scale);
+                    selectedTc.SetPosition(translation);
+                    selectedTc.SetRotation(rotation);
+                    selectedTc.SetScale(scale);
                 }
             }
         }
