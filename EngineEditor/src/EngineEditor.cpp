@@ -268,12 +268,18 @@ namespace EngineEditor
                 return true;
             }
         case FOREST_KEY_Q:
+            if (ImGuizmo::IsUsing())
+                return true;
             ImGuizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
             break;
         case FOREST_KEY_W:
+            if (ImGuizmo::IsUsing())
+                return true;
             ImGuizmo_operation = ImGuizmo::OPERATION::ROTATE;
             break;
         case FOREST_KEY_E:
+            if (ImGuizmo::IsUsing())
+                return true;
             ImGuizmo_operation = ImGuizmo::OPERATION::SCALE;
             break;
         default:
