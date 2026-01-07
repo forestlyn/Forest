@@ -247,6 +247,15 @@ namespace Engine::Renderer
         DrawQuadInternal(transform, tintColor, TextureIndex, TilingFactor, entityID);
     }
 
+    void Renderer2D::DrawSprite(const glm::mat4 &transform, SpriteComponent &src, int entityID)
+    {
+        ENGINE_PROFILING_FUNC();
+        auto color = src.Color;
+        float TextureIndex = 0.0f; // White Texture
+        float TilingFactor = 1.0f;
+        DrawQuadInternal(transform, color, TextureIndex, TilingFactor, entityID);
+    }
+
 #pragma endregion
     /// @brief get the texture index in slot
     /// if not exist, add it to slot

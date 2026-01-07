@@ -5,6 +5,8 @@
 #include "Engine/Renderer/Shader/Texture.h"
 #include "Engine/Renderer/Shader/SubTexture.h"
 #include "Engine/Renderer/Shader/VertexArray.h"
+#include "Engine/Scene/Components/SpriteComponent.h"
+
 namespace Engine::Renderer
 {
 
@@ -46,6 +48,9 @@ namespace Engine::Renderer
 
         static void DrawQuad(const glm::mat4 &transform, const glm::vec4 &color, int entityID = -1);
         static void DrawQuad(const glm::mat4 &transform, const Ref<Texture2D> &texture, const float tintFactor = 1.0f, const glm::vec4 &tintColor = glm::vec4(1.0f), int entityID = -1);
+
+        // draw component
+        static void DrawSprite(const glm::mat4 &transform, SpriteComponent &src, int entityID);
 
         // just for test
         static int GetMaxQuads()
