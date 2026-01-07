@@ -156,7 +156,6 @@ namespace EngineEditor
 
         // Gizmos
         {
-
             Engine::Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
             if (selectedEntity && ImGuizmo_operation != -1)
             {
@@ -166,64 +165,56 @@ namespace EngineEditor
                 ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
 
                 auto &tc = selectedEntity.GetComponent<Engine::TransformComponent>();
-                glm::mat4 transform = tc.GetTransform();
+                glm::mat4 selectedTransform = tc.GetTransform();
 
                 ImGuizmo::OPERATION guizmoOperation = static_cast<ImGuizmo::OPERATION>(ImGuizmo_operation);
                 ImGuizmo::MODE guizmoMode = ImGuizmo::MODE::LOCAL;
 
-                Engine::Entity cameraEntity = m_Scene->GetPrimaryCameraEntity();
-                if (cameraEntity)
+                bool isOrthographic = false; // TODO: get from camera settings
+                ImGuizmo::SetOrthographic(isOrthographic);
+
+                float tcsnap[3] = {0.5f, 0.5f, 0.5f};
+                float rotationSnap = 45.0f;
+                float scaleSnap = 0.5f;
+                float *snapPtr = nullptr;
+                if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_LEFT_CONTROL))
                 {
-                    auto &cameraComponent = cameraEntity.GetComponent<Engine::CameraComponent>();
-                    auto &cameraTc = cameraEntity.GetComponent<Engine::TransformComponent>();
-                    glm::mat4 cameraTransform = glm::inverse(cameraTc.GetTransform());
-
-                    bool isOrthographic = cameraComponent.Camera->GetProjectionType() == Engine::SceneCamera::ProjectionType::Orthographic;
-                    ImGuizmo::SetOrthographic(isOrthographic);
-
-                    float tcsnap[3] = {0.5f, 0.5f, 0.5f};
-                    float rotationSnap = 45.0f;
-                    float scaleSnap = 0.5f;
-                    float *snapPtr = nullptr;
-                    if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_LEFT_CONTROL))
+                    switch (guizmoOperation)
                     {
-                        switch (guizmoOperation)
-                        {
-                        case ImGuizmo::OPERATION::TRANSLATE:
-                            snapPtr = tcsnap;
-                            break;
-                        case ImGuizmo::OPERATION::ROTATE:
-                            snapPtr = &rotationSnap;
-                            break;
-                        case ImGuizmo::OPERATION::SCALE:
-                            snapPtr = &scaleSnap;
-                            break;
-                        default:
-                            snapPtr = nullptr;
-                            break;
-                        }
+                    case ImGuizmo::OPERATION::TRANSLATE:
+                        snapPtr = tcsnap;
+                        break;
+                    case ImGuizmo::OPERATION::ROTATE:
+                        snapPtr = &rotationSnap;
+                        break;
+                    case ImGuizmo::OPERATION::SCALE:
+                        snapPtr = &scaleSnap;
+                        break;
+                    default:
+                        snapPtr = nullptr;
+                        break;
                     }
+                }
 
-                    ImGuizmo::Manipulate(glm::value_ptr(cameraTransform),
-                                         glm::value_ptr(cameraComponent.Camera->GetProjectionMatrix()),
-                                         guizmoOperation,
-                                         guizmoMode,
-                                         glm::value_ptr(transform), 0,
-                                         snapPtr);
+                ImGuizmo::Manipulate(glm::value_ptr(m_EditorCamera.GetViewMatrix()),
+                                     glm::value_ptr(m_EditorCamera.GetProjectionMatrix()),
+                                     guizmoOperation,
+                                     guizmoMode,
+                                     glm::value_ptr(selectedTransform), 0,
+                                     snapPtr);
 
-                    if (ImGuizmo::IsUsing())
-                    {
-                        glm::vec3 translation, rotation, scale;
-                        Engine::Math::DecomposeTransform(transform, translation, rotation, scale);
+                if (ImGuizmo::IsUsing())
+                {
+                    glm::vec3 translation, rotation, scale;
+                    Engine::Math::DecomposeTransform(selectedTransform, translation, rotation, scale);
 
-                        auto deltaRotation = rotation - tc.GetRotation();
+                    auto deltaRotation = rotation - tc.GetRotation();
 
-                        rotation = tc.GetRotation() + deltaRotation;
+                    rotation = tc.GetRotation() + deltaRotation;
 
-                        tc.SetPosition(translation);
-                        tc.SetRotation(rotation);
-                        tc.SetScale(scale);
-                    }
+                    tc.SetPosition(translation);
+                    tc.SetRotation(rotation);
+                    tc.SetScale(scale);
                 }
             }
         }
