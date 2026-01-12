@@ -83,6 +83,18 @@ namespace EngineEditor
                     mouseY = m_SceneViewportSize.y - mouseY; // Flip Y coordinate
 
                     int pixelData = m_FrameBuffer->GetPixelData(1, mouseX, mouseY);
+                    if (pixelData != -1)
+                    {
+                        m_HoveredEntity = Engine::Entity((entt::entity)pixelData, m_Scene.get());
+                    }
+                    else
+                    {
+                        m_HoveredEntity = {};
+                    }
+                }
+                else
+                {
+                    m_HoveredEntity = {};
                 }
 
                 m_FrameBuffer->Unbind();
@@ -238,7 +250,8 @@ namespace EngineEditor
     bool EngineEditor::OnEvent(Engine::Event::Event &event)
     {
         Engine::Event::EventDispatcher dispatcher(event);
-        event.Handled = dispatcher.Dispatch<Engine::Event::KeyPressedEvent>(BIND_EVENT_FN(EngineEditor::KeyPressedEventHandler));
+        event.Handled |= dispatcher.Dispatch<Engine::Event::KeyPressedEvent>(BIND_EVENT_FN(EngineEditor::KeyPressedEventHandler));
+        event.Handled |= dispatcher.Dispatch<Engine::Event::MouseButtonPressedEvent>(BIND_EVENT_FN(EngineEditor::MousePressedEventHandler));
         return false;
     }
 
@@ -286,6 +299,29 @@ namespace EngineEditor
             break;
         }
         return false;
+    }
+
+    bool EngineEditor::MousePressedEventHandler(Engine::Event::MouseButtonPressedEvent &event)
+    {
+        switch (event.GetMouseButton())
+        {
+        case FOREST_MOUSE_BUTTON_LEFT:
+            if (CanPickEntity())
+            {
+                m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
+                return true;
+            }
+            break;
+
+        default:
+            break;
+        }
+        return false;
+    }
+
+    bool EngineEditor::CanPickEntity()
+    {
+        return m_FocusScene && !ImGui::IsKeyPressed(ImGuiKey_LeftAlt) && !ImGuizmo::IsOver();
     }
 
     void EngineEditor::OpenDockSpace()
@@ -378,5 +414,4 @@ namespace EngineEditor
             return;
         }
     }
-
 }

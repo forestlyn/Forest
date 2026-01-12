@@ -102,8 +102,7 @@ namespace Platform::OpenGL
             Utils::GLCreateTexture(m_Spec.Samples > 1, m_DepthAttachment, 1);
             Utils::GLBindTexture(m_Spec.Samples > 1, m_DepthAttachment);
             Utils::GLAttachDepthTexture(m_DepthAttachment, m_Spec.Samples, Utils::TextureFormatToGLFormat(m_DepthAttachmentSpecification.Format),
-                                        Utils::TextureFormatToGLBaseFormat(m_DepthAttachmentSpecification.Format), m_Spec.Width, m_Spec.Height);
-            m_DepthAttachment = m_DepthAttachment;
+                                        GL_DEPTH_STENCIL_ATTACHMENT, m_Spec.Width, m_Spec.Height);
         }
 
         if (m_ColorAttachments.size() > 1)

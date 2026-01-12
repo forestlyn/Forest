@@ -27,6 +27,8 @@ namespace EngineEditor
         void LoadScene();
 
         bool KeyPressedEventHandler(Engine::Event::KeyPressedEvent &event);
+        bool MousePressedEventHandler(Engine::Event::MouseButtonPressedEvent &event);
+        bool CanPickEntity();
 
     private:
         glm::vec4 m_SquareColor = {0.2f, 0.3f, 0.8f, 1.0f};
@@ -35,6 +37,7 @@ namespace EngineEditor
 
         bool m_FocusScene = false, m_HoverScene = false;
         glm::ivec2 m_SceneViewportSize = {0, 0};
+        Engine::Entity m_HoveredEntity;
 
         Engine::Renderer::EditorCamera m_EditorCamera;
         Engine::Ref<Engine::Scene> m_Scene;
