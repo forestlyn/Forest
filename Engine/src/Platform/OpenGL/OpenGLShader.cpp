@@ -5,20 +5,10 @@
 #include <fstream>
 #include <vector>
 #include "Engine/Profile/Instrumentor.h"
+#include "Utils.h"
+#include <shaderc/shaderc.hpp>
 namespace Platform::OpenGL
 {
-
-    static GLenum ConvertShaderTypeFromString(const std::string &type)
-    {
-        if (type == "vertex")
-            return GL_VERTEX_SHADER;
-        if (type == "fragment" || type == "pixel")
-            return GL_FRAGMENT_SHADER;
-
-        ENGINE_ASSERT(false, "Unknown shader type!");
-        return 0;
-    }
-
     OpenGLShader::OpenGLShader(const std::string &name, const std::string &vertexSrc, const std::string &fragmentSrc)
         : m_Name(name)
     {
@@ -31,9 +21,11 @@ namespace Platform::OpenGL
         CompileShader(shaderSources);
     }
 
-    OpenGLShader::OpenGLShader(const std::string &filepath)
+    OpenGLShader::OpenGLShader(const std::string &filepath) : m_Filepath(filepath)
     {
         ENGINE_PROFILING_FUNC();
+
+        Utils::CreateCacheDirIfNotExists();
 
         std::string source = "";
         {
@@ -62,16 +54,6 @@ namespace Platform::OpenGL
 
         auto shaderSources = PreProcess(source);
         CompileShader(shaderSources);
-
-        // // test
-        // ExtractNameFromFilepath("filepath/shader.glsl");
-        // ENGINE_INFO("Shader name extracted: {0}", m_Name);
-        // ExtractNameFromFilepath("shader.glsl");
-        // ENGINE_INFO("Shader name extracted: {0}", m_Name);
-        // ExtractNameFromFilepath("filepath\\shader.glsl");
-        // ENGINE_INFO("Shader name extracted: {0}", m_Name);
-        // ExtractNameFromFilepath("shader");
-        // ENGINE_INFO("Shader name extracted: {0}", m_Name);
 
         ExtractNameFromFilepath(filepath);
     }
@@ -217,11 +199,11 @@ namespace Platform::OpenGL
 
             size_t begin = pos + strlen(typeToken) + 1;
             std::string type = source.substr(begin, eol - begin);
-            ENGINE_ASSERT(ConvertShaderTypeFromString(type), "Invalid shader type specified");
+            ENGINE_ASSERT(Utils::ConvertShaderTypeFromString(type), "Invalid shader type specified");
 
             size_t nextLinePos = source.find_first_not_of("\r\n", eol);
             pos = source.find(typeToken, nextLinePos);
-            shaderSources[ConvertShaderTypeFromString(type)] =
+            shaderSources[Utils::ConvertShaderTypeFromString(type)] =
                 (pos == std::string::npos) ? source.substr(nextLinePos) : source.substr(nextLinePos, pos - nextLinePos);
         }
 

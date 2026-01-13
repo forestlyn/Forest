@@ -20,4 +20,9 @@ namespace Platform::OpenGL::Utils
     void GLBindTexture(bool multisample, uint32_t id);
     void GLAttachColorTexture(uint32_t id, int samples, GLenum internalFormat, GLenum format, uint32_t width, uint32_t height, int index);
     void GLAttachDepthTexture(uint32_t id, int samples, GLenum format, GLenum attachmentType, uint32_t width, uint32_t height);
+
+    // Compile Shader utility functions
+    GLenum ConvertShaderTypeFromString(const std::string &type);
+    std::string GetCacheDirectory();
+    void CreateCacheDirIfNotExists();
 }

@@ -1,6 +1,8 @@
 #include "Utils.h"
+#include <filesystem>
 namespace Platform::OpenGL::Utils
 {
+#pragma region Vertex Array Utility
     bool IsInteger(Engine::Renderer::ShaderDataType type)
     {
         switch (type)
@@ -39,7 +41,8 @@ namespace Platform::OpenGL::Utils
             return 0;
         }
     }
-
+#pragma endregion
+#pragma region Framebuffer Utility
     GLenum TextureTarget(bool multisample)
     {
         return multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
@@ -136,4 +139,29 @@ namespace Platform::OpenGL::Utils
         }
         glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(samples > 1), id, 0);
     }
+#pragma endregion
+#pragma region Compile Shader Utility
+    GLenum ConvertShaderTypeFromString(const std::string &type)
+    {
+        if (type == "vertex")
+            return GL_VERTEX_SHADER;
+        if (type == "fragment" || type == "pixel")
+            return GL_FRAGMENT_SHADER;
+
+        ENGINE_ASSERT(false, "Unknown shader type!");
+        return 0;
+    }
+    std::string GetCacheDirectory()
+    {
+        return "assets/cache/shaders/opengl/";
+    }
+    void CreateCacheDirIfNotExists()
+    {
+        std::string cacheDir = GetCacheDirectory();
+        if (std::filesystem::exists(std::filesystem::path(cacheDir)) == false)
+        {
+            std::filesystem::create_directories(std::filesystem::path(cacheDir));
+        }
+    }
+#pragma endregion
 }

@@ -44,7 +44,7 @@ foreach(SRC_FILE ${SOURCE_FILES})
         endif()
     endforeach()
     # 为当前文件设置编译宏：FOREST_ENABLE_PROFILING_FILE
-    message(STATUS "Profiling config for ${SRC_FILE}: ${FILE_PROFILING}")
+    # message(STATUS "Profiling config for ${SRC_FILE}: ${FILE_PROFILING}")
     set_source_files_properties(
         ${SRC_FILE}
         PROPERTIES

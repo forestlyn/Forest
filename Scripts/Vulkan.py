@@ -33,6 +33,9 @@ def InstallVulkanPrompt():
 
 
 def CheckVulkanSDK():
+    print("Checking for Vulkan SDK...")
+    print(f"Detected VULKAN_SDK environment variable: {VULKAN_SDK}")
+    print(f"Required Vulkan SDK version: {HAZEL_VULKAN_VERSION}")
     if VULKAN_SDK is None:
         print("You don't have the Vulkan SDK installed!")
         InstallVulkanPrompt()

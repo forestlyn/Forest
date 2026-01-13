@@ -46,6 +46,7 @@ namespace Platform::OpenGL
     private:
         uint32_t m_RendererID = 0;
         std::string m_Name;
+        std::string m_Filepath;
     };
 
 } // namespace Engine::Renderer
