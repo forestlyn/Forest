@@ -43,10 +43,18 @@ namespace Platform::OpenGL
 
         void ExtractNameFromFilepath(const std::string &filepath);
 
+    void CompileOrGetVulkanSPIRV(const std::unordered_map<GLenum, std::string> &shaderSources);
+        void CompileOrGetOpenGLBinaries();
+
     private:
         uint32_t m_RendererID = 0;
         std::string m_Name;
         std::string m_Filepath;
+
+        std::unordered_map<GLenum, std::vector<uint32_t>> m_VulkanSPIRV;
+        std::unordered_map<GLenum, std::vector<uint32_t>> m_OpenGLSPIRV;
+
+        std::unordered_map<GLenum, std::string> m_OpenGLSourceCode;
     };
 
 } // namespace Engine::Renderer

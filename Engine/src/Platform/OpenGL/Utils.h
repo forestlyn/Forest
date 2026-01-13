@@ -24,5 +24,6 @@ namespace Platform::OpenGL::Utils
     // Compile Shader utility functions
     GLenum ConvertShaderTypeFromString(const std::string &type);
     std::string GetCacheDirectory();
-    void CreateCacheDirIfNotExists();
+    void CreateCacheDirIfNotExists(std::string cacheDir);
+    void GLShaderStageCachedVulkanFileExtension(GLenum type, std::string &outExtension);
 }

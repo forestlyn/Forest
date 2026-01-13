@@ -1,5 +1,6 @@
 #include "Utils.h"
 #include <filesystem>
+#include <shaderc/shaderc.hpp>
 namespace Platform::OpenGL::Utils
 {
 #pragma region Vertex Array Utility
@@ -155,13 +156,28 @@ namespace Platform::OpenGL::Utils
     {
         return "assets/cache/shaders/opengl/";
     }
-    void CreateCacheDirIfNotExists()
+    void CreateCacheDirIfNotExists(std::string cacheDir)
     {
-        std::string cacheDir = GetCacheDirectory();
         if (std::filesystem::exists(std::filesystem::path(cacheDir)) == false)
         {
             std::filesystem::create_directories(std::filesystem::path(cacheDir));
         }
     }
+    void GLShaderStageCachedVulkanFileExtension(GLenum type, std::string &outExtension)
+    {
+        switch (type)
+        {
+        case GL_VERTEX_SHADER:
+            outExtension = ".vert.spv";
+            break;
+        case GL_FRAGMENT_SHADER:
+            outExtension = ".frag.spv";
+            break;
+        default:
+            ENGINE_ASSERT(false, "Unsupported shader type for SPIR-V compilation");
+            break;
+        }
+    }
+
 #pragma endregion
 }

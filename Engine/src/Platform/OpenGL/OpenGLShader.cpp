@@ -7,6 +7,7 @@
 #include "Engine/Profile/Instrumentor.h"
 #include "Utils.h"
 #include <shaderc/shaderc.hpp>
+#include <filesystem>
 namespace Platform::OpenGL
 {
     OpenGLShader::OpenGLShader(const std::string &name, const std::string &vertexSrc, const std::string &fragmentSrc)
@@ -25,7 +26,10 @@ namespace Platform::OpenGL
     {
         ENGINE_PROFILING_FUNC();
 
-        Utils::CreateCacheDirIfNotExists();
+        std::string cacheFilepath = Utils::GetCacheDirectory();
+        Utils::CreateCacheDirIfNotExists(cacheFilepath);
+
+        Utils::CheckAndCreateCacheSPIRV(filepath, cacheFilepath);
 
         std::string source = "";
         {
@@ -309,6 +313,58 @@ namespace Platform::OpenGL
         size_t lastDot = filepath.rfind('.');
         lastDot = lastDot == std::string::npos ? filepath.size() : lastDot;
         m_Name = filepath.substr(lastSlash, lastDot - lastSlash);
+    }
+
+    void OpenGLShader::CompileOrGetVulkanSPIRV(const std::unordered_map<GLenum, std::string> &shaderSources)
+    {
+        ENGINE_PROFILING_FUNC();
+
+        GLuint program = glCreateProgram();
+        shaderc::Compiler compiler;
+        shaderc::CompileOptions options;
+        options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+        const bool optimize = true;
+        if (optimize)
+            options.SetOptimizationLevel(shaderc_optimization_level_performance);
+
+        std::filesystem::path cacheDir = Utils::GetCacheDirectory();
+
+        auto &shaderData = m_VulkanSPIRV;
+        shaderData.clear();
+
+        for (const auto &kv : shaderSources)
+        {
+            GLenum type = kv.first;
+            std::filesystem::path shaderFilePath = m_Filepath;
+            std::filesystem::path cachedPath = cacheDir / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedVulkanFileExtension(type));
+            shaderc_shader_kind kind;
+            if (type == GL_VERTEX_SHADER)
+                kind = shaderc_vertex_shader;
+            else if (type == GL_FRAGMENT_SHADER)
+                kind = shaderc_fragment_shader;
+            else
+            {
+                ENGINE_ASSERT(false, "Unsupported shader type for SPIR-V compilation");
+                continue;
+            }
+
+            shaderc::SpvCompilationResult module =
+                compiler.CompileGlslToSpv(sourceStr, kind, m_Filepath.c_str(), "main", options);
+
+            if (module.GetCompilationStatus() != shaderc_compilation_status_success)
+            {
+                ENGINE_ERROR("Shader compilation error: {0}", module.GetErrorMessage());
+                continue;
+            }
+
+            m_VulkanSPIRV[type] = std::vector<uint32_t>(module.cbegin(), module.cend());
+
+            Utils::WriteSPIRVBinaryToCache(cacheDir.string(), kind, m_VulkanSPIRV[type]);
+        }
+    }
+
+    void OpenGLShader::CompileOrGetOpenGLBinaries()
+    {
     }
 
 #pragma endregion
