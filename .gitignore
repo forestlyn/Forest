@@ -2,3 +2,5 @@
 /.vscode
 /.vs
 rmbuild.bat
+/Scripts/__pycache__
+/Engine/ThirdParty/VulkanSDK
