@@ -73,6 +73,8 @@ namespace Engine::Renderer
 
         m_SceneData.QuadTextureShader->Bind();
         m_SceneData.QuadTextureShader->SetIntArray("u_Textures", textureSlots, m_SceneData.MaxTextureSlots);
+
+        m_SceneData.CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraData), 0);
     }
 
     void Renderer2D::Shutdown()
@@ -84,9 +86,8 @@ namespace Engine::Renderer
     {
         ENGINE_PROFILING_FUNC();
 
-        m_SceneData.ViewProjectionMatrix = viewProjectionMatrix;
-        m_SceneData.QuadTextureShader->Bind();
-        m_SceneData.QuadTextureShader->SetMat4("u_ViewProjection", m_SceneData.ViewProjectionMatrix);
+        m_SceneData.CameraBuffer.ViewProjection = viewProjectionMatrix;
+        m_SceneData.CameraUniformBuffer->SetData(&m_SceneData.CameraBuffer, sizeof(CameraData));
 
         Reset();
     }

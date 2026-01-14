@@ -19,7 +19,7 @@ add_subdirectory("ThirdParty/glad")
 add_subdirectory("ThirdParty/imgui")
 add_subdirectory("ThirdParty/yaml-cpp")
 
-# 设置 shaderc 路径
+# find vulkan sdk library
 set(SHADERC_ROOT $ENV{VULKAN_SDK})
 message("Current Vulkan SDK path: ${SHADERC_ROOT}")
 set(SHADERC_INCLUDE_DIR "${SHADERC_ROOT}/Include")
@@ -27,22 +27,22 @@ message("SHADERC_INCLUDE_DIR set to: ${SHADERC_INCLUDE_DIR}")
 set(SHADERC_LIB_DIR "${SHADERC_ROOT}/Lib")
 message("SHADERC_LIB_DIR set to: ${SHADERC_LIB_DIR}")
 
-find_library(SHADERC_LIBRARY NAMES shaderc_combined
-    PATHS ${SHADERC_LIB_DIR}
-    DOC "shaderc library")
-
-if (SHADERC_INCLUDE_DIR AND SHADERC_LIBRARY)
-    message(STATUS "Found shaderc: ${SHADERC_LIBRARY}")
-    message(STATUS "shaderc include dir: ${SHADERC_INCLUDE_DIR}")
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(SHADER_COMBINED_LIB "${SHADERC_LIB_DIR}/shaderc_combinedd.lib")
+    set(SHADERC_LIB "${SHADERC_LIB_DIR}/shaderc_sharedd.lib")
+    set(SPIRV_CROSS_CORE_LIB "${SHADERC_LIB_DIR}/spirv-cross-cored.lib")
+    set(SPIRV_CROSS_GLSL_LIB "${SHADERC_LIB_DIR}/spirv-cross-glsld.lib")
+    set(SPIRV_TOOLS_LIB "${SHADERC_LIB_DIR}/SPIRV-Toolsd.lib")
 else()
-    message(FATAL_ERROR "shaderc not found!")
+    set(SHADER_COMBINED_LIB "${SHADERC_LIB_DIR}/shaderc_combined.lib")
+    set(SHADERC_LIB "${SHADERC_LIB_DIR}/shaderc_shared.lib")
+    set(SPIRV_CROSS_CORE_LIB "${SHADERC_LIB_DIR}/spirv-cross-core.lib")
+    set(SPIRV_CROSS_GLSL_LIB "${SHADERC_LIB_DIR}/spirv-cross-glsl.lib")
+    set(SPIRV_TOOLS_LIB "${SHADERC_LIB_DIR}/SPIRV-Tools.lib")
 endif()
 
-add_library(shaderc_combined STATIC IMPORTED)
-set_target_properties(shaderc_combined PROPERTIES
-    IMPORTED_LOCATION "${SHADERC_LIBRARY}"
-    INTERFACE_INCLUDE_DIRECTORIES "${SHADERC_INCLUDE_DIR}"
-)
+set(SHADERC_LIBRARYS "${SHADER_COMBINED_LIB};${SHADERC_LIB};${SPIRV_CROSS_CORE_LIB};${SPIRV_CROSS_GLSL_LIB};${SPIRV_TOOLS_LIB}")
+message("Shaderc Libraries: ${SHADERC_LIBRARYS}")
 
 # Configure Profiling
 set(SOURCE_FILES ${ENGINE_SOURCES})
@@ -69,7 +69,7 @@ target_include_directories(Engine
 )
 
 target_link_libraries(Engine PUBLIC glfw glad opengl32 imgui yaml-cpp)
-target_link_libraries(Engine PRIVATE shaderc_combined)
+target_link_libraries(Engine PRIVATE ${SHADERC_LIBRARYS})
 # 设置编译器特性
 target_compile_features(Engine PUBLIC cxx_std_20)
 
@@ -90,7 +90,7 @@ target_precompile_headers(
 # 设置库的输出名称
 set_target_properties(Engine PROPERTIES
     OUTPUT_NAME "Engine"
-    DEBUG_POSTFIX "-debug"
+    DEBUG_POSTFIX "_debug"
     RELEASE_POSTFIX "_release"
 )
 

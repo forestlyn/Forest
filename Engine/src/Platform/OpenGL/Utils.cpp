@@ -1,5 +1,6 @@
 #include "Utils.h"
 #include <filesystem>
+#include <fstream>
 #include <shaderc/shaderc.hpp>
 namespace Platform::OpenGL::Utils
 {
@@ -152,6 +153,34 @@ namespace Platform::OpenGL::Utils
         ENGINE_ASSERT(false, "Unknown shader type!");
         return 0;
     }
+    std::string GLShaderStageToString(GLenum type)
+    {
+        switch (type)
+        {
+        case GL_VERTEX_SHADER:
+            return "GL_VERTEX_SHADER";
+        case GL_FRAGMENT_SHADER:
+            return "GL_FRAGMENT_SHADER";
+        default:
+            ENGINE_ASSERT(false, "Unknown GL shader type!");
+            return "";
+        }
+    }
+
+    shaderc_shader_kind GLShaderTypeToShaderC(GLenum type)
+    {
+        switch (type)
+        {
+        case GL_VERTEX_SHADER:
+            return shaderc_vertex_shader;
+        case GL_FRAGMENT_SHADER:
+            return shaderc_fragment_shader;
+        default:
+            ENGINE_ASSERT(false, "Unknown GL shader type!");
+            return static_cast<shaderc_shader_kind>(0);
+        }
+    }
+
     std::string GetCacheDirectory()
     {
         return "assets/cache/shaders/opengl/";
@@ -163,19 +192,54 @@ namespace Platform::OpenGL::Utils
             std::filesystem::create_directories(std::filesystem::path(cacheDir));
         }
     }
-    void GLShaderStageCachedVulkanFileExtension(GLenum type, std::string &outExtension)
+    std::string GLShaderStageCachedVulkanFileExtension(GLenum type)
     {
+        std::string outExtension;
         switch (type)
         {
         case GL_VERTEX_SHADER:
-            outExtension = ".vert.spv";
+            outExtension = ".vulkan.vert.spv";
             break;
         case GL_FRAGMENT_SHADER:
-            outExtension = ".frag.spv";
+            outExtension = ".vulkan.frag.spv";
             break;
         default:
             ENGINE_ASSERT(false, "Unsupported shader type for SPIR-V compilation");
             break;
+        }
+        return outExtension;
+    }
+
+    std::string GLShaderStageCachedOpenGLFileExtension(GLenum type)
+    {
+        std::string outExtension;
+        switch (type)
+        {
+        case GL_VERTEX_SHADER:
+            outExtension = ".opengl.vert.spv";
+            break;
+        case GL_FRAGMENT_SHADER:
+            outExtension = ".opengl.frag.spv";
+            break;
+        default:
+            ENGINE_ASSERT(false, "Unsupported shader type for SPIR-V compilation");
+            break;
+        }
+        return outExtension;
+    }
+
+    void WriteSPIRVBinaryToCache(const std::string &cacheFile, const std::vector<uint32_t> &spirv)
+    {
+        std::filesystem::path filePath = cacheFile;
+        std::ofstream outFile(filePath, std::ios::binary);
+        if (outFile)
+        {
+            outFile.write(reinterpret_cast<const char *>(spirv.data()), spirv.size() * sizeof(uint32_t));
+            outFile.close();
+        }
+        else
+        {
+            ENGINE_ERROR("Could not write SPIR-V binary to cache at '{0}'", filePath.string());
         }
     }
 

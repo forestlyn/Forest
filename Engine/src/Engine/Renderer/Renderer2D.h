@@ -6,6 +6,7 @@
 #include "Engine/Renderer/Shader/SubTexture.h"
 #include "Engine/Renderer/Shader/VertexArray.h"
 #include "Engine/Scene/Components/SpriteComponent.h"
+#include "Engine/Renderer/UniformBuffer.h"
 
 namespace Engine::Renderer
 {
@@ -100,7 +101,10 @@ namespace Engine::Renderer
             float TilingFactor;
             int EntityID;
         };
-
+        struct CameraData
+        {
+            glm::mat4 ViewProjection;
+        };
         struct Scene2DData
         {
             //-- Camera data --
@@ -126,6 +130,9 @@ namespace Engine::Renderer
 
             QuadVertex *QuadVertexBufferBase = nullptr;
             QuadVertex *QuadVertexBufferPtr = nullptr;
+
+            CameraData CameraBuffer;
+            Ref<UniformBuffer> CameraUniformBuffer;
         };
 
         static Scene2DData m_SceneData;

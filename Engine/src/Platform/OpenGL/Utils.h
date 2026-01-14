@@ -2,6 +2,7 @@
 #include "Engine/Renderer/FrameBuffer.h"
 #include "Engine/Renderer/Shader/Buffer.h"
 #include <glad/glad.h>
+#include <shaderc/shaderc.hpp>
 namespace Platform::OpenGL::Utils
 {
 
@@ -23,7 +24,11 @@ namespace Platform::OpenGL::Utils
 
     // Compile Shader utility functions
     GLenum ConvertShaderTypeFromString(const std::string &type);
+    std::string GLShaderStageToString(GLenum type);
+    shaderc_shader_kind GLShaderTypeToShaderC(GLenum type);
     std::string GetCacheDirectory();
     void CreateCacheDirIfNotExists(std::string cacheDir);
-    void GLShaderStageCachedVulkanFileExtension(GLenum type, std::string &outExtension);
+    std::string GLShaderStageCachedVulkanFileExtension(GLenum type);
+    std::string GLShaderStageCachedOpenGLFileExtension(GLenum type);
+    void WriteSPIRVBinaryToCache(const std::string &cacheFile, const std::vector<uint32_t> &spirv);
 }
