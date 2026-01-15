@@ -28,6 +28,7 @@ namespace EngineEditor
 
         m_Scene = Engine::CreateRef<Engine::Scene>();
         m_SceneHierarchyPanel = SceneHierarchyPanel(m_Scene);
+        m_ContentBrowserPanel = ContentBrowserPanel();
     }
 
     EngineEditor::~EngineEditor()
@@ -245,6 +246,7 @@ namespace EngineEditor
         Engine::Renderer::Renderer2D::SetMaxQuads(maxQuads);
 
         m_SceneHierarchyPanel.OnImGuiRender();
+        m_ContentBrowserPanel.OnImGuiRender();
     }
 
     bool EngineEditor::OnEvent(Engine::Event::Event &event)

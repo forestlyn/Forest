@@ -15,6 +15,7 @@ namespace Platform::OpenGL
 
         virtual void Bind(uint32_t slot = 0) const override;
         virtual void SetData(void *data, uint32_t size) override;
+        virtual uint32_t GetRendererID() const override { return m_RendererID; }
 
         virtual bool operator==(const Engine::Renderer::Texture &other) const override
         {

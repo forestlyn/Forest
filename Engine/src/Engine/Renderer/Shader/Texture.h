@@ -28,6 +28,8 @@ namespace Engine::Renderer
     public:
         static Ref<Texture2D> Create(uint32_t width, uint32_t height);
         static Ref<Texture2D> Create(const std::string &path);
+
+        virtual uint32_t GetRendererID() const = 0;
     };
 
 } // namespace Engine::Renderer

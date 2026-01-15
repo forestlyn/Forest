@@ -4,6 +4,7 @@
 #include "Engine/Renderer/FrameBuffer.h"
 #include "Panels/SceneHierarchyPanel.h"
 #include "Engine/Renderer/Camera/EditorCamera.h"
+#include "Panels/ContentBrowserPanel.h"
 namespace EngineEditor
 {
 
@@ -47,5 +48,6 @@ namespace EngineEditor
         int ImGuizmo_operation = -1;
 
         SceneHierarchyPanel m_SceneHierarchyPanel;
+        ContentBrowserPanel m_ContentBrowserPanel;
     };
 }
