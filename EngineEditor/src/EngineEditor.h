@@ -26,6 +26,7 @@ namespace EngineEditor
         void NewScene();
         void SaveScene();
         void LoadScene();
+        void LoadScene(std::filesystem::path path);
 
         bool KeyPressedEventHandler(Engine::Event::KeyPressedEvent &event);
         bool MousePressedEventHandler(Engine::Event::MouseButtonPressedEvent &event);

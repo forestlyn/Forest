@@ -37,6 +37,7 @@ namespace EngineEditor
         for (const auto &entry : std::filesystem::directory_iterator(m_CurrentDirectory))
         {
             const auto &path = entry.path();
+            // ImGui::Text("%s", path.string().c_str());
             auto relativePath = std::filesystem::relative(path, AssetsDirectory);
             std::string filenameString = relativePath.filename().string();
 
@@ -44,6 +45,12 @@ namespace EngineEditor
             Engine::Ref<Engine::Renderer::Texture2D> icon = entry.is_directory() ? m_DirectoryIcon : m_FileIcon;
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
             ImGui::ImageButton("##icon", ImTextureRef((void *)(uintptr_t)icon->GetRendererID()), ImVec2(thumbnailWidth, thumbnailHeight));
+            if (ImGui::BeginDragDropSource())
+            {
+                const wchar_t *itemPath = path.c_str();
+                ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t));
+                ImGui::EndDragDropSource();
+            }
             ImGui::PopStyleColor();
 
             if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))

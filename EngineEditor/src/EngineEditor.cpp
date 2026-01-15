@@ -166,6 +166,17 @@ namespace EngineEditor
         uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID(0);
         auto m_Specs = m_FrameBuffer->GetSpecification();
         ImGui::Image((void *)(uint64_t)textureID, ImVec2{(float)m_Specs.Width, (float)m_Specs.Height}, ImVec2{0, 1}, ImVec2{1, 0});
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+            {
+                const wchar_t *path = (const wchar_t *)payload->Data;
+                std::filesystem::path filepath(path);
+                ENGINE_INFO("Accept payload: {}", filepath.string());
+                LoadScene(filepath);
+            }
+            ImGui::EndDragDropTarget();
+        }
 
         // Gizmos
         {
@@ -396,11 +407,16 @@ namespace EngineEditor
     void EngineEditor::LoadScene()
     {
         std::string scenePath = Engine::FileDialog::OpenFileDialog("YAML Files\0*.yaml\0All Files\0*.*\0");
-        if (!scenePath.empty())
+        LoadScene(scenePath);
+    }
+
+    void EngineEditor::LoadScene(std::filesystem::path path)
+    {
+        if (!path.empty())
         {
             m_Scene = Engine::CreateRef<Engine::Scene>();
             Engine::Serialization::SceneSerialize sceneSerialize(m_Scene);
-            sceneSerialize.Deserialize(scenePath);
+            sceneSerialize.Deserialize(path.string());
             m_SceneHierarchyPanel.SetContext(m_Scene);
             m_Scene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
         }
