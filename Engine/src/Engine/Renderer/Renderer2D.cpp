@@ -252,9 +252,18 @@ namespace Engine::Renderer
     {
         ENGINE_PROFILING_FUNC();
         auto color = src.Color;
-        float TextureIndex = 0.0f; // White Texture
-        float TilingFactor = 1.0f;
-        DrawQuadInternal(transform, color, TextureIndex, TilingFactor, entityID);
+        float TilingFactor = src.TilingFactor;
+        if (src.Texture)
+        {
+            float TextureIndex = GetTextureIndex(src.Texture);
+            DrawQuadInternal(transform, color, TextureIndex, TilingFactor, entityID);
+            return;
+        }
+        else
+        {
+            float TextureIndex = 0.0f; // White Texture
+            DrawQuadInternal(transform, color, TextureIndex, TilingFactor, entityID);
+        }
     }
 
 #pragma endregion

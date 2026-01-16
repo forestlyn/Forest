@@ -4,6 +4,7 @@
 #include <imgui_internal.h>
 #include <glm/gtc/type_ptr.hpp>
 #include "UIUtils.h"
+#include <filesystem>
 namespace EngineEditor
 {
     SceneHierarchyPanel::SceneHierarchyPanel(const Engine::Ref<Engine::Scene> &context)
@@ -139,7 +140,21 @@ namespace EngineEditor
                                                                } }, false);
 
         UIUtils::DrawComponent<Engine::SpriteComponent>("Sprite Renderer", entity, [](Engine::SpriteComponent &sprite)
-                                                        { ImGui::ColorEdit4("Color", glm::value_ptr(sprite.Color)); });
+                                                        {
+                                                            ImGui::ColorEdit4("Color", glm::value_ptr(sprite.Color));
+                                                            ImGui::Button("Texture");
+                                                            if (ImGui::BeginDragDropTarget())
+                                                            {
+                                                                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+                                                                {
+                                                                    const wchar_t *path = (const wchar_t *)payload->Data;
+                                                                    std::filesystem::path texturePath = std::filesystem::path(path);
+                                                                    sprite.Texture = Engine::Renderer::Texture2D::Create(texturePath.string());
+                                                                    ENGINE_INFO("Loaded texture from path: {}", texturePath.string());
+                                                                }
+                                                                ImGui::EndDragDropTarget();
+                                                            }
+                                                            ImGui::DragFloat("Tiling Factor", &sprite.TilingFactor, 0.1f, 0.01f, 10.0f); });
 
         UIUtils::DrawComponent<Engine::CameraComponent>("Camera", entity, [](Engine::CameraComponent &cameraComp)
                                                         {
