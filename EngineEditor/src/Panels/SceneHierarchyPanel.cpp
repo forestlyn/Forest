@@ -154,6 +154,11 @@ namespace EngineEditor
                                                                 }
                                                                 ImGui::EndDragDropTarget();
                                                             }
+                                                            ImGui::SameLine();
+                                                            ImGui::Button("Clear Texture");
+                                                            if (ImGui::IsItemClicked()){
+                                                                sprite.Texture = nullptr;
+                                                            }
                                                             ImGui::DragFloat("Tiling Factor", &sprite.TilingFactor, 0.1f, 0.01f, 10.0f); });
 
         UIUtils::DrawComponent<Engine::CameraComponent>("Camera", entity, [](Engine::CameraComponent &cameraComp)

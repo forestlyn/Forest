@@ -1,14 +1,14 @@
 Scene: Untitled
 Entities:
-  - EntityID: 3
+  - EntityID: 0
     TagComponent:
-      Tag: Square2
+      Tag: Square
     TransformComponent:
-      Position: [-2.2, 0.9, 10]
+      Position: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Color: [1, 0.122112215, 0.122112215, 1]
+      Color: [0.8, 0.2, 0.3, 1]
   - EntityID: 1
     TagComponent:
       Tag: Main Camera
@@ -21,19 +21,19 @@ Entities:
       FixedAspectRatio: false
       Camera:
         ProjectionType: 1
-        AspectRatio: 1.0451807
+        AspectRatio: 1.2442397
         OrthographicSize: 10
         OrthographicNearClip: -1
         OrthographicFarClip: 1
         PerspectiveFOV: 45
         PerspectiveNearClip: 0.1
         PerspectiveFarClip: 1000
-  - EntityID: 0
+  - EntityID: 3
     TagComponent:
-      Tag: Square
+      Tag: Square2
     TransformComponent:
-      Position: [0, 0, 0]
+      Position: [-2.2, 0.9, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Color: [0.8, 0.2, 0.3, 1]
+      Color: [1, 0.122112215, 0.122112215, 1]
