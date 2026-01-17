@@ -243,5 +243,12 @@ namespace Platform::OpenGL::Utils
         }
     }
 
+    std::string CalculateHash(const std::string &combinedSources)
+    {
+        std::hash<std::string> hasher;
+        size_t hashValue = hasher(combinedSources);
+        return std::to_string(hashValue);
+    }
+
 #pragma endregion
 }

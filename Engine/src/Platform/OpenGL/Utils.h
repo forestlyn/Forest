@@ -31,4 +31,6 @@ namespace Platform::OpenGL::Utils
     std::string GLShaderStageCachedVulkanFileExtension(GLenum type);
     std::string GLShaderStageCachedOpenGLFileExtension(GLenum type);
     void WriteSPIRVBinaryToCache(const std::string &cacheFile, const std::vector<uint32_t> &spirv);
+
+    std::string CalculateHash(const std::string &combinedSources);
 }

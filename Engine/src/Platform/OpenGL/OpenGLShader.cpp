@@ -10,6 +10,7 @@
 #include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
 #include <filesystem>
+#include <yaml-cpp/yaml.h>
 namespace Platform::OpenGL
 {
     OpenGLShader::OpenGLShader(const std::string &name, const std::string &vertexSrc, const std::string &fragmentSrc)
@@ -20,9 +21,10 @@ namespace Platform::OpenGL
         std::unordered_map<GLenum, std::string> shaderSources;
         shaderSources[GL_VERTEX_SHADER] = vertexSrc;
         shaderSources[GL_FRAGMENT_SHADER] = fragmentSrc;
+        m_FilePath = "Unnamed.shader";
         {
-            CompileOrGetVulkanSPIRV(shaderSources);
-            CompileOrGetOpenGLBinaries();
+            CompileOrGetVulkanSPIRV(shaderSources, true);
+            CompileOrGetOpenGLBinaries(true);
             CreateProgram();
         }
     }
@@ -60,8 +62,15 @@ namespace Platform::OpenGL
         }
 
         auto shaderSources = PreProcess(source);
-        CompileOrGetVulkanSPIRV(shaderSources);
-        CompileOrGetOpenGLBinaries();
+        std::string hashValue = CalculateHash(shaderSources);
+        std::string oldHashValue = LoadHashValue(filepath);
+        bool needsRecompile = hashValue != oldHashValue;
+        if (needsRecompile)
+        {
+            SaveHashValue(filepath, hashValue);
+        }
+        CompileOrGetVulkanSPIRV(shaderSources, needsRecompile);
+        CompileOrGetOpenGLBinaries(needsRecompile);
         CreateProgram();
         // CompileShader(shaderSources);
 
@@ -320,9 +329,11 @@ namespace Platform::OpenGL
         m_Name = filepath.substr(lastSlash, lastDot - lastSlash);
     }
 
-    void OpenGLShader::CompileOrGetVulkanSPIRV(const std::unordered_map<GLenum, std::string> &shaderSources)
+    void OpenGLShader::CompileOrGetVulkanSPIRV(const std::unordered_map<GLenum, std::string> &shaderSources, bool forceRecompile)
     {
         ENGINE_PROFILING_FUNC();
+
+        std::string hashValue = CalculateHash(shaderSources);
 
         GLuint program = glCreateProgram();
         shaderc::Compiler compiler;
@@ -343,7 +354,7 @@ namespace Platform::OpenGL
             std::filesystem::path cachedPath = cacheDir / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedVulkanFileExtension(type));
 
             std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-            if (in.is_open())
+            if (in.is_open() && !forceRecompile)
             {
                 in.seekg(0, std::ios::end);
                 auto size = in.tellg();
@@ -376,7 +387,7 @@ namespace Platform::OpenGL
             Reflect(stage, data);
     }
 
-    void OpenGLShader::CompileOrGetOpenGLBinaries()
+    void OpenGLShader::CompileOrGetOpenGLBinaries(bool forceRecompile)
     {
         ENGINE_PROFILING_FUNC();
 
@@ -397,7 +408,7 @@ namespace Platform::OpenGL
             std::filesystem::path cachedPath = cacheDir / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedOpenGLFileExtension(type));
 
             std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-            if (in.is_open())
+            if (in.is_open() && !forceRecompile)
             {
                 in.seekg(0, std::ios::end);
                 auto size = in.tellg();
@@ -514,4 +525,45 @@ namespace Platform::OpenGL
 
 #pragma endregion
 
+#pragma region Check hash
+
+    std::string OpenGLShader::CalculateHash(const std::unordered_map<GLenum, std::string> &shaderSources)
+    {
+        ENGINE_PROFILING_FUNC();
+
+        std::string combinedSources;
+        for (const auto &[type, source] : shaderSources)
+        {
+            combinedSources += source;
+        }
+        return Utils::CalculateHash(combinedSources);
+    }
+
+    std::string OpenGLShader::LoadHashValue(std::string path)
+    {
+        if (!std::filesystem::exists(Utils::GetCacheDirectory() + "/" + "hash.yaml"))
+        {
+            return "";
+        }
+        YAML::Node config = YAML::LoadFile(Utils::GetCacheDirectory() + "/" + "hash.yaml");
+        if (config[path])
+        {
+            return config[path].as<std::string>();
+        }
+        return "";
+    }
+
+    void OpenGLShader::SaveHashValue(std::string path, std::string hashValue)
+    {
+        if (!std::filesystem::exists(Utils::GetCacheDirectory() + "/" + "hash.yaml"))
+        {
+            std::ofstream fout(Utils::GetCacheDirectory() + "/" + "hash.yaml");
+            fout << "";
+        }
+        YAML::Node config = YAML::LoadFile(Utils::GetCacheDirectory() + "/" + "hash.yaml");
+        config[path] = hashValue;
+        std::ofstream fout(Utils::GetCacheDirectory() + "/" + "hash.yaml");
+        fout << config;
+    }
+#pragma endregion
 } // namespace Platform::OpenGL

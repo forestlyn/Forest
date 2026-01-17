@@ -43,11 +43,15 @@ namespace Platform::OpenGL
 
         void ExtractNameFromFilepath(const std::string &filepath);
 
-        void CompileOrGetVulkanSPIRV(const std::unordered_map<GLenum, std::string> &shaderSources);
-        void CompileOrGetOpenGLBinaries();
+        void CompileOrGetVulkanSPIRV(const std::unordered_map<GLenum, std::string> &shaderSources, bool forceRecompile);
+        void CompileOrGetOpenGLBinaries(bool forceRecompile);
         void Reflect(GLenum stage, const std::vector<uint32_t> &spirv);
 
         void CreateProgram();
+
+        std::string CalculateHash(const std::unordered_map<GLenum, std::string> &shaderSources);
+        std::string LoadHashValue(std::string path);
+        void SaveHashValue(std::string path, std::string hashValue);
 
     private:
         uint32_t m_RendererID = 0;
