@@ -29,6 +29,9 @@ namespace EngineEditor
         m_Scene = Engine::CreateRef<Engine::Scene>();
         m_SceneHierarchyPanel = SceneHierarchyPanel(m_Scene);
         m_ContentBrowserPanel = ContentBrowserPanel();
+
+        m_PlayIcon = Engine::Renderer::Texture2D::Create("assets/textures/icon/play_icon.png");
+        m_StopIcon = Engine::Renderer::Texture2D::Create("assets/textures/icon/stop_icon.png");
     }
 
     EngineEditor::~EngineEditor()
@@ -65,7 +68,7 @@ namespace EngineEditor
             {
                 Timer_Profiling("EngineEditor::Renderer2D Scene");
 
-                if (false) // Runtime update
+                if (m_SceneState == SceneState::Play) // Runtime update
                 {
                     m_Scene->OnUpdateRuntime(timestep);
                 }
@@ -256,6 +259,8 @@ namespace EngineEditor
 
         Engine::Renderer::Renderer2D::SetMaxQuads(maxQuads);
 
+        UIToolbar();
+
         m_SceneHierarchyPanel.OnImGuiRender();
         m_ContentBrowserPanel.OnImGuiRender();
     }
@@ -335,6 +340,44 @@ namespace EngineEditor
     bool EngineEditor::CanPickEntity()
     {
         return m_FocusScene && !ImGui::IsKeyPressed(ImGuiKey_LeftAlt) && !ImGuizmo::IsOver();
+    }
+
+    void EngineEditor::UIToolbar()
+    {
+        ImGui::Begin("##UIToolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
+
+        float windowWidth = ImGui::GetWindowWidth();
+        float buttonSize = 25.0f;
+        float center = windowWidth * 0.5f;
+        float offset = buttonSize * 0.5f;
+
+        ImGui::SetCursorPosX(center - offset - 80.0f);
+
+        if (m_SceneState == SceneState::Edit)
+        {
+            if (ImGui::ImageButton("##PlayScene", ImTextureRef((void *)m_PlayIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
+            {
+                PlayScene();
+            }
+        }
+        else if (m_SceneState == SceneState::Play)
+        {
+            if (ImGui::ImageButton("##StopScene", ImTextureRef((void *)m_StopIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
+            {
+                StopScene();
+            }
+        }
+        ImGui::End();
+    }
+
+    void EngineEditor::PlayScene()
+    {
+        m_SceneState = SceneState::Play;
+    }
+
+    void EngineEditor::StopScene()
+    {
+        m_SceneState = SceneState::Edit;
     }
 
     void EngineEditor::OpenDockSpace()

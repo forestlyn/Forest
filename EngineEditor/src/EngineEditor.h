@@ -5,6 +5,7 @@
 #include "Panels/SceneHierarchyPanel.h"
 #include "Engine/Renderer/Camera/EditorCamera.h"
 #include "Panels/ContentBrowserPanel.h"
+#include "Engine/Renderer/Shader/Texture.h"
 namespace EngineEditor
 {
 
@@ -32,10 +33,18 @@ namespace EngineEditor
         bool MousePressedEventHandler(Engine::Event::MouseButtonPressedEvent &event);
         bool CanPickEntity();
 
+        void UIToolbar();
+
+        void PlayScene();
+        void StopScene();
+
     private:
         glm::vec4 m_SquareColor = {0.2f, 0.3f, 0.8f, 1.0f};
 
         Engine::Ref<Engine::Renderer::FrameBuffer> m_FrameBuffer;
+
+        Engine::Ref<Engine::Renderer::Texture2D> m_PlayIcon;
+        Engine::Ref<Engine::Renderer::Texture2D> m_StopIcon;
 
         bool m_FocusScene = false, m_HoverScene = false;
         glm::ivec2 m_SceneViewportSize = {0, 0};
@@ -50,5 +59,13 @@ namespace EngineEditor
 
         SceneHierarchyPanel m_SceneHierarchyPanel;
         ContentBrowserPanel m_ContentBrowserPanel;
+
+        enum class SceneState
+        {
+            Edit = 0,
+            Play = 1
+        };
+
+        SceneState m_SceneState = SceneState::Edit;
     };
 }
