@@ -18,6 +18,7 @@ add_subdirectory("ThirdParty/glfw")
 add_subdirectory("ThirdParty/glad")
 add_subdirectory("ThirdParty/imgui")
 add_subdirectory("ThirdParty/yaml-cpp")
+add_subdirectory("ThirdParty/Box2D")
 
 # find vulkan sdk library
 set(SHADERC_ROOT $ENV{VULKAN_SDK})
@@ -59,6 +60,7 @@ target_include_directories(Engine
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/imgui>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/entt/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/yaml-cpp/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Box2D/include>
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glfw/include>
@@ -68,7 +70,7 @@ target_include_directories(Engine
         $<BUILD_INTERFACE:${SHADERC_INCLUDE_DIR}>
 )
 
-target_link_libraries(Engine PUBLIC glfw glad opengl32 imgui yaml-cpp)
+target_link_libraries(Engine PUBLIC glfw glad opengl32 imgui yaml-cpp box2d)
 target_link_libraries(Engine PRIVATE ${SHADERC_LIBRARYS})
 # 设置编译器特性
 target_compile_features(Engine PUBLIC cxx_std_20)

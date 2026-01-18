@@ -16,3 +16,6 @@
 [submodule "Engine/ThirdParty/ImGuizmo"]
 	path = Engine/ThirdParty/ImGuizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "Engine/ThirdParty/Box2D"]
+	path = Engine/ThirdParty/Box2D
+	url = https://github.com/erincatto/box2d.git
