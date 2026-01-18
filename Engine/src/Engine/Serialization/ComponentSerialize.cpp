@@ -54,6 +54,30 @@ namespace Engine::Serialization
         out << YAML::EndMap;
     }
 
+    void SerilizaRigidbody2DComponent(YAML::Emitter &out, Rigidbody2DComponent &component)
+    {
+        out << YAML::Key << "Rigidbody2DComponent";
+        out << YAML::BeginMap;
+        out << YAML::Key << "Type" << YAML::Value << (int)component.Type;
+        out << YAML::Key << "Velocity" << YAML::Value << component.Velocity;
+        out << YAML::Key << "AngularVelocity" << YAML::Value << component.AngularVelocity;
+        out << YAML::Key << "FixedRotation" << YAML::Value << component.FixedRotation;
+        out << YAML::EndMap;
+    }
+
+    void SerilizaBoxCollider2DComponent(YAML::Emitter &out, BoxCollider2DComponent &component)
+    {
+        out << YAML::Key << "BoxCollider2DComponent";
+        out << YAML::BeginMap;
+        out << YAML::Key << "Offset" << YAML::Value << component.Offset;
+        out << YAML::Key << "Size" << YAML::Value << component.Size;
+        out << YAML::Key << "Density" << YAML::Value << component.Density;
+        out << YAML::Key << "Friction" << YAML::Value << component.Friction;
+        out << YAML::Key << "Restitution" << YAML::Value << component.Restitution;
+        out << YAML::Key << "RestitutionThreshold" << YAML::Value << component.RestitutionThreshold;
+        out << YAML::EndMap;
+    }
+
     bool DeserializeTagComponent(const YAML::Node &componentNode, TagComponent &component)
     {
         if (componentNode["Tag"])
@@ -165,6 +189,56 @@ namespace Engine::Serialization
             component.Color = glm::vec4(1.0f);
             return true;
         }
+    }
+
+    bool DeserializeRigidbody2DComponent(const YAML::Node &componentNode, Rigidbody2DComponent &component)
+    {
+        if (componentNode["Type"])
+        {
+            component.Type = (Rigidbody2DComponent::BodyType)componentNode["Type"].as<int>();
+        }
+        if (componentNode["Velocity"])
+        {
+            component.Velocity = componentNode["Velocity"].as<glm::vec2>();
+        }
+        if (componentNode["AngularVelocity"])
+        {
+            component.AngularVelocity = componentNode["AngularVelocity"].as<float>();
+        }
+        if (componentNode["FixedRotation"])
+        {
+            component.FixedRotation = componentNode["FixedRotation"].as<bool>();
+        }
+        return true;
+    }
+
+    bool DeserializeBoxCollider2DComponent(const YAML::Node &componentNode, BoxCollider2DComponent &component)
+    {
+        if (componentNode["Offset"])
+        {
+            component.Offset = componentNode["Offset"].as<glm::vec2>();
+        }
+        if (componentNode["Size"])
+        {
+            component.Size = componentNode["Size"].as<glm::vec2>();
+        }
+        if (componentNode["Density"])
+        {
+            component.Density = componentNode["Density"].as<float>();
+        }
+        if (componentNode["Friction"])
+        {
+            component.Friction = componentNode["Friction"].as<float>();
+        }
+        if (componentNode["Restitution"])
+        {
+            component.Restitution = componentNode["Restitution"].as<float>();
+        }
+        if (componentNode["RestitutionThreshold"])
+        {
+            component.RestitutionThreshold = componentNode["RestitutionThreshold"].as<float>();
+        }
+        return true;
     }
 
 } // namespace Engine::Serialization

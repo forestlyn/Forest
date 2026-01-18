@@ -115,6 +115,22 @@ namespace EngineEditor
                         ImGui::CloseCurrentPopup();
                     }
                 }
+                if (!entity.HasComponent<Engine::Rigidbody2DComponent>())
+                {
+                    if (ImGui::MenuItem("Rigidbody 2D"))
+                    {
+                        entity.AddComponent<Engine::Rigidbody2DComponent>();
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
+                if (!entity.HasComponent<Engine::BoxCollider2DComponent>())
+                {
+                    if (ImGui::MenuItem("Box Collider 2D"))
+                    {
+                        entity.AddComponent<Engine::BoxCollider2DComponent>();
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
                 ImGui::EndPopup();
             }
         }
@@ -225,5 +241,26 @@ namespace EngineEditor
                                                                     sceneCamera->SetPerspectiveFarClip(farClip);
                                                                 }
                                                             } });
+
+        UIUtils::DrawComponent<Engine::Rigidbody2DComponent>("Rigidbody 2D", entity, [](Engine::Rigidbody2DComponent &rigidbody2D)
+                                                             {
+                                                                const char *bodyTypeStrings[] = {"Static", "Kinematic", "Dynamic"};
+                                                                int currentBodyType = (int)rigidbody2D.Type;
+                                                                if (ImGui::Combo("Body Type", &currentBodyType, bodyTypeStrings, IM_ARRAYSIZE(bodyTypeStrings)))
+                                                                {
+                                                                    rigidbody2D.Type = (Engine::Rigidbody2DComponent::BodyType)currentBodyType;
+                                                                }
+                                                                ImGui::DragFloat2("Velocity", glm::value_ptr(rigidbody2D.Velocity), 0.1f);
+                                                                ImGui::DragFloat("Angular Velocity", &rigidbody2D.AngularVelocity, 0.1f);
+                                                                ImGui::Checkbox("Fixed Rotation", &rigidbody2D.FixedRotation); });
+
+        UIUtils::DrawComponent<Engine::BoxCollider2DComponent>("Box Collider 2D", entity, [](Engine::BoxCollider2DComponent &boxCollider)
+                                                               {
+                                                                  ImGui::DragFloat2("Offset", glm::value_ptr(boxCollider.Offset), 0.1f);
+                                                                  ImGui::DragFloat2("Size", glm::value_ptr(boxCollider.Size), 0.1f, 0.01f);
+                                                                  ImGui::DragFloat("Density", &boxCollider.Density, 0.1f, 0.0f);
+                                                                  ImGui::DragFloat("Friction", &boxCollider.Friction, 0.01f, 0.0f, 1.0f);
+                                                                  ImGui::DragFloat("Restitution", &boxCollider.Restitution, 0.01f, 0.0f, 1.0f);
+                                                                  ImGui::DragFloat("Restitution Threshold", &boxCollider.RestitutionThreshold, 0.1f, 0.0f); });
     }
 }

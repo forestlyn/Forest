@@ -27,6 +27,16 @@ namespace Engine::Serialization
             auto &spriteComp = entity.GetComponent<SpriteComponent>();
             SerilizaSpriteComponent(out, spriteComp);
         }
+        if (entity.HasComponent<Rigidbody2DComponent>())
+        {
+            auto &rigidbody2DComp = entity.GetComponent<Rigidbody2DComponent>();
+            SerilizaRigidbody2DComponent(out, rigidbody2DComp);
+        }
+        if (entity.HasComponent<BoxCollider2DComponent>())
+        {
+            auto &boxCollider2DComp = entity.GetComponent<BoxCollider2DComponent>();
+            SerilizaBoxCollider2DComponent(out, boxCollider2DComp);
+        }
         out << YAML::EndMap; // Entity
     }
 
@@ -65,6 +75,24 @@ namespace Engine::Serialization
             auto spriteNode = entityNode["SpriteComponent"];
             auto &spriteComp = entity.AddComponent<SpriteComponent>();
             if (!DeserializeSpriteComponent(spriteNode, spriteComp))
+            {
+                return false;
+            }
+        }
+        if (entityNode["Rigidbody2DComponent"])
+        {
+            auto rigidbody2DNode = entityNode["Rigidbody2DComponent"];
+            auto &rigidbody2DComp = entity.AddComponent<Rigidbody2DComponent>();
+            if (!DeserializeRigidbody2DComponent(rigidbody2DNode, rigidbody2DComp))
+            {
+                return false;
+            }
+        }
+        if (entityNode["BoxCollider2DComponent"])
+        {
+            auto boxCollider2DNode = entityNode["BoxCollider2DComponent"];
+            auto &boxCollider2DComp = entity.AddComponent<BoxCollider2DComponent>();
+            if (!DeserializeBoxCollider2DComponent(boxCollider2DNode, boxCollider2DComp))
             {
                 return false;
             }

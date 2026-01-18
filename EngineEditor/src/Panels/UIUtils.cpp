@@ -127,4 +127,6 @@ namespace EngineEditor
     template void UIUtils::DrawComponent<Engine::TransformComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::TransformComponent &)> &uiFunction, bool removeable);
     template void UIUtils::DrawComponent<Engine::SpriteComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::SpriteComponent &)> &uiFunction, bool removeable);
     template void UIUtils::DrawComponent<Engine::CameraComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::CameraComponent &)> &uiFunction, bool removeable);
+    template void UIUtils::DrawComponent<Engine::Rigidbody2DComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::Rigidbody2DComponent &)> &uiFunction, bool removeable);
+    template void UIUtils::DrawComponent<Engine::BoxCollider2DComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::BoxCollider2DComponent &)> &uiFunction, bool removeable);
 }

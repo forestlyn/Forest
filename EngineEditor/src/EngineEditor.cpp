@@ -373,11 +373,13 @@ namespace EngineEditor
     void EngineEditor::PlayScene()
     {
         m_SceneState = SceneState::Play;
+        m_Scene->OnRuntimeStart();
     }
 
     void EngineEditor::StopScene()
     {
         m_SceneState = SceneState::Edit;
+        m_Scene->OnRuntimeStop();
     }
 
     void EngineEditor::OpenDockSpace()
@@ -449,7 +451,7 @@ namespace EngineEditor
 
     void EngineEditor::LoadScene()
     {
-        std::string scenePath = Engine::FileDialog::OpenFileDialog("YAML Files\0*.yaml\0All Files\0*.*\0");
+        std::string scenePath = Engine::FileDialog::OpenFileDialog("Scene Files\0*.scene\0All Files\0*.*\0");
         LoadScene(scenePath);
     }
 
@@ -457,6 +459,12 @@ namespace EngineEditor
     {
         if (!path.empty())
         {
+            std::string ext = path.extension().string();
+            if (ext != ".scene")
+            {
+                ENGINE_ERROR("Could not load scene file '{0}' - not a .scene file!", path.string());
+                return;
+            }
             m_Scene = Engine::CreateRef<Engine::Scene>();
             Engine::Serialization::SceneSerialize sceneSerialize(m_Scene);
             sceneSerialize.Deserialize(path.string());
@@ -467,7 +475,7 @@ namespace EngineEditor
 
     void EngineEditor::SaveScene()
     {
-        std::string scenePath = Engine::FileDialog::SaveFileDialog("YAML Files\0*.yaml\0All Files\0*.*\0");
+        std::string scenePath = Engine::FileDialog::SaveFileDialog("Scene Files\0*.scene\0All Files\0*.*\0");
         if (!scenePath.empty())
         {
             Engine::Serialization::SceneSerialize sceneSerialize(m_Scene);
