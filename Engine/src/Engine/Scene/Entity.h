@@ -48,5 +48,7 @@ namespace Engine
             return !(*this == other);
         }
         operator uint32_t() const { return (uint32_t)m_EntityHandle; }
+
+        UUID GetUUID();
     };
 }

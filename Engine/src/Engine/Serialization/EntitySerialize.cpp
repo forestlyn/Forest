@@ -5,7 +5,7 @@ namespace Engine::Serialization
     void SerilizaEntity(YAML::Emitter &out, Entity entity)
     {
         out << YAML::BeginMap; // Entity
-        out << YAML::Key << "EntityID" << YAML::Value << (uint32_t)(entt::entity)entity;
+        out << YAML::Key << "EntityID" << YAML::Value << entity.GetUUID();
 
         if (entity.HasComponent<TagComponent>())
         {

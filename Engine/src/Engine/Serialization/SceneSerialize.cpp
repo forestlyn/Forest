@@ -93,11 +93,11 @@ namespace Engine::Serialization
         {
             for (auto entityNode : entities)
             {
-                uint32_t entityID = entityNode["EntityID"].as<uint32_t>();
-                Entity entity = m_Scene->CreateEntityWithID(entityID);
+                uint64_t uuid = entityNode["EntityID"].as<uint64_t>();
+                Entity entity = m_Scene->CreateEntityWithID(UUID(uuid));
                 if (!DeserializeEntity(entityNode, entity))
                 {
-                    LOG_ERROR("Failed to deserialize entity with ID: {}", entityID);
+                    LOG_ERROR("Failed to deserialize entity with ID: {}", uuid);
                 }
             }
         }

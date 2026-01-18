@@ -159,15 +159,17 @@ namespace Engine
     {
         entt::entity entityHandle = m_Registry.create();
         auto entity = Entity(entityHandle, this);
+        entity.AddComponent<IDComponent>();
         entity.AddComponent<TagComponent>(name);
         entity.AddComponent<TransformComponent>();
         return entity;
     }
 
-    Entity Scene::CreateEntityWithID(int handle)
+    Entity Scene::CreateEntityWithID(UUID uuid, const std::string &name)
     {
-        entt::entity entityHandle = m_Registry.create(static_cast<entt::entity>(handle));
+        entt::entity entityHandle = m_Registry.create();
         Entity entity = Entity(entityHandle, this);
+        entity.AddComponent<IDComponent>(uuid);
         return entity;
     }
 

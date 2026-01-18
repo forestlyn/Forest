@@ -5,6 +5,7 @@
 #include <entt.hpp>
 #include "Engine/Renderer/Camera/EditorCamera.h"
 #include <box2d/box2d.h>
+#include "Engine/Core/UUID.h"
 namespace Engine
 {
     class Entity;
@@ -22,7 +23,7 @@ namespace Engine
         // Create an entity with a specific name,will add TagComponent and TransformComponent by default
         Entity CreateEntity(const std::string &name = std::string());
         // Create an entity with a specific ID (for deserialization) no default components
-        Entity CreateEntityWithID(int handle);
+        Entity CreateEntityWithID(UUID uuid, const std::string &name = std::string());
         entt::registry &GetRegistry() { return m_Registry; }
 
         void SetViewportSize(uint32_t width, uint32_t height);
