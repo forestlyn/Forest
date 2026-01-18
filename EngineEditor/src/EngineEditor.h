@@ -25,7 +25,8 @@ namespace EngineEditor
         void OpenDockSpace();
 
         void NewScene();
-        void SaveScene();
+        void SaveSceneAs();
+        void SaveScene(std::filesystem::path path);
         void LoadScene();
         void LoadScene(std::filesystem::path path);
 
@@ -51,7 +52,8 @@ namespace EngineEditor
         Engine::Entity m_HoveredEntity;
 
         Engine::Renderer::EditorCamera m_EditorCamera;
-        Engine::Ref<Engine::Scene> m_Scene;
+        Engine::Ref<Engine::Scene> m_ActiveScene;
+        std::filesystem::path m_ActiveScenePath;
 
         glm::vec2 m_SceneViewportBounds[2];
 

@@ -26,8 +26,8 @@ namespace EngineEditor
         fbSpec.Height = 720;
         m_FrameBuffer = Engine::Renderer::FrameBuffer::Create(fbSpec);
 
-        m_Scene = Engine::CreateRef<Engine::Scene>();
-        m_SceneHierarchyPanel = SceneHierarchyPanel(m_Scene);
+        m_ActiveScene = Engine::CreateRef<Engine::Scene>();
+        m_SceneHierarchyPanel = SceneHierarchyPanel(m_ActiveScene);
         m_ContentBrowserPanel = ContentBrowserPanel();
 
         m_PlayIcon = Engine::Renderer::Texture2D::Create("assets/textures/icon/play_icon.png");
@@ -70,11 +70,11 @@ namespace EngineEditor
 
                 if (m_SceneState == SceneState::Play) // Runtime update
                 {
-                    m_Scene->OnUpdateRuntime(timestep);
+                    m_ActiveScene->OnUpdateRuntime(timestep);
                 }
                 else // Editor update
                 {
-                    m_Scene->OnUpdateEditor(timestep, m_EditorCamera);
+                    m_ActiveScene->OnUpdateEditor(timestep, m_EditorCamera);
                 }
 
                 auto mousePos = ImGui::GetMousePos();
@@ -89,7 +89,7 @@ namespace EngineEditor
                     int pixelData = m_FrameBuffer->GetPixelData(1, mouseX, mouseY);
                     if (pixelData != -1)
                     {
-                        m_HoveredEntity = Engine::Entity((entt::entity)pixelData, m_Scene.get());
+                        m_HoveredEntity = Engine::Entity((entt::entity)pixelData, m_ActiveScene.get());
                     }
                     else
                     {
@@ -122,9 +122,13 @@ namespace EngineEditor
                 {
                     LoadScene();
                 }
+                if (ImGui::MenuItem("Save Scene Ctrl+S"))
+                {
+                    SaveScene(m_ActiveScenePath);
+                }
                 if (ImGui::MenuItem("Save Scene Ctrl+Shift+S"))
                 {
-                    SaveScene();
+                    SaveSceneAs();
                 }
                 ImGui::EndMenu();
             }
@@ -163,7 +167,7 @@ namespace EngineEditor
             m_SceneViewportSize.x = (int)regionAvailSize.x;
             m_SceneViewportSize.y = (int)regionAvailSize.y;
             m_FrameBuffer->Resize(m_SceneViewportSize.x, m_SceneViewportSize.y);
-            m_Scene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
+            m_ActiveScene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
             m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
         }
         uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID(0);
@@ -295,7 +299,12 @@ namespace EngineEditor
         case FOREST_KEY_S:
             if (isCtrlPressed && isShiftPressed)
             {
-                SaveScene();
+                SaveSceneAs();
+                return true;
+            }
+            else if (isCtrlPressed)
+            {
+                SaveScene(m_ActiveScenePath);
                 return true;
             }
         case FOREST_KEY_Q:
@@ -373,13 +382,13 @@ namespace EngineEditor
     void EngineEditor::PlayScene()
     {
         m_SceneState = SceneState::Play;
-        m_Scene->OnRuntimeStart();
+        m_ActiveScene->OnRuntimeStart();
     }
 
     void EngineEditor::StopScene()
     {
         m_SceneState = SceneState::Edit;
-        m_Scene->OnRuntimeStop();
+        m_ActiveScene->OnRuntimeStop();
     }
 
     void EngineEditor::OpenDockSpace()
@@ -444,9 +453,10 @@ namespace EngineEditor
 
     void EngineEditor::NewScene()
     {
-        m_Scene = Engine::CreateRef<Engine::Scene>();
-        m_SceneHierarchyPanel.SetContext(m_Scene);
-        m_Scene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
+        m_ActiveScene = Engine::CreateRef<Engine::Scene>();
+        m_ActiveScenePath.clear();
+        m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+        m_ActiveScene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
     }
 
     void EngineEditor::LoadScene()
@@ -465,21 +475,34 @@ namespace EngineEditor
                 ENGINE_ERROR("Could not load scene file '{0}' - not a .scene file!", path.string());
                 return;
             }
-            m_Scene = Engine::CreateRef<Engine::Scene>();
-            Engine::Serialization::SceneSerialize sceneSerialize(m_Scene);
+            m_ActiveScenePath = path;
+            m_ActiveScene = Engine::CreateRef<Engine::Scene>();
+            Engine::Serialization::SceneSerialize sceneSerialize(m_ActiveScene);
             sceneSerialize.Deserialize(path.string());
-            m_SceneHierarchyPanel.SetContext(m_Scene);
-            m_Scene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
+            m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+            m_ActiveScene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
         }
     }
 
-    void EngineEditor::SaveScene()
+    void EngineEditor::SaveScene(std::filesystem::path path)
+    {
+        if (path.empty())
+        {
+            SaveSceneAs();
+            return;
+        }
+        Engine::Serialization::SceneSerialize sceneSerialize(m_ActiveScene);
+        sceneSerialize.Serialize(path.string());
+    }
+
+    void EngineEditor::SaveSceneAs()
     {
         std::string scenePath = Engine::FileDialog::SaveFileDialog("Scene Files\0*.scene\0All Files\0*.*\0");
         if (!scenePath.empty())
         {
-            Engine::Serialization::SceneSerialize sceneSerialize(m_Scene);
+            Engine::Serialization::SceneSerialize sceneSerialize(m_ActiveScene);
             sceneSerialize.Serialize(scenePath);
+            m_ActiveScenePath = scenePath;
             return;
         }
     }
