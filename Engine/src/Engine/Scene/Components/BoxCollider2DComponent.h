@@ -11,7 +11,7 @@ namespace Engine
         float RestitutionThreshold = 0.5f;
 
         glm::vec2 Offset = glm::vec2(0.0f);
-        glm::vec2 Size = glm::vec2(0.5f);
+        glm::vec2 Size = glm::vec2(1.0f);
 
         BoxCollider2DComponent() = default;
         BoxCollider2DComponent(const BoxCollider2DComponent &other) = default;

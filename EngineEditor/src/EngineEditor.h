@@ -30,7 +30,9 @@ namespace EngineEditor
         void LoadScene();
         void LoadScene(std::filesystem::path path);
 
+        bool KeyPressedEventHandlerInEditorMode(Engine::Event::KeyPressedEvent &event);
         bool KeyPressedEventHandler(Engine::Event::KeyPressedEvent &event);
+
         bool MousePressedEventHandler(Engine::Event::MouseButtonPressedEvent &event);
         bool CanPickEntity();
         void DuplicateEntity(Engine::Entity entity);

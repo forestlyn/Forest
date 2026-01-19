@@ -272,14 +272,16 @@ namespace EngineEditor
     bool EngineEditor::OnEvent(Engine::Event::Event &event)
     {
         Engine::Event::EventDispatcher dispatcher(event);
+        event.Handled |= dispatcher.Dispatch<Engine::Event::KeyPressedEvent>(BIND_EVENT_FN(EngineEditor::KeyPressedEventHandlerInEditorMode));
         event.Handled |= dispatcher.Dispatch<Engine::Event::KeyPressedEvent>(BIND_EVENT_FN(EngineEditor::KeyPressedEventHandler));
         event.Handled |= dispatcher.Dispatch<Engine::Event::MouseButtonPressedEvent>(BIND_EVENT_FN(EngineEditor::MousePressedEventHandler));
         return false;
     }
 
-    bool EngineEditor::KeyPressedEventHandler(Engine::Event::KeyPressedEvent &event)
+    bool EngineEditor::KeyPressedEventHandlerInEditorMode(Engine::Event::KeyPressedEvent &event)
     {
-        ENGINE_INFO("KeyPressedEvent: {}", event.ToString());
+        if (m_SceneState == SceneState::Play)
+            return false;
         bool isCtrlPressed = Engine::Core::Input::IsKeyPressed(FOREST_KEY_LEFT_CONTROL) || Engine::Core::Input::IsKeyPressed(FOREST_KEY_RIGHT_CONTROL);
         bool isShiftPressed = Engine::Core::Input::IsKeyPressed(FOREST_KEY_LEFT_SHIFT) || Engine::Core::Input::IsKeyPressed(FOREST_KEY_RIGHT_SHIFT);
 
@@ -315,6 +317,17 @@ namespace EngineEditor
                 DuplicateEntity(m_SceneHierarchyPanel.GetSelectedEntity());
                 return true;
             }
+        }
+        return false;
+    }
+
+    bool EngineEditor::KeyPressedEventHandler(Engine::Event::KeyPressedEvent &event)
+    {
+        bool isCtrlPressed = Engine::Core::Input::IsKeyPressed(FOREST_KEY_LEFT_CONTROL) || Engine::Core::Input::IsKeyPressed(FOREST_KEY_RIGHT_CONTROL);
+        bool isShiftPressed = Engine::Core::Input::IsKeyPressed(FOREST_KEY_LEFT_SHIFT) || Engine::Core::Input::IsKeyPressed(FOREST_KEY_RIGHT_SHIFT);
+
+        switch (event.GetKeyCode())
+        {
         case FOREST_KEY_Q:
             if (ImGuizmo::IsUsing())
                 return true;
@@ -396,6 +409,11 @@ namespace EngineEditor
 
     void EngineEditor::PlayScene()
     {
+        if (!m_EditorScene)
+        {
+            ENGINE_ERROR("No editor scene to play!");
+            return;
+        }
         m_SceneState = SceneState::Play;
         m_ActiveScene = Engine::Scene::Copy(m_EditorScene);
         m_RuntimeScene = m_ActiveScene;
@@ -474,6 +492,11 @@ namespace EngineEditor
 
     void EngineEditor::NewScene()
     {
+        if (m_SceneState == SceneState::Play)
+        {
+            StopScene();
+        }
+
         m_EditorScene = Engine::CreateRef<Engine::Scene>();
         m_ActiveScene = m_EditorScene;
         m_EditorScenePath.clear();
@@ -489,6 +512,10 @@ namespace EngineEditor
 
     void EngineEditor::LoadScene(std::filesystem::path path)
     {
+        if (m_SceneState == SceneState::Play)
+        {
+            StopScene();
+        }
         if (!path.empty())
         {
             std::string ext = path.extension().string();

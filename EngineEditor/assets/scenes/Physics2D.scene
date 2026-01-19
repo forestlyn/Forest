@@ -1,64 +1,5 @@
 Scene: Untitled
 Entities:
-  - EntityID: 5589837931712714978
-    TagComponent:
-      Tag: Square
-    TransformComponent:
-      Position: [0.26837277, 0, 0]
-      Rotation: [0, 0, -89.99997]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Color: [0.8, 0.2, 0.3, 1]
-    Rigidbody2DComponent:
-      Type: 2
-      Velocity: [0, 9.8]
-      AngularVelocity: 0
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0.84
-      RestitutionThreshold: 0.9
-  - EntityID: 15481874266898090421
-    TagComponent:
-      Tag: Main Camera
-    TransformComponent:
-      Position: [0, 0, 10]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Primary: true
-      FixedAspectRatio: false
-      Camera:
-        ProjectionType: 1
-        AspectRatio: 1.8646617
-        OrthographicSize: 10
-        OrthographicNearClip: -1
-        OrthographicFarClip: 1
-        PerspectiveFOV: 45
-        PerspectiveNearClip: 0.1
-        PerspectiveFarClip: 1000
-  - EntityID: 1108859090500040080
-    TagComponent:
-      Tag: Second Camera
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Primary: false
-      FixedAspectRatio: false
-      Camera:
-        ProjectionType: 0
-        AspectRatio: 1.8646617
-        OrthographicSize: 10
-        OrthographicNearClip: -1
-        OrthographicFarClip: 1
-        PerspectiveFOV: 0.7853982
-        PerspectiveNearClip: 0.1
-        PerspectiveFarClip: 1000
   - EntityID: 10581122825863251169
     TagComponent:
       Tag: Platform
@@ -75,8 +16,67 @@ Entities:
       FixedRotation: false
     BoxCollider2DComponent:
       Offset: [0, 0]
-      Size: [0.5, 0.5]
+      Size: [1, 1]
       Density: 1
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
+  - EntityID: 1108859090500040080
+    TagComponent:
+      Tag: Second Camera
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Primary: false
+      FixedAspectRatio: false
+      Camera:
+        ProjectionType: 0
+        AspectRatio: 2.0753205
+        OrthographicSize: 10
+        OrthographicNearClip: -1
+        OrthographicFarClip: 1
+        PerspectiveFOV: 0.7853982
+        PerspectiveNearClip: 0.1
+        PerspectiveFarClip: 1000
+  - EntityID: 15481874266898090421
+    TagComponent:
+      Tag: Main Camera
+    TransformComponent:
+      Position: [0, 0, 10]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Primary: true
+      FixedAspectRatio: false
+      Camera:
+        ProjectionType: 1
+        AspectRatio: 2.0753205
+        OrthographicSize: 10
+        OrthographicNearClip: -1
+        OrthographicFarClip: 1
+        PerspectiveFOV: 45
+        PerspectiveNearClip: 0.1
+        PerspectiveFarClip: 1000
+  - EntityID: 5589837931712714978
+    TagComponent:
+      Tag: Square
+    TransformComponent:
+      Position: [0.26837277, 0, 0]
+      Rotation: [0, 0, -89.99997]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [0.8, 0.2, 0.3, 1]
+    Rigidbody2DComponent:
+      Type: 2
+      Velocity: [0, 9.8]
+      AngularVelocity: 0
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.84
+      RestitutionThreshold: 0.9
