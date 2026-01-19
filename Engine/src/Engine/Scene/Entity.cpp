@@ -10,4 +10,8 @@ namespace Engine
     {
         return m_Scene->m_Registry.get<IDComponent>(m_EntityHandle).ID;
     }
+    const std::string &Entity::GetName()
+    {
+        return m_Scene->m_Registry.get<TagComponent>(m_EntityHandle).Tag;
+    }
 }

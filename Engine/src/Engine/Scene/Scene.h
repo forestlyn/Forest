@@ -36,6 +36,8 @@ namespace Engine
 
         static Ref<Scene> Copy(Ref<Scene> other);
 
+        void DuplicateEntity(Entity entity);
+
     private:
         void RecalculateCameraProjections();
 

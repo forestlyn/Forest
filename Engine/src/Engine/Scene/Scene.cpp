@@ -283,6 +283,7 @@ namespace Engine
         CopyComponent<SpriteComponent>(newScene->m_Registry, other->m_Registry, entityMap);
         CopyComponent<Rigidbody2DComponent>(newScene->m_Registry, other->m_Registry, entityMap);
         CopyComponent<BoxCollider2DComponent>(newScene->m_Registry, other->m_Registry, entityMap);
+        CopyComponent<NativeScriptComponent>(newScene->m_Registry, other->m_Registry, entityMap);
         {
             auto view = newScene->m_Registry.view<TagComponent>();
             for (auto e : view)
@@ -294,6 +295,29 @@ namespace Engine
 
         return newScene;
     }
+
+    template <typename T>
+    static void CopyComponentIfExists(Entity dst, Entity src)
+    {
+        if (src.HasComponent<T>())
+        {
+            T &srcComponent = src.GetComponent<T>();
+            dst.AddOrReplaceComponent<T>(srcComponent);
+        }
+    }
+
+    void Scene::DuplicateEntity(Entity entity)
+    {
+        std::string name = entity.GetName();
+        Entity newEntity = CreateEntity(name + "_Copy");
+        CopyComponentIfExists<TransformComponent>(newEntity, entity);
+        CopyComponentIfExists<CameraComponent>(newEntity, entity);
+        CopyComponentIfExists<SpriteComponent>(newEntity, entity);
+        CopyComponentIfExists<Rigidbody2DComponent>(newEntity, entity);
+        CopyComponentIfExists<BoxCollider2DComponent>(newEntity, entity);
+        CopyComponentIfExists<NativeScriptComponent>(newEntity, entity);
+    }
+
     void Scene::RecalculateCameraProjections()
     {
         auto view = m_Registry.view<CameraComponent>();

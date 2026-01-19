@@ -19,6 +19,12 @@ namespace Engine
             return m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
         }
 
+        template <typename T, typename... Args>
+        T &AddOrReplaceComponent(Args &&...args)
+        {
+            return m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
+        }
+
         template <typename T>
         T &GetComponent()
         {
@@ -50,5 +56,6 @@ namespace Engine
         operator uint32_t() const { return (uint32_t)m_EntityHandle; }
 
         UUID GetUUID();
+        const std::string &GetName();
     };
 }

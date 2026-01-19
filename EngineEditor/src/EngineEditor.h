@@ -33,6 +33,7 @@ namespace EngineEditor
         bool KeyPressedEventHandler(Engine::Event::KeyPressedEvent &event);
         bool MousePressedEventHandler(Engine::Event::MouseButtonPressedEvent &event);
         bool CanPickEntity();
+        void DuplicateEntity(Engine::Entity entity);
 
         void UIToolbar();
 

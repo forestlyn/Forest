@@ -279,6 +279,7 @@ namespace EngineEditor
 
     bool EngineEditor::KeyPressedEventHandler(Engine::Event::KeyPressedEvent &event)
     {
+        ENGINE_INFO("KeyPressedEvent: {}", event.ToString());
         bool isCtrlPressed = Engine::Core::Input::IsKeyPressed(FOREST_KEY_LEFT_CONTROL) || Engine::Core::Input::IsKeyPressed(FOREST_KEY_RIGHT_CONTROL);
         bool isShiftPressed = Engine::Core::Input::IsKeyPressed(FOREST_KEY_LEFT_SHIFT) || Engine::Core::Input::IsKeyPressed(FOREST_KEY_RIGHT_SHIFT);
 
@@ -305,6 +306,13 @@ namespace EngineEditor
             else if (isCtrlPressed)
             {
                 SaveScene(m_EditorScenePath);
+                return true;
+            }
+        case FOREST_KEY_D:
+            if (isCtrlPressed)
+            {
+                ENGINE_INFO("Duplicate Entity Shortcut Pressed");
+                DuplicateEntity(m_SceneHierarchyPanel.GetSelectedEntity());
                 return true;
             }
         case FOREST_KEY_Q:
@@ -349,6 +357,13 @@ namespace EngineEditor
     bool EngineEditor::CanPickEntity()
     {
         return m_FocusScene && !ImGui::IsKeyPressed(ImGuiKey_LeftAlt) && !ImGuizmo::IsOver();
+    }
+
+    void EngineEditor::DuplicateEntity(Engine::Entity entity)
+    {
+        if (!entity)
+            return;
+        m_ActiveScene->DuplicateEntity(entity);
     }
 
     void EngineEditor::UIToolbar()
