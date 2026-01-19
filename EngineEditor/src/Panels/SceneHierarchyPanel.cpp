@@ -119,6 +119,14 @@ namespace EngineEditor
                         ImGui::CloseCurrentPopup();
                     }
                 }
+                if (!entity.HasComponent<Engine::CircleComponent>())
+                {
+                    if (ImGui::MenuItem("Circle Renderer"))
+                    {
+                        entity.AddComponent<Engine::CircleComponent>();
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
                 if (!entity.HasComponent<Engine::Rigidbody2DComponent>())
                 {
                     if (ImGui::MenuItem("Rigidbody 2D"))
@@ -245,6 +253,12 @@ namespace EngineEditor
                                                                     sceneCamera->SetPerspectiveFarClip(farClip);
                                                                 }
                                                             } });
+
+        UIUtils::DrawComponent<Engine::CircleComponent>("Circle Renderer", entity, [](Engine::CircleComponent &circle)
+                                                        {
+                                                                ImGui::ColorEdit4("Color", glm::value_ptr(circle.Color));
+                                                                ImGui::DragFloat("Thickness", &circle.Thickness, 0.01f, 0.0f, 1.0f);
+                                                                ImGui::DragFloat("Fade", &circle.Fade, 0.01f, 0.0f, 1.0f); });
 
         UIUtils::DrawComponent<Engine::Rigidbody2DComponent>("Rigidbody 2D", entity, [](Engine::Rigidbody2DComponent &rigidbody2D)
                                                              {

@@ -281,17 +281,10 @@ namespace Engine
         CopyComponent<TransformComponent>(newScene->m_Registry, other->m_Registry, entityMap);
         CopyComponent<CameraComponent>(newScene->m_Registry, other->m_Registry, entityMap);
         CopyComponent<SpriteComponent>(newScene->m_Registry, other->m_Registry, entityMap);
+        CopyComponent<CircleComponent>(newScene->m_Registry, other->m_Registry, entityMap);
         CopyComponent<Rigidbody2DComponent>(newScene->m_Registry, other->m_Registry, entityMap);
         CopyComponent<BoxCollider2DComponent>(newScene->m_Registry, other->m_Registry, entityMap);
         CopyComponent<NativeScriptComponent>(newScene->m_Registry, other->m_Registry, entityMap);
-        {
-            auto view = newScene->m_Registry.view<TagComponent>();
-            for (auto e : view)
-            {
-                std::string name = newScene->m_Registry.get<TagComponent>(e).Tag;
-                ENGINE_TRACE("name:{}", name);
-            }
-        }
 
         return newScene;
     }
@@ -313,6 +306,7 @@ namespace Engine
         CopyComponentIfExists<TransformComponent>(newEntity, entity);
         CopyComponentIfExists<CameraComponent>(newEntity, entity);
         CopyComponentIfExists<SpriteComponent>(newEntity, entity);
+        CopyComponentIfExists<CircleComponent>(newEntity, entity);
         CopyComponentIfExists<Rigidbody2DComponent>(newEntity, entity);
         CopyComponentIfExists<BoxCollider2DComponent>(newEntity, entity);
         CopyComponentIfExists<NativeScriptComponent>(newEntity, entity);

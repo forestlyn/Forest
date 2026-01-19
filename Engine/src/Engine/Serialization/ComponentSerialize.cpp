@@ -54,6 +54,16 @@ namespace Engine::Serialization
         out << YAML::EndMap;
     }
 
+    void SerilizaCircleComponent(YAML::Emitter &out, CircleComponent &component)
+    {
+        out << YAML::Key << "CircleComponent";
+        out << YAML::BeginMap;
+        out << YAML::Key << "Color" << YAML::Value << component.Color;
+        out << YAML::Key << "Thickness" << YAML::Value << component.Thickness;
+        out << YAML::Key << "Fade" << YAML::Value << component.Fade;
+        out << YAML::EndMap;
+    }
+
     void SerilizaRigidbody2DComponent(YAML::Emitter &out, Rigidbody2DComponent &component)
     {
         out << YAML::Key << "Rigidbody2DComponent";
@@ -189,6 +199,23 @@ namespace Engine::Serialization
             component.Color = glm::vec4(1.0f);
             return true;
         }
+    }
+
+    bool DeserializeCircleComponent(const YAML::Node &componentNode, CircleComponent &component)
+    {
+        if (componentNode["Color"])
+        {
+            component.Color = componentNode["Color"].as<glm::vec4>();
+        }
+        if (componentNode["Thickness"])
+        {
+            component.Thickness = componentNode["Thickness"].as<float>();
+        }
+        if (componentNode["Fade"])
+        {
+            component.Fade = componentNode["Fade"].as<float>();
+        }
+        return true;
     }
 
     bool DeserializeRigidbody2DComponent(const YAML::Node &componentNode, Rigidbody2DComponent &component)
