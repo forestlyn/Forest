@@ -18,26 +18,30 @@ namespace EngineEditor
 
         ImGui::Begin("Scene Hierarchy");
 
-        if (ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered())
+        if (m_Context)
         {
-            m_SelectionContext = {};
-        }
-
-        if (ImGui::BeginPopupContextWindow("HierarchyContextMenu", ImGuiPopupFlags_MouseButtonRight))
-        {
-            if (ImGui::MenuItem("Create Empty Entity"))
+            if (ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered())
             {
-                m_Context->CreateEntity("Empty Entity");
+                m_SelectionContext = {};
             }
-            ImGui::EndPopup();
+
+            if (ImGui::BeginPopupContextWindow("HierarchyContextMenu", ImGuiPopupFlags_MouseButtonRight))
+            {
+                if (ImGui::MenuItem("Create Empty Entity"))
+                {
+                    m_Context->CreateEntity("Empty Entity");
+                }
+                ImGui::EndPopup();
+            }
+
+            auto view = m_Context->m_Registry.view<Engine::TagComponent>();
+            for (auto entity : view)
+            {
+                Engine::Entity e{entity, m_Context.get()};
+                DrawEntityNode(e);
+            }
         }
 
-        auto view = m_Context->m_Registry.view<Engine::TagComponent>();
-        for (auto entity : view)
-        {
-            Engine::Entity e{entity, m_Context.get()};
-            DrawEntityNode(e);
-        }
         ImGui::End();
 
         ImGui::Begin("Properties");

@@ -124,7 +124,7 @@ namespace EngineEditor
                 }
                 if (ImGui::MenuItem("Save Scene Ctrl+S"))
                 {
-                    SaveScene(m_ActiveScenePath);
+                    SaveScene(m_EditorScenePath);
                 }
                 if (ImGui::MenuItem("Save Scene Ctrl+Shift+S"))
                 {
@@ -304,7 +304,7 @@ namespace EngineEditor
             }
             else if (isCtrlPressed)
             {
-                SaveScene(m_ActiveScenePath);
+                SaveScene(m_EditorScenePath);
                 return true;
             }
         case FOREST_KEY_Q:
@@ -382,6 +382,9 @@ namespace EngineEditor
     void EngineEditor::PlayScene()
     {
         m_SceneState = SceneState::Play;
+        m_ActiveScene = Engine::Scene::Copy(m_EditorScene);
+        m_RuntimeScene = m_ActiveScene;
+        m_SceneHierarchyPanel.SetContext(m_ActiveScene);
         m_ActiveScene->OnRuntimeStart();
     }
 
@@ -389,6 +392,9 @@ namespace EngineEditor
     {
         m_SceneState = SceneState::Edit;
         m_ActiveScene->OnRuntimeStop();
+
+        m_ActiveScene = m_EditorScene;
+        m_SceneHierarchyPanel.SetContext(m_ActiveScene);
     }
 
     void EngineEditor::OpenDockSpace()
@@ -453,8 +459,9 @@ namespace EngineEditor
 
     void EngineEditor::NewScene()
     {
-        m_ActiveScene = Engine::CreateRef<Engine::Scene>();
-        m_ActiveScenePath.clear();
+        m_EditorScene = Engine::CreateRef<Engine::Scene>();
+        m_ActiveScene = m_EditorScene;
+        m_EditorScenePath.clear();
         m_SceneHierarchyPanel.SetContext(m_ActiveScene);
         m_ActiveScene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
     }
@@ -475,8 +482,9 @@ namespace EngineEditor
                 ENGINE_ERROR("Could not load scene file '{0}' - not a .scene file!", path.string());
                 return;
             }
-            m_ActiveScenePath = path;
-            m_ActiveScene = Engine::CreateRef<Engine::Scene>();
+            m_EditorScene = Engine::CreateRef<Engine::Scene>();
+            m_ActiveScene = m_EditorScene;
+            m_EditorScenePath = path;
             Engine::Serialization::SceneSerialize sceneSerialize(m_ActiveScene);
             sceneSerialize.Deserialize(path.string());
             m_SceneHierarchyPanel.SetContext(m_ActiveScene);
@@ -502,7 +510,7 @@ namespace EngineEditor
         {
             Engine::Serialization::SceneSerialize sceneSerialize(m_ActiveScene);
             sceneSerialize.Serialize(scenePath);
-            m_ActiveScenePath = scenePath;
+            m_EditorScenePath = scenePath;
             return;
         }
     }

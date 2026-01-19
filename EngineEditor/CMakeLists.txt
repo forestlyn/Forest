@@ -26,7 +26,7 @@ target_link_libraries(EngineEditor PRIVATE Engine)
 # 设置可执行文件的输出名称
 set_target_properties(EngineEditor PROPERTIES
     OUTPUT_NAME "EngineEditor"
-    DEBUG_POSTFIX "-debug"
+    DEBUG_POSTFIX "_debug"
     RELEASE_POSTFIX "_release"
 )
 

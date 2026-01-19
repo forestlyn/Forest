@@ -21,6 +21,6 @@ namespace Engine
         b2BodyId RuntimeBodyId;
 
         Rigidbody2DComponent() = default;
-        Rigidbody2DComponent(const Rigidbody2DComponent &other) = delete;
+        Rigidbody2DComponent(const Rigidbody2DComponent &other) = default;
     };
 } // namespace Engine

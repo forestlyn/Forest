@@ -12,18 +12,18 @@ namespace Engine
     class Scene
     {
     public:
-        Scene();
+        Scene() = default;
         ~Scene()
         {
             LOG_INFO("Scene destroyed.");
         }
-        void OnUpdateRuntime(Engine::Core::Timestep timestep);
-        void OnUpdateEditor(Engine::Core::Timestep timestep, Renderer::EditorCamera &editorCamera);
+        void OnUpdateRuntime(Core::Timestep timestep);
+        void OnUpdateEditor(Core::Timestep timestep, Renderer::EditorCamera &editorCamera);
 
         // Create an entity with a specific name,will add TagComponent and TransformComponent by default
         Entity CreateEntity(const std::string &name = std::string());
         // Create an entity with a specific ID (for deserialization) no default components
-        Entity CreateEntityWithID(UUID uuid, const std::string &name = std::string());
+        Entity CreateEntityWithID(UUID uuid);
         entt::registry &GetRegistry() { return m_Registry; }
 
         void SetViewportSize(uint32_t width, uint32_t height);
@@ -33,6 +33,8 @@ namespace Engine
 
         void OnRuntimeStart();
         void OnRuntimeStop();
+
+        static Ref<Scene> Copy(Ref<Scene> other);
 
     private:
         void RecalculateCameraProjections();
@@ -48,4 +50,5 @@ namespace Engine
         friend class Entity;
         friend class EngineEditor::SceneHierarchyPanel;
     };
+
 } // namespace Engine

@@ -10,7 +10,7 @@ namespace Engine
         float TilingFactor = 1.0f;
         Engine::Ref<Engine::Renderer::Texture2D> Texture = nullptr;
         SpriteComponent() = default;
-        SpriteComponent(const SpriteComponent &other) = delete;
+        SpriteComponent(const SpriteComponent &other) = default;
         SpriteComponent(const glm::vec4 &color) : Color(color) {}
     };
 }

@@ -7,9 +7,6 @@
 #include "Engine/Profile/Instrumentor.h"
 namespace Engine
 {
-    Scene::Scene()
-    {
-    }
     void Scene::OnUpdateRuntime(Core::Timestep deltaTime)
     {
         ENGINE_PROFILING_FUNC();
@@ -78,7 +75,6 @@ namespace Engine
 
                         transform.SetPosition(glm::vec3(position.x, position.y, transform.GetPosition().z));
                         transform.SetRotation(glm::vec3(transform.GetRotation().x, transform.GetRotation().y, glm::degrees(angle)));
-                        ENGINE_INFO("Entity {} position: ({}, {}), angle: {}", (int)entity, position.x, position.y, angle);
                     }
                 }
             }
@@ -165,7 +161,7 @@ namespace Engine
         return entity;
     }
 
-    Entity Scene::CreateEntityWithID(UUID uuid, const std::string &name)
+    Entity Scene::CreateEntityWithID(UUID uuid)
     {
         entt::entity entityHandle = m_Registry.create();
         Entity entity = Entity(entityHandle, this);
@@ -248,6 +244,55 @@ namespace Engine
     void Scene::OnRuntimeStop()
     {
         b2DestroyWorld(worldId);
+    }
+
+    template <typename T>
+    static void CopyComponent(entt::registry &dst, entt::registry &src, std::unordered_map<uint64_t, entt::entity> entityMap)
+    {
+        auto view = src.view<T>();
+        for (auto e : view)
+        {
+            ENGINE_ASSERT(entityMap.find(src.get<IDComponent>(e).ID) != entityMap.end(), "Entity not found in map!");
+            entt::entity destEntity = entityMap[src.get<IDComponent>(e).ID];
+            T &srcComponent = src.get<T>(e);
+            dst.emplace_or_replace<T>(destEntity, srcComponent);
+        }
+    }
+
+    Ref<Scene> Scene::Copy(Ref<Scene> other)
+    {
+        Ref<Scene> newScene = CreateRef<Scene>();
+        newScene->m_ViewportWidth = other->m_ViewportWidth;
+        newScene->m_ViewportHeight = other->m_ViewportHeight;
+
+        std::unordered_map<uint64_t, entt::entity> entityMap;
+
+        auto view = other->m_Registry.view<IDComponent>();
+        for (auto e : view)
+        {
+            UUID uuid = other->m_Registry.get<IDComponent>(e).ID;
+            std::string name = other->m_Registry.get<TagComponent>(e).Tag;
+            Entity newEntity = newScene->CreateEntityWithID(uuid);
+            entityMap[uuid] = (entt::entity)newEntity;
+        }
+
+        // Copy all components
+        CopyComponent<TagComponent>(newScene->m_Registry, other->m_Registry, entityMap);
+        CopyComponent<TransformComponent>(newScene->m_Registry, other->m_Registry, entityMap);
+        CopyComponent<CameraComponent>(newScene->m_Registry, other->m_Registry, entityMap);
+        CopyComponent<SpriteComponent>(newScene->m_Registry, other->m_Registry, entityMap);
+        CopyComponent<Rigidbody2DComponent>(newScene->m_Registry, other->m_Registry, entityMap);
+        CopyComponent<BoxCollider2DComponent>(newScene->m_Registry, other->m_Registry, entityMap);
+        {
+            auto view = newScene->m_Registry.view<TagComponent>();
+            for (auto e : view)
+            {
+                std::string name = newScene->m_Registry.get<TagComponent>(e).Tag;
+                ENGINE_TRACE("name:{}", name);
+            }
+        }
+
+        return newScene;
     }
     void Scene::RecalculateCameraProjections()
     {

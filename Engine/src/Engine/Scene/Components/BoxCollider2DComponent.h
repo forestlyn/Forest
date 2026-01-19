@@ -14,6 +14,6 @@ namespace Engine
         glm::vec2 Size = glm::vec2(0.5f);
 
         BoxCollider2DComponent() = default;
-        BoxCollider2DComponent(const BoxCollider2DComponent &other) = delete;
+        BoxCollider2DComponent(const BoxCollider2DComponent &other) = default;
     };
 } // namespace Engine

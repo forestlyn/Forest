@@ -53,7 +53,9 @@ namespace EngineEditor
 
         Engine::Renderer::EditorCamera m_EditorCamera;
         Engine::Ref<Engine::Scene> m_ActiveScene;
-        std::filesystem::path m_ActiveScenePath;
+        Engine::Ref<Engine::Scene> m_EditorScene;
+        Engine::Ref<Engine::Scene> m_RuntimeScene;
+        std::filesystem::path m_EditorScenePath;
 
         glm::vec2 m_SceneViewportBounds[2];
 

@@ -9,7 +9,7 @@ namespace Engine
         std::string Tag;
 
         TagComponent() = default;
-        TagComponent(const TagComponent &other) = delete;
+        TagComponent(const TagComponent &other) = default;
         TagComponent(const std::string &tag) : Tag(tag) {}
     };
 }

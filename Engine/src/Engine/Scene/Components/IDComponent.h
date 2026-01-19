@@ -11,6 +11,6 @@ namespace Engine
             : ID(uuid)
         {
         }
-        IDComponent(const IDComponent &other) = delete;
+        IDComponent(const IDComponent &other) = default;
     };
 } // namespace Engine

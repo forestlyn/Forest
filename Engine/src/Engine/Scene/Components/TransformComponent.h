@@ -35,7 +35,7 @@ namespace Engine
 
     public:
         TransformComponent() = default;
-        TransformComponent(const TransformComponent &other) = delete;
+        TransformComponent(const TransformComponent &other) = default;
         TransformComponent(const glm::vec3 &position) : Position(position) {}
 
         glm::mat4 GetTransform()
