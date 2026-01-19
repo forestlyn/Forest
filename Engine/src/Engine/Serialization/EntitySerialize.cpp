@@ -27,6 +27,11 @@ namespace Engine::Serialization
             auto &spriteComp = entity.GetComponent<SpriteComponent>();
             SerilizaSpriteComponent(out, spriteComp);
         }
+        if (entity.HasComponent<CircleComponent>())
+        {
+            auto &circleComp = entity.GetComponent<CircleComponent>();
+            SerilizaCircleComponent(out, circleComp);
+        }
         if (entity.HasComponent<Rigidbody2DComponent>())
         {
             auto &rigidbody2DComp = entity.GetComponent<Rigidbody2DComponent>();
@@ -75,6 +80,15 @@ namespace Engine::Serialization
             auto spriteNode = entityNode["SpriteComponent"];
             auto &spriteComp = entity.AddComponent<SpriteComponent>();
             if (!DeserializeSpriteComponent(spriteNode, spriteComp))
+            {
+                return false;
+            }
+        }
+        if (entityNode["CircleComponent"])
+        {
+            auto circleNode = entityNode["CircleComponent"];
+            auto &circleComp = entity.AddComponent<CircleComponent>();
+            if (!DeserializeCircleComponent(circleNode, circleComp))
             {
                 return false;
             }

@@ -25,55 +25,94 @@ namespace Engine::Renderer
         ENGINE_PROFILING_FUNC();
 
         // initialize shaders
-        m_SceneData.QuadTextureShader = Shader::Create("assets/shaders/TextureShader.glsl");
+        m_SceneData.QuadTextureShader = Shader::Create("assets/shaders/Renderer2D_QuadShader.glsl");
+        m_SceneData.CircleShader = Shader::Create("assets/shaders/Renderer2D_CircleShader.glsl");
         // initialize vertex array
-
-        m_SceneData.QuadVertexArray = VertexArray::Create();
-
-        m_SceneData.QuadVertexBufferBase = new QuadVertex[m_SceneData.MaxVertices];
-        m_SceneData.QuadVertexBufferPtr = m_SceneData.QuadVertexBufferBase;
-
-        m_SceneData.QuadVertexBuffer = VertexBuffer::Create(sizeof(QuadVertex) * m_SceneData.MaxVertices);
-        m_SceneData.QuadVertexBuffer->SetLayout({{ShaderDataType::Float3, "a_Position"},
-                                                 {ShaderDataType::Float4, "a_Color"},
-                                                 {ShaderDataType::Float2, "a_TexCoord"},
-                                                 {ShaderDataType::Float, "a_TexIndex"},
-                                                 {ShaderDataType::Float, "a_TilingFactor"},
-                                                 {ShaderDataType::Int, "a_EntityID"}});
-        m_SceneData.QuadVertexArray->AddVertexBuffer(m_SceneData.QuadVertexBuffer);
-
-        uint32_t *quadIndices = new uint32_t[m_SceneData.MaxIndices];
-        uint32_t offset = 0;
-        for (size_t i = 0; i < m_SceneData.MaxQuads * 6; i += 6)
+        //-- Init Quad --
         {
-            quadIndices[i + 0] = offset + 0;
-            quadIndices[i + 1] = offset + 1;
-            quadIndices[i + 2] = offset + 2;
 
-            quadIndices[i + 3] = offset + 2;
-            quadIndices[i + 4] = offset + 3;
-            quadIndices[i + 5] = offset + 0;
+            m_SceneData.QuadVertexArray = VertexArray::Create();
 
-            offset += 4;
+            m_SceneData.QuadVertexBufferBase = new QuadVertex[m_SceneData.MaxVertices];
+            m_SceneData.QuadVertexBufferPtr = m_SceneData.QuadVertexBufferBase;
+
+            m_SceneData.QuadVertexBuffer = VertexBuffer::Create(sizeof(QuadVertex) * m_SceneData.MaxVertices);
+            m_SceneData.QuadVertexBuffer->SetLayout({{ShaderDataType::Float3, "a_Position"},
+                                                     {ShaderDataType::Float4, "a_Color"},
+                                                     {ShaderDataType::Float2, "a_TexCoord"},
+                                                     {ShaderDataType::Float, "a_TexIndex"},
+                                                     {ShaderDataType::Float, "a_TilingFactor"},
+                                                     {ShaderDataType::Int, "a_EntityID"}});
+            m_SceneData.QuadVertexArray->AddVertexBuffer(m_SceneData.QuadVertexBuffer);
+
+            uint32_t *quadIndices = new uint32_t[m_SceneData.MaxIndices];
+            uint32_t offset = 0;
+            for (size_t i = 0; i < m_SceneData.MaxIndices; i += 6)
+            {
+                quadIndices[i + 0] = offset + 0;
+                quadIndices[i + 1] = offset + 1;
+                quadIndices[i + 2] = offset + 2;
+
+                quadIndices[i + 3] = offset + 2;
+                quadIndices[i + 4] = offset + 3;
+                quadIndices[i + 5] = offset + 0;
+
+                offset += 4;
+            }
+
+            Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, m_SceneData.MaxIndices);
+            m_SceneData.QuadVertexArray->SetIndexBuffer(quadIB);
+            delete[] quadIndices;
+
+            // create a 1x1 white texture
+            auto WhiteTexture = Texture2D::Create(1, 1);
+            uint32_t whitePixel = 0xffffffff;
+            WhiteTexture->SetData(&whitePixel, sizeof(uint32_t));
+            m_SceneData.TextureSlots[0] = WhiteTexture;
+
+            int32_t textureSlots[m_SceneData.MaxTextureSlots];
+            for (int32_t i = 0; i < m_SceneData.MaxTextureSlots; i++)
+                textureSlots[i] = i;
+
+            m_SceneData.QuadTextureShader->Bind();
+            m_SceneData.QuadTextureShader->SetIntArray("u_Textures", textureSlots, m_SceneData.MaxTextureSlots);
         }
 
-        Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, m_SceneData.MaxIndices);
-        m_SceneData.QuadVertexArray->SetIndexBuffer(quadIB);
-        delete[] quadIndices;
+        //-- Init Circle --
+        {
+            m_SceneData.CircleVertexArray = VertexArray::Create();
 
-        // create a 1x1 white texture
-        auto WhiteTexture = Texture2D::Create(1, 1);
-        uint32_t whitePixel = 0xffffffff;
-        WhiteTexture->SetData(&whitePixel, sizeof(uint32_t));
-        m_SceneData.TextureSlots[0] = WhiteTexture;
+            m_SceneData.CircleVertexBufferBase = new CircleVertex[m_SceneData.MaxVertices];
+            m_SceneData.CircleVertexBufferPtr = m_SceneData.CircleVertexBufferBase;
 
-        int32_t textureSlots[m_SceneData.MaxTextureSlots];
-        for (int32_t i = 0; i < m_SceneData.MaxTextureSlots; i++)
-            textureSlots[i] = i;
+            m_SceneData.CircleVertexBuffer = VertexBuffer::Create(sizeof(CircleVertex) * m_SceneData.MaxVertices);
+            m_SceneData.CircleVertexBuffer->SetLayout({{ShaderDataType::Float3, "a_WorldPosition"},
+                                                       {ShaderDataType::Float2, "a_LocalPosition"},
+                                                       {ShaderDataType::Float4, "a_Color"},
+                                                       {ShaderDataType::Float, "a_Thickness"},
+                                                       {ShaderDataType::Float, "a_Fade"},
+                                                       {ShaderDataType::Int, "a_EntityID"}});
+            m_SceneData.CircleVertexArray->AddVertexBuffer(m_SceneData.CircleVertexBuffer);
 
-        m_SceneData.QuadTextureShader->Bind();
-        m_SceneData.QuadTextureShader->SetIntArray("u_Textures", textureSlots, m_SceneData.MaxTextureSlots);
+            uint32_t *circleIndices = new uint32_t[m_SceneData.MaxIndices];
+            uint32_t offset = 0;
+            for (size_t i = 0; i < m_SceneData.MaxIndices; i += 6)
+            {
+                circleIndices[i + 0] = offset + 0;
+                circleIndices[i + 1] = offset + 1;
+                circleIndices[i + 2] = offset + 2;
 
+                circleIndices[i + 3] = offset + 2;
+                circleIndices[i + 4] = offset + 3;
+                circleIndices[i + 5] = offset + 0;
+
+                offset += 4;
+            }
+
+            Ref<IndexBuffer> circleIB = IndexBuffer::Create(circleIndices, m_SceneData.MaxIndices);
+            m_SceneData.CircleVertexArray->SetIndexBuffer(circleIB);
+            delete[] circleIndices;
+        }
         m_SceneData.CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraData), 0);
     }
 
@@ -89,21 +128,26 @@ namespace Engine::Renderer
         m_SceneData.CameraBuffer.ViewProjection = viewProjectionMatrix;
         m_SceneData.CameraUniformBuffer->SetData(&m_SceneData.CameraBuffer, sizeof(CameraData));
 
-        Reset();
+        ResetQuad();
+        ResetCircle();
     }
 
     void Renderer2D::EndScene()
     {
         ENGINE_PROFILING_FUNC();
 
+        // Quad
         uint32_t dataSize = (uint32_t)((uint8_t *)m_SceneData.QuadVertexBufferPtr - (uint8_t *)m_SceneData.QuadVertexBufferBase);
         m_SceneData.QuadVertexBuffer->SetData(m_SceneData.QuadVertexBufferBase, dataSize);
-
-        Flush();
+        FlushQuad();
+        // Circle
+        dataSize = (uint32_t)((uint8_t *)m_SceneData.CircleVertexBufferPtr - (uint8_t *)m_SceneData.CircleVertexBufferBase);
+        m_SceneData.CircleVertexBuffer->SetData(m_SceneData.CircleVertexBufferBase, dataSize);
+        FlushCircle();
     }
 
     /// @brief flush the draw calls
-    void Renderer2D::Flush()
+    void Renderer2D::FlushQuad()
     {
         ENGINE_PROFILING_FUNC();
         for (int i = 0; i < m_SceneData.TextureSlotIndex; i++)
@@ -113,6 +157,14 @@ namespace Engine::Renderer
         m_Stats.DrawCalls++;
         RenderCommand::DrawIndexed(m_SceneData.QuadVertexArray, m_SceneData.QuadIndexCount);
     }
+
+    void Renderer2D::FlushCircle()
+    {
+        ENGINE_PROFILING_FUNC();
+        m_Stats.DrawCalls++;
+        RenderCommand::DrawIndexed(m_SceneData.CircleVertexArray, m_SceneData.CircleIndexCount);
+    }
+
 #pragma region DrawQuadImplementations
     void Renderer2D::DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color, int entityID)
     {
@@ -267,6 +319,16 @@ namespace Engine::Renderer
     }
 
 #pragma endregion
+
+#pragma region DrawCircleImplementations
+    void Renderer2D::DrawCircle(const glm::mat4 &transform, CircleComponent &src, int entityID)
+    {
+        ENGINE_PROFILING_FUNC();
+        DrawCircleInternal(transform, src.Color, src.Thickness, src.Fade, entityID);
+    }
+
+#pragma endregion
+
     /// @brief get the texture index in slot
     /// if not exist, add it to slot
     /// if exceed max slots, flush and reset
@@ -285,8 +347,8 @@ namespace Engine::Renderer
         if (m_SceneData.TextureSlotIndex >= Renderer2D::Scene2DData::MaxTextureSlots)
         {
             UploadQuadData();
-            Flush();
-            Reset();
+            FlushQuad();
+            ResetQuad();
         }
 
         // ENGINE_INFO("New Texture Slot: {}", m_SceneData.TextureSlotIndex);
@@ -300,12 +362,24 @@ namespace Engine::Renderer
         uint32_t dataSize = (uint32_t)((uint8_t *)m_SceneData.QuadVertexBufferPtr - (uint8_t *)m_SceneData.QuadVertexBufferBase);
         m_SceneData.QuadVertexBuffer->SetData(m_SceneData.QuadVertexBufferBase, dataSize);
     }
+    /// @brief upload the circle vertex data to gpu
+    void Renderer2D::UploadCircleData()
+    {
+        uint32_t dataSize = (uint32_t)((uint8_t *)m_SceneData.CircleVertexBufferPtr - (uint8_t *)m_SceneData.CircleVertexBufferBase);
+        m_SceneData.CircleVertexBuffer->SetData(m_SceneData.CircleVertexBufferBase, dataSize);
+    }
     /// @brief reset ptr and index
-    void Renderer2D::Reset()
+    void Renderer2D::ResetQuad()
     {
         m_SceneData.QuadVertexBufferPtr = m_SceneData.QuadVertexBufferBase;
         m_SceneData.QuadIndexCount = 0;
         m_SceneData.TextureSlotIndex = 1;
+    }
+    /// @brief reset ptr and index
+    void Renderer2D::ResetCircle()
+    {
+        m_SceneData.CircleVertexBufferPtr = m_SceneData.CircleVertexBufferBase;
+        m_SceneData.CircleIndexCount = 0;
     }
 
     /// @brief internal function to draw quad
@@ -314,8 +388,8 @@ namespace Engine::Renderer
         if (m_SceneData.QuadIndexCount >= m_SceneData.MaxIndices)
         {
             UploadQuadData();
-            Flush();
-            Reset();
+            FlushQuad();
+            ResetQuad();
         }
 
         for (int i = 0; i < 4; i++)
@@ -333,5 +407,33 @@ namespace Engine::Renderer
         m_Stats.QuadCount++;
 
         ENGINE_ASSERT(m_SceneData.QuadIndexCount <= m_SceneData.MaxIndices, "Renderer2D::DrawQuad - Exceeded max quad index count!");
+    }
+    /// @brief internal function to draw circle
+    void Renderer2D::DrawCircleInternal(const glm::mat4 &transform, const glm::vec4 &color, float thickness, float fade, int entityID)
+    {
+        if (m_SceneData.CircleIndexCount >= m_SceneData.MaxIndices)
+        {
+            UploadCircleData();
+            FlushCircle();
+            ResetCircle();
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            glm::vec4 localPos = QuadVertexPositions[i] * 2.0f;
+
+            m_SceneData.CircleVertexBufferPtr->WorldPosition = transform * QuadVertexPositions[i];
+            m_SceneData.CircleVertexBufferPtr->LocalPosition = {QuadVertexPositions[i].x * 2.0f, QuadVertexPositions[i].y * 2.0f};
+            m_SceneData.CircleVertexBufferPtr->Color = color;
+            m_SceneData.CircleVertexBufferPtr->Thickness = thickness;
+            m_SceneData.CircleVertexBufferPtr->Fade = fade;
+            m_SceneData.CircleVertexBufferPtr->EntityID = entityID;
+            m_SceneData.CircleVertexBufferPtr++;
+        }
+
+        m_SceneData.CircleIndexCount += 6;
+        m_Stats.QuadCount++;
+
+        ENGINE_ASSERT(m_SceneData.CircleIndexCount <= m_SceneData.MaxIndices, "Renderer2D::DrawCircle - Exceeded max circle index count!");
     }
 }

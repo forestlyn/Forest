@@ -6,6 +6,7 @@
 #include "Engine/Renderer/Shader/SubTexture.h"
 #include "Engine/Renderer/Shader/VertexArray.h"
 #include "Engine/Scene/Components/SpriteComponent.h"
+#include "Engine/Scene/Components/CircleComponent.h"
 #include "Engine/Renderer/UniformBuffer.h"
 
 namespace Engine::Renderer
@@ -30,7 +31,8 @@ namespace Engine::Renderer
         static void BeginScene(glm::mat4 viewProjectionMatrix);
         static void EndScene();
 
-        static void Flush();
+        static void FlushQuad();
+        static void FlushCircle();
 
         static void DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color, int entityID = -1);
         static void DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color, int entityID = -1);
@@ -52,7 +54,7 @@ namespace Engine::Renderer
 
         // draw component
         static void DrawSprite(const glm::mat4 &transform, SpriteComponent &src, int entityID);
-
+        static void DrawCircle(const glm::mat4 &transform, CircleComponent &src, int entityID);
         // just for test
         static int GetMaxQuads()
         {
@@ -88,10 +90,13 @@ namespace Engine::Renderer
         static float GetTextureIndex(const Ref<Texture2D> &texture);
 
         static void UploadQuadData();
-        static void Reset();
+        static void ResetQuad();
+
+        static void UploadCircleData();
+        static void ResetCircle();
 
         static void DrawQuadInternal(const glm::mat4 &transform, const glm::vec4 &color, const float textureIndex, const float tilingFactor, int entityID = -1, const glm::vec2 *texCoords = QuadTexCoords);
-
+        static void DrawCircleInternal(const glm::mat4 &transform, const glm::vec4 &color, float thickness, float fade, int entityID = -1);
         struct QuadVertex
         {
             glm::vec3 Position;
@@ -99,6 +104,15 @@ namespace Engine::Renderer
             glm::vec2 TexCoord;
             float TexIndex;
             float TilingFactor;
+            int EntityID;
+        };
+        struct CircleVertex
+        {
+            glm::vec3 WorldPosition;
+            glm::vec2 LocalPosition;
+            glm::vec4 Color;
+            float Thickness;
+            float Fade;
             int EntityID;
         };
         struct CameraData
@@ -112,17 +126,19 @@ namespace Engine::Renderer
 
             //-- Textures and shaders --
             Ref<Shader> QuadTextureShader;
+            Ref<Shader> CircleShader;
 
             static const int MaxTextureSlots = 32;
             std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
             uint32_t TextureSlotIndex = 1; // 0 = white texture
 
-            //-- Quad data --
             const int InitialMaxQuads = 10000;
 
             uint32_t MaxQuads = InitialMaxQuads;
             uint32_t MaxVertices = MaxQuads * 4;
             uint32_t MaxIndices = MaxQuads * 6;
+
+            //-- Quad data --
 
             Ref<VertexArray> QuadVertexArray;
             Ref<VertexBuffer> QuadVertexBuffer;
@@ -130,6 +146,13 @@ namespace Engine::Renderer
 
             QuadVertex *QuadVertexBufferBase = nullptr;
             QuadVertex *QuadVertexBufferPtr = nullptr;
+
+            // -- Circle data --
+            Ref<VertexArray> CircleVertexArray;
+            Ref<VertexBuffer> CircleVertexBuffer;
+            uint32_t CircleIndexCount = 0;
+            CircleVertex *CircleVertexBufferBase = nullptr;
+            CircleVertex *CircleVertexBufferPtr = nullptr;
 
             CameraData CameraBuffer;
             Ref<UniformBuffer> CameraUniformBuffer;

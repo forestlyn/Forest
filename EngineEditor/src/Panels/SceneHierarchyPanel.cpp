@@ -254,7 +254,7 @@ namespace EngineEditor
                                                                 }
                                                             } });
 
-        UIUtils::DrawComponent<Engine::CircleComponent>("Circle Renderer", entity, [](Engine::CircleComponent &circle)
+        UIUtils::DrawComponent<Engine::CircleComponent>("Circle", entity, [](Engine::CircleComponent &circle)
                                                         {
                                                                 ImGui::ColorEdit4("Color", glm::value_ptr(circle.Color));
                                                                 ImGui::DragFloat("Thickness", &circle.Thickness, 0.01f, 0.0f, 1.0f);

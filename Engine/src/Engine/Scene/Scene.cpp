@@ -127,6 +127,14 @@ namespace Engine
                 Renderer::Renderer2D::DrawQuad(transformComponent.GetTransform(), spriteComponent.Color);
             }
 
+            auto circleView = m_Registry.view<CircleComponent, TransformComponent>();
+            for (auto entity : circleView)
+            {
+                auto &circleComponent = circleView.get<CircleComponent>(entity);
+                auto &transformComponent = circleView.get<TransformComponent>(entity);
+                Renderer::Renderer2D::DrawCircle(transformComponent.GetTransform(), circleComponent, (int)entity);
+            }
+
             Engine::Renderer::Renderer2D::EndScene();
         }
     }
@@ -146,6 +154,14 @@ namespace Engine
             auto &spriteComponent = view.get<SpriteComponent>(entity);
             auto &transformComponent = view.get<TransformComponent>(entity);
             Renderer::Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
+        }
+
+        auto circleView = m_Registry.view<CircleComponent, TransformComponent>();
+        for (auto entity : circleView)
+        {
+            auto &circleComponent = circleView.get<CircleComponent>(entity);
+            auto &transformComponent = circleView.get<TransformComponent>(entity);
+            Renderer::Renderer2D::DrawCircle(transformComponent.GetTransform(), circleComponent, (int)entity);
         }
 
         Engine::Renderer::Renderer2D::EndScene();
