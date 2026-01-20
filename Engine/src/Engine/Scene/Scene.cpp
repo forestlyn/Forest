@@ -265,7 +265,7 @@ namespace Engine
                 auto &circleCollider = entity.GetComponent<CircleCollider2DComponent>();
                 b2Circle circleShape;
                 circleShape.radius = circleCollider.Radius * transform.GetScale().x;
-                circleShape.center = {0, 0};
+                circleShape.center = {circleCollider.Offset.x, circleCollider.Offset.y};
                 b2ShapeDef shapeDef = b2DefaultShapeDef();
                 shapeDef.density = circleCollider.Density;
                 shapeDef.material.friction = circleCollider.Friction;

@@ -93,6 +93,7 @@ namespace Engine::Serialization
         out << YAML::Key << "CircleCollider2DComponent";
         out << YAML::BeginMap;
         out << YAML::Key << "Radius" << YAML::Value << component.Radius;
+        out << YAML::Key << "Offset" << YAML::Value << component.Offset;
         out << YAML::Key << "Density" << YAML::Value << component.Density;
         out << YAML::Key << "Friction" << YAML::Value << component.Friction;
         out << YAML::Key << "Restitution" << YAML::Value << component.Restitution;
@@ -285,6 +286,10 @@ namespace Engine::Serialization
         if (componentNode["Radius"])
         {
             component.Radius = componentNode["Radius"].as<float>();
+        }
+        if (componentNode["Offset"])
+        {
+            component.Offset = componentNode["Offset"].as<glm::vec2>();
         }
         if (componentNode["Density"])
         {
