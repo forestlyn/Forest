@@ -5,5 +5,6 @@
 #include "Components/TransformComponent.h"
 #include "Components/SpriteComponent.h"
 #include "Components/CircleComponent.h"
+#include "Components/CircleCollider2DComponent.h"
 #include "Components/Rigidbody2DComponent.h"
 #include "Components/BoxCollider2DComponent.h"

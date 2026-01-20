@@ -88,6 +88,18 @@ namespace Engine::Serialization
         out << YAML::EndMap;
     }
 
+    void SerilizaCircleCollider2DComponent(YAML::Emitter &out, CircleCollider2DComponent &component)
+    {
+        out << YAML::Key << "CircleCollider2DComponent";
+        out << YAML::BeginMap;
+        out << YAML::Key << "Radius" << YAML::Value << component.Radius;
+        out << YAML::Key << "Density" << YAML::Value << component.Density;
+        out << YAML::Key << "Friction" << YAML::Value << component.Friction;
+        out << YAML::Key << "Restitution" << YAML::Value << component.Restitution;
+        out << YAML::Key << "RestitutionThreshold" << YAML::Value << component.RestitutionThreshold;
+        out << YAML::EndMap;
+    }
+
     bool DeserializeTagComponent(const YAML::Node &componentNode, TagComponent &component)
     {
         if (componentNode["Tag"])
@@ -248,6 +260,31 @@ namespace Engine::Serialization
         if (componentNode["Size"])
         {
             component.Size = componentNode["Size"].as<glm::vec2>();
+        }
+        if (componentNode["Density"])
+        {
+            component.Density = componentNode["Density"].as<float>();
+        }
+        if (componentNode["Friction"])
+        {
+            component.Friction = componentNode["Friction"].as<float>();
+        }
+        if (componentNode["Restitution"])
+        {
+            component.Restitution = componentNode["Restitution"].as<float>();
+        }
+        if (componentNode["RestitutionThreshold"])
+        {
+            component.RestitutionThreshold = componentNode["RestitutionThreshold"].as<float>();
+        }
+        return true;
+    }
+
+    bool DeserializeCircleCollider2DComponent(const YAML::Node &componentNode, CircleCollider2DComponent &component)
+    {
+        if (componentNode["Radius"])
+        {
+            component.Radius = componentNode["Radius"].as<float>();
         }
         if (componentNode["Density"])
         {

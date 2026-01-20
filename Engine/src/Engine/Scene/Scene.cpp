@@ -259,6 +259,19 @@ namespace Engine
                 shapeDef.material.restitution = boxCollider.Restitution;
                 b2CreatePolygonShape(rigidbody2D.RuntimeBodyId, &shapeDef, &dynamicBox);
             }
+
+            if (entity.HasComponent<CircleCollider2DComponent>())
+            {
+                auto &circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+                b2Circle circleShape;
+                circleShape.radius = circleCollider.Radius * transform.GetScale().x;
+                circleShape.center = {0, 0};
+                b2ShapeDef shapeDef = b2DefaultShapeDef();
+                shapeDef.density = circleCollider.Density;
+                shapeDef.material.friction = circleCollider.Friction;
+                shapeDef.material.restitution = circleCollider.Restitution;
+                b2CreateCircleShape(rigidbody2D.RuntimeBodyId, &shapeDef, &circleShape);
+            }
         }
     }
     void Scene::OnRuntimeStop()
@@ -304,6 +317,7 @@ namespace Engine
         CopyComponent<CircleComponent>(newScene->m_Registry, other->m_Registry, entityMap);
         CopyComponent<Rigidbody2DComponent>(newScene->m_Registry, other->m_Registry, entityMap);
         CopyComponent<BoxCollider2DComponent>(newScene->m_Registry, other->m_Registry, entityMap);
+        CopyComponent<CircleCollider2DComponent>(newScene->m_Registry, other->m_Registry, entityMap);
         CopyComponent<NativeScriptComponent>(newScene->m_Registry, other->m_Registry, entityMap);
 
         return newScene;
@@ -329,6 +343,7 @@ namespace Engine
         CopyComponentIfExists<CircleComponent>(newEntity, entity);
         CopyComponentIfExists<Rigidbody2DComponent>(newEntity, entity);
         CopyComponentIfExists<BoxCollider2DComponent>(newEntity, entity);
+        CopyComponentIfExists<CircleCollider2DComponent>(newEntity, entity);
         CopyComponentIfExists<NativeScriptComponent>(newEntity, entity);
     }
 

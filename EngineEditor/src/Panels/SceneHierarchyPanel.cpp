@@ -143,6 +143,14 @@ namespace EngineEditor
                         ImGui::CloseCurrentPopup();
                     }
                 }
+                if (!entity.HasComponent<Engine::CircleCollider2DComponent>())
+                {
+                    if (ImGui::MenuItem("Circle Collider 2D"))
+                    {
+                        entity.AddComponent<Engine::CircleCollider2DComponent>();
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
                 ImGui::EndPopup();
             }
         }
@@ -280,5 +288,12 @@ namespace EngineEditor
                                                                   ImGui::DragFloat("Friction", &boxCollider.Friction, 0.01f, 0.0f, 1.0f);
                                                                   ImGui::DragFloat("Restitution", &boxCollider.Restitution, 0.01f, 0.0f, 1.0f);
                                                                   ImGui::DragFloat("Restitution Threshold", &boxCollider.RestitutionThreshold, 0.1f, 0.0f); });
+        UIUtils::DrawComponent<Engine::CircleCollider2DComponent>("Circle Collider 2D", entity, [](Engine::CircleCollider2DComponent &circleCollider)
+                                                                  {
+                                                                    ImGui::DragFloat("Radius", &circleCollider.Radius, 0.1f, 0.01f);
+                                                                    ImGui::DragFloat("Density", &circleCollider.Density, 0.1f, 0.0f);
+                                                                    ImGui::DragFloat("Friction", &circleCollider.Friction, 0.01f, 0.0f, 1.0f);
+                                                                    ImGui::DragFloat("Restitution", &circleCollider.Restitution, 0.01f, 0.0f, 1.0f);
+                                                                    ImGui::DragFloat("Restitution Threshold", &circleCollider.RestitutionThreshold, 0.1f, 0.0f); });
     }
 }

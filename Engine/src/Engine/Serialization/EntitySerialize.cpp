@@ -42,6 +42,11 @@ namespace Engine::Serialization
             auto &boxCollider2DComp = entity.GetComponent<BoxCollider2DComponent>();
             SerilizaBoxCollider2DComponent(out, boxCollider2DComp);
         }
+        if (entity.HasComponent<CircleCollider2DComponent>())
+        {
+            auto &circleCollider2DComp = entity.GetComponent<CircleCollider2DComponent>();
+            SerilizaCircleCollider2DComponent(out, circleCollider2DComp);
+        }
         out << YAML::EndMap; // Entity
     }
 
@@ -107,6 +112,15 @@ namespace Engine::Serialization
             auto boxCollider2DNode = entityNode["BoxCollider2DComponent"];
             auto &boxCollider2DComp = entity.AddComponent<BoxCollider2DComponent>();
             if (!DeserializeBoxCollider2DComponent(boxCollider2DNode, boxCollider2DComp))
+            {
+                return false;
+            }
+        }
+        if (entityNode["CircleCollider2DComponent"])
+        {
+            auto circleCollider2DNode = entityNode["CircleCollider2DComponent"];
+            auto &circleCollider2DComp = entity.AddComponent<CircleCollider2DComponent>();
+            if (!DeserializeCircleCollider2DComponent(circleCollider2DNode, circleCollider2DComp))
             {
                 return false;
             }
