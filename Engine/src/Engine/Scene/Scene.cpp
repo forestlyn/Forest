@@ -124,7 +124,7 @@ namespace Engine
             {
                 auto &spriteComponent = view.get<SpriteComponent>(entity);
                 auto &transformComponent = view.get<TransformComponent>(entity);
-                Renderer::Renderer2D::DrawQuad(transformComponent.GetTransform(), spriteComponent.Color);
+                Renderer::Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
             }
 
             auto circleView = m_Registry.view<CircleComponent, TransformComponent>();

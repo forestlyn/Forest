@@ -46,19 +46,17 @@ struct VertexOutput {
 };
 
 layout(location = 0) in VertexOutput Input;
-layout(location = 3) in flat int v_EntityID;
+layout(location = 4) in flat int v_EntityID;
 
 void main() {
 	vec4 texColor = Input.Color;
 
-	float dist = length(Input.LocalPosition);
-	float delta = fwidth(dist);
-	float alpha = smoothstep(Input.Thickness / 2.0 + delta, Input.Thickness / 2.0 - delta, dist);
-	texColor.a *= alpha;
-
-	color = texColor;
-	if(color.a < 0.01)
+	float distance = 1.0 - length(Input.LocalPosition);
+	float circle = smoothstep(0.0, Input.Fade, distance);
+	circle *= smoothstep(Input.Thickness + Input.Fade, Input.Thickness, distance);
+	if(circle == 0.0)
 		discard;
-
+	color = texColor;
+	color.a *= circle;
 	entityID = v_EntityID;
 }

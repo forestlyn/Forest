@@ -155,6 +155,7 @@ namespace Engine::Renderer
             m_SceneData.TextureSlots[i]->Bind(i);
         }
         m_Stats.DrawCalls++;
+        m_SceneData.QuadTextureShader->Bind();
         RenderCommand::DrawIndexed(m_SceneData.QuadVertexArray, m_SceneData.QuadIndexCount);
     }
 
@@ -162,6 +163,7 @@ namespace Engine::Renderer
     {
         ENGINE_PROFILING_FUNC();
         m_Stats.DrawCalls++;
+        m_SceneData.CircleShader->Bind();
         RenderCommand::DrawIndexed(m_SceneData.CircleVertexArray, m_SceneData.CircleIndexCount);
     }
 
@@ -420,8 +422,6 @@ namespace Engine::Renderer
 
         for (int i = 0; i < 4; i++)
         {
-            glm::vec4 localPos = QuadVertexPositions[i] * 2.0f;
-
             m_SceneData.CircleVertexBufferPtr->WorldPosition = transform * QuadVertexPositions[i];
             m_SceneData.CircleVertexBufferPtr->LocalPosition = {QuadVertexPositions[i].x * 2.0f, QuadVertexPositions[i].y * 2.0f};
             m_SceneData.CircleVertexBufferPtr->Color = color;
