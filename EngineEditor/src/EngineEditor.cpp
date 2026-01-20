@@ -369,7 +369,7 @@ namespace EngineEditor
 
     bool EngineEditor::CanPickEntity()
     {
-        return m_FocusScene && !ImGui::IsKeyPressed(ImGuiKey_LeftAlt) && !ImGuizmo::IsOver();
+        return m_HoverScene && !ImGui::IsKeyPressed(ImGuiKey_LeftAlt) && !ImGuizmo::IsOver();
     }
 
     void EngineEditor::DuplicateEntity(Engine::Entity entity)
