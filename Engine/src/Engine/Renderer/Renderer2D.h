@@ -33,6 +33,7 @@ namespace Engine::Renderer
 
         static void FlushQuad();
         static void FlushCircle();
+        static void FlushLine();
 
         static void DrawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color, int entityID = -1);
         static void DrawQuad(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color, int entityID = -1);
@@ -52,6 +53,16 @@ namespace Engine::Renderer
         static void DrawQuad(const glm::mat4 &transform, const glm::vec4 &color, int entityID = -1);
         static void DrawQuad(const glm::mat4 &transform, const Ref<Texture2D> &texture, const float tintFactor = 1.0f, const glm::vec4 &tintColor = glm::vec4(1.0f), int entityID = -1);
 
+        static void DrawCircle(const glm::vec3 &position, const float radius, const glm::vec4 &color, float thickness = 1.0f, float fade = 0.005f, int entityID = -1);
+
+        static void DrawLine(const glm::vec2 &p0, const glm::vec2 &p1, const glm::vec4 &color, int entityID = -1);
+        static void DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec4 &color, int entityID = -1);
+        static void SetLineWidth(float width);
+        static float GetLineWidth();
+
+        static void DrawRect(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color, int entityID = -1);
+        static void DrawRect(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color, int entityID = -1);
+        static void DrawRect(const glm::mat4 &transform, const glm::vec4 &color, int entityID = -1);
         // draw component
         static void DrawSprite(const glm::mat4 &transform, SpriteComponent &src, int entityID);
         static void DrawCircle(const glm::mat4 &transform, CircleComponent &src, int entityID);
@@ -95,6 +106,9 @@ namespace Engine::Renderer
         static void UploadCircleData();
         static void ResetCircle();
 
+        static void UploadLineData();
+        static void ResetLine();
+
         static void DrawQuadInternal(const glm::mat4 &transform, const glm::vec4 &color, const float textureIndex, const float tilingFactor, int entityID = -1, const glm::vec2 *texCoords = QuadTexCoords);
         static void DrawCircleInternal(const glm::mat4 &transform, const glm::vec4 &color, float thickness, float fade, int entityID = -1);
         struct QuadVertex
@@ -115,6 +129,12 @@ namespace Engine::Renderer
             float Fade;
             int EntityID;
         };
+        struct LineVertex
+        {
+            glm::vec3 Position;
+            glm::vec4 Color;
+            int EntityID;
+        };
         struct CameraData
         {
             glm::mat4 ViewProjection;
@@ -127,6 +147,7 @@ namespace Engine::Renderer
             //-- Textures and shaders --
             Ref<Shader> QuadTextureShader;
             Ref<Shader> CircleShader;
+            Ref<Shader> LineShader;
 
             static const int MaxTextureSlots = 32;
             std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
@@ -153,6 +174,14 @@ namespace Engine::Renderer
             uint32_t CircleIndexCount = 0;
             CircleVertex *CircleVertexBufferBase = nullptr;
             CircleVertex *CircleVertexBufferPtr = nullptr;
+
+            // -- Line data --
+            Ref<VertexArray> LineVertexArray;
+            Ref<VertexBuffer> LineVertexBuffer;
+            uint32_t LineVertexCount = 0;
+            LineVertex *LineVertexBufferBase = nullptr;
+            LineVertex *LineVertexBufferPtr = nullptr;
+            float LineWidth = 2.0f;
 
             CameraData CameraBuffer;
             Ref<UniformBuffer> CameraUniformBuffer;

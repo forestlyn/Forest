@@ -154,6 +154,7 @@ namespace Engine
             auto &spriteComponent = view.get<SpriteComponent>(entity);
             auto &transformComponent = view.get<TransformComponent>(entity);
             Renderer::Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
+            // Renderer::Renderer2D::DrawRect(transformComponent.GetTransform(), {1.0f, 0.0f, 1.0f, 1.0f}, (int)entity);
         }
 
         auto circleView = m_Registry.view<CircleComponent, TransformComponent>();
@@ -163,6 +164,9 @@ namespace Engine
             auto &transformComponent = circleView.get<TransformComponent>(entity);
             Renderer::Renderer2D::DrawCircle(transformComponent.GetTransform(), circleComponent, (int)entity);
         }
+
+        Renderer::Renderer2D::DrawLine({-10.0f, 0.0f, 0.0f}, {10.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f});
+        Renderer::Renderer2D::DrawRect({0.0f, 0.0f, 0.0f}, {3.0f, 3.0f}, {0.0f, 1.0f, 0.0f, 1.0f});
 
         Engine::Renderer::Renderer2D::EndScene();
     }

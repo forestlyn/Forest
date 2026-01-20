@@ -38,4 +38,14 @@ namespace Engine::Platform::OpenGL
         uint32_t count = indexCount == -1 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
         glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
     }
+    void OpenGLRendererAPI::DrawLine(Ref<Renderer::VertexArray> &vertexArray, uint32_t vertexCount)
+    {
+        ENGINE_PROFILING_FUNC();
+        vertexArray->Bind();
+        glDrawArrays(GL_LINES, 0, vertexCount);
+    }
+    void OpenGLRendererAPI::SetLineWidth(float width)
+    {
+        glLineWidth(width);
+    }
 } // namespace Engine::Platform::OpenGL

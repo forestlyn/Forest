@@ -15,5 +15,7 @@ namespace Engine::Platform::OpenGL
         virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
         virtual void DrawIndexed(Ref<Renderer::VertexArray> &vertexArray, uint32_t indexCount = -1) override;
+        virtual void DrawLine(Ref<Renderer::VertexArray> &vertexArray, uint32_t vertexCount) override;
+        virtual void SetLineWidth(float width) override;
     };
 } // namespace Engine::Platform::OpenGL

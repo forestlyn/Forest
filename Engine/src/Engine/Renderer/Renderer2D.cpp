@@ -27,6 +27,8 @@ namespace Engine::Renderer
         // initialize shaders
         m_SceneData.QuadTextureShader = Shader::Create("assets/shaders/Renderer2D_QuadShader.glsl");
         m_SceneData.CircleShader = Shader::Create("assets/shaders/Renderer2D_CircleShader.glsl");
+        m_SceneData.LineShader = Shader::Create("assets/shaders/Renderer2D_LineShader.glsl");
+
         // initialize vertex array
         //-- Init Quad --
         {
@@ -113,6 +115,21 @@ namespace Engine::Renderer
             m_SceneData.CircleVertexArray->SetIndexBuffer(circleIB);
             delete[] circleIndices;
         }
+
+        //-- Init Line --
+        {
+            m_SceneData.LineVertexArray = VertexArray::Create();
+
+            m_SceneData.LineVertexBufferBase = new LineVertex[m_SceneData.MaxVertices];
+            m_SceneData.LineVertexBufferPtr = m_SceneData.LineVertexBufferBase;
+
+            m_SceneData.LineVertexBuffer = VertexBuffer::Create(sizeof(LineVertex) * m_SceneData.MaxVertices);
+            m_SceneData.LineVertexBuffer->SetLayout({{ShaderDataType::Float3, "a_Position"},
+                                                     {ShaderDataType::Float4, "a_Color"},
+                                                     {ShaderDataType::Int, "a_EntityID"}});
+            m_SceneData.LineVertexArray->AddVertexBuffer(m_SceneData.LineVertexBuffer);
+            SetLineWidth(m_SceneData.LineWidth);
+        }
         m_SceneData.CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraData), 0);
     }
 
@@ -130,6 +147,7 @@ namespace Engine::Renderer
 
         ResetQuad();
         ResetCircle();
+        ResetLine();
     }
 
     void Renderer2D::EndScene()
@@ -137,13 +155,25 @@ namespace Engine::Renderer
         ENGINE_PROFILING_FUNC();
 
         // Quad
-        uint32_t dataSize = (uint32_t)((uint8_t *)m_SceneData.QuadVertexBufferPtr - (uint8_t *)m_SceneData.QuadVertexBufferBase);
-        m_SceneData.QuadVertexBuffer->SetData(m_SceneData.QuadVertexBufferBase, dataSize);
-        FlushQuad();
+        {
+            uint32_t dataSize = (uint32_t)((uint8_t *)m_SceneData.QuadVertexBufferPtr - (uint8_t *)m_SceneData.QuadVertexBufferBase);
+            m_SceneData.QuadVertexBuffer->SetData(m_SceneData.QuadVertexBufferBase, dataSize);
+            FlushQuad();
+        }
+
         // Circle
-        dataSize = (uint32_t)((uint8_t *)m_SceneData.CircleVertexBufferPtr - (uint8_t *)m_SceneData.CircleVertexBufferBase);
-        m_SceneData.CircleVertexBuffer->SetData(m_SceneData.CircleVertexBufferBase, dataSize);
-        FlushCircle();
+        {
+            uint32_t dataSize = (uint32_t)((uint8_t *)m_SceneData.CircleVertexBufferPtr - (uint8_t *)m_SceneData.CircleVertexBufferBase);
+            m_SceneData.CircleVertexBuffer->SetData(m_SceneData.CircleVertexBufferBase, dataSize);
+            FlushCircle();
+        }
+
+        // Line
+        {
+            uint32_t dataSize = (uint32_t)((uint8_t *)m_SceneData.LineVertexBufferPtr - (uint8_t *)m_SceneData.LineVertexBufferBase);
+            m_SceneData.LineVertexBuffer->SetData(m_SceneData.LineVertexBufferBase, dataSize);
+            FlushLine();
+        }
     }
 
     /// @brief flush the draw calls
@@ -165,6 +195,14 @@ namespace Engine::Renderer
         m_Stats.DrawCalls++;
         m_SceneData.CircleShader->Bind();
         RenderCommand::DrawIndexed(m_SceneData.CircleVertexArray, m_SceneData.CircleIndexCount);
+    }
+
+    void Renderer2D::FlushLine()
+    {
+        ENGINE_PROFILING_FUNC();
+        m_Stats.DrawCalls++;
+        m_SceneData.LineShader->Bind();
+        RenderCommand::DrawLine(m_SceneData.LineVertexArray, m_SceneData.LineVertexCount);
     }
 
 #pragma region DrawQuadImplementations
@@ -302,6 +340,89 @@ namespace Engine::Renderer
         DrawQuadInternal(transform, tintColor, TextureIndex, TilingFactor, entityID);
     }
 
+    void Renderer2D::DrawCircle(const glm::vec3 &position, const float radius, const glm::vec4 &color, float thickness, float fade, int entityID)
+    {
+        ENGINE_PROFILING_FUNC();
+
+        glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
+                              glm::scale(glm::mat4(1.0f), glm::vec3(radius * 2.0f, radius * 2.0f, 1.0f));
+
+        DrawCircleInternal(transform, color, thickness, fade, entityID);
+    }
+
+    void Renderer2D::DrawLine(const glm::vec2 &p0, const glm::vec2 &p1, const glm::vec4 &color, int entityID)
+    {
+        DrawLine(glm::vec3(p0, 0.0f), glm::vec3(p1, 0.0f), color, entityID);
+    }
+
+    void Renderer2D::DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec4 &color, int entityID)
+    {
+        ENGINE_PROFILING_FUNC();
+
+        if (m_SceneData.LineVertexCount >= m_SceneData.MaxVertices)
+        {
+            UploadLineData();
+            FlushLine();
+            ResetLine();
+        }
+
+        m_SceneData.LineVertexBufferPtr->Position = p0;
+        m_SceneData.LineVertexBufferPtr->Color = color;
+        m_SceneData.LineVertexBufferPtr->EntityID = entityID;
+        m_SceneData.LineVertexBufferPtr++;
+
+        m_SceneData.LineVertexBufferPtr->Position = p1;
+        m_SceneData.LineVertexBufferPtr->Color = color;
+        m_SceneData.LineVertexBufferPtr->EntityID = entityID;
+        m_SceneData.LineVertexBufferPtr++;
+
+        m_SceneData.LineVertexCount += 2;
+
+        ENGINE_ASSERT(m_SceneData.LineVertexCount <= m_SceneData.MaxVertices, "Renderer2D::DrawLine - Exceeded max line vertex count!");
+    }
+
+    void Renderer2D::SetLineWidth(float width)
+    {
+        m_SceneData.LineWidth = width;
+        RenderCommand::SetLineWidth(width);
+    }
+
+    float Renderer2D::GetLineWidth()
+    {
+        return m_SceneData.LineWidth;
+    }
+
+    void Renderer2D::DrawRect(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color, int entityID)
+    {
+        DrawRect(glm::vec3(position, 0.0f), size, color, entityID);
+    }
+
+    void Renderer2D::DrawRect(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color, int entityID)
+    {
+        glm::vec3 p0 = position + glm::vec3(-size.x * 0.5f, -size.y * 0.5f, 0.0f);
+        glm::vec3 p1 = position + glm::vec3(size.x * 0.5f, -size.y * 0.5f, 0.0f);
+        glm::vec3 p2 = position + glm::vec3(size.x * 0.5f, size.y * 0.5f, 0.0f);
+        glm::vec3 p3 = position + glm::vec3(-size.x * 0.5f, size.y * 0.5f, 0.0f);
+
+        DrawLine(p0, p1, color, entityID);
+        DrawLine(p1, p2, color, entityID);
+        DrawLine(p2, p3, color, entityID);
+        DrawLine(p3, p0, color, entityID);
+    }
+
+    void Renderer2D::DrawRect(const glm::mat4 &transform, const glm::vec4 &color, int entityID)
+    {
+        glm::vec3 p0 = transform * glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f);
+        glm::vec3 p1 = transform * glm::vec4(0.5f, -0.5f, 0.0f, 1.0f);
+        glm::vec3 p2 = transform * glm::vec4(0.5f, 0.5f, 0.0f, 1.0f);
+        glm::vec3 p3 = transform * glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f);
+
+        DrawLine(p0, p1, color, entityID);
+        DrawLine(p1, p2, color, entityID);
+        DrawLine(p2, p3, color, entityID);
+        DrawLine(p3, p0, color, entityID);
+    }
+
     void Renderer2D::DrawSprite(const glm::mat4 &transform, SpriteComponent &src, int entityID)
     {
         ENGINE_PROFILING_FUNC();
@@ -370,18 +491,28 @@ namespace Engine::Renderer
         uint32_t dataSize = (uint32_t)((uint8_t *)m_SceneData.CircleVertexBufferPtr - (uint8_t *)m_SceneData.CircleVertexBufferBase);
         m_SceneData.CircleVertexBuffer->SetData(m_SceneData.CircleVertexBufferBase, dataSize);
     }
-    /// @brief reset ptr and index
+    /// @brief upload the line vertex data to gpu
+    void Renderer2D::UploadLineData()
+    {
+        uint32_t dataSize = (uint32_t)((uint8_t *)m_SceneData.LineVertexBufferPtr - (uint8_t *)m_SceneData.LineVertexBufferBase);
+        m_SceneData.LineVertexBuffer->SetData(m_SceneData.LineVertexBufferBase, dataSize);
+    }
+
     void Renderer2D::ResetQuad()
     {
         m_SceneData.QuadVertexBufferPtr = m_SceneData.QuadVertexBufferBase;
         m_SceneData.QuadIndexCount = 0;
         m_SceneData.TextureSlotIndex = 1;
     }
-    /// @brief reset ptr and index
     void Renderer2D::ResetCircle()
     {
         m_SceneData.CircleVertexBufferPtr = m_SceneData.CircleVertexBufferBase;
         m_SceneData.CircleIndexCount = 0;
+    }
+    void Renderer2D::ResetLine()
+    {
+        m_SceneData.LineVertexBufferPtr = m_SceneData.LineVertexBufferBase;
+        m_SceneData.LineVertexCount = 0;
     }
 
     /// @brief internal function to draw quad

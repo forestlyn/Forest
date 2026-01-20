@@ -32,6 +32,16 @@ namespace Engine::Renderer
             CurrentRendererAPI->DrawIndexed(vertexArray, indexCount);
         }
 
+        inline static void DrawLine(Ref<VertexArray> &vertexArray, uint32_t vertexCount)
+        {
+            CurrentRendererAPI->DrawLine(vertexArray, vertexCount);
+        }
+
+        inline static void SetLineWidth(float width)
+        {
+            CurrentRendererAPI->SetLineWidth(width);
+        }
+
     private:
         static RendererAPI *CurrentRendererAPI;
     };
