@@ -12,7 +12,20 @@ namespace EngineEditor
         void SetContext(const Engine::Ref<Engine::Scene> &context)
         {
             m_Context = context;
-            m_SelectionContext = {};
+            if (m_SelectionContext)
+            {
+                Engine::UUID uuid = m_SelectionContext.GetUUID();
+                auto view = m_Context->GetRegistry().view<Engine::IDComponent>();
+                for (auto entity : view)
+                {
+                    if (view.get<Engine::IDComponent>(entity).ID == uuid)
+                    {
+                        m_SelectionContext = Engine::Entity(entity, m_Context.get());
+                        return;
+                    }
+                }
+                m_SelectionContext = {};
+            }
         }
         void OnImGuiRender();
 
