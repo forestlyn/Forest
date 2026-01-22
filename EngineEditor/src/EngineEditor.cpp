@@ -77,6 +77,8 @@ namespace EngineEditor
                     m_ActiveScene->OnUpdateEditor(timestep, m_EditorCamera);
                 }
 
+                OnLateRender();
+
                 auto mousePos = ImGui::GetMousePos();
 
                 if (mousePos.x >= m_SceneViewportBounds[0].x && mousePos.x <= m_SceneViewportBounds[1].x &&
@@ -137,8 +139,8 @@ namespace EngineEditor
         }
 
         ImGui::Begin("Settings");
-        ImGui::ColorEdit4("Square Color", glm::value_ptr(m_SquareColor));
-
+        ImGui::Checkbox("Show Physics Colliders", &ShowPhysicsColliders);
+        ImGui::Separator();
         ImGui::Text("Renderer2D Stats:");
         auto stats = Engine::Renderer::Renderer2D::GetStats();
         ImGui::Text("Draw Calls: %d", stats.DrawCalls);
@@ -152,115 +154,47 @@ namespace EngineEditor
 
         ImGui::End();
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-        ImGui::Begin("Scene");
-
-        m_FocusScene = ImGui::IsWindowFocused();
-        m_HoverScene = ImGui::IsWindowHovered();
-
-        Engine::Core::Application::Get().GetImGuiLayer().BlockEvents(!(m_FocusScene || m_HoverScene));
-        // ENGINE_INFO("m_FocusScene:{},m_HoverScene:{}", m_FocusScene, m_HoverScene);
-
-        auto regionAvailSize = ImGui::GetContentRegionAvail();
-        if (m_SceneViewportSize.x != (int)regionAvailSize.x || m_SceneViewportSize.y != (int)regionAvailSize.y)
+        // Scene
         {
-            m_SceneViewportSize.x = (int)regionAvailSize.x;
-            m_SceneViewportSize.y = (int)regionAvailSize.y;
-            m_FrameBuffer->Resize(m_SceneViewportSize.x, m_SceneViewportSize.y);
-            m_ActiveScene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
-            m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
-        }
-        uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID(0);
-        auto m_Specs = m_FrameBuffer->GetSpecification();
-        ImGui::Image((void *)(uint64_t)textureID, ImVec2{(float)m_Specs.Width, (float)m_Specs.Height}, ImVec2{0, 1}, ImVec2{1, 0});
-        if (ImGui::BeginDragDropTarget())
-        {
-            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+            ImGui::Begin("Scene");
+
+            m_FocusScene = ImGui::IsWindowFocused();
+            m_HoverScene = ImGui::IsWindowHovered();
+
+            Engine::Core::Application::Get().GetImGuiLayer().BlockEvents(!(m_FocusScene || m_HoverScene));
+            // ENGINE_INFO("m_FocusScene:{},m_HoverScene:{}", m_FocusScene, m_HoverScene);
+
+            auto regionAvailSize = ImGui::GetContentRegionAvail();
+            if (m_SceneViewportSize.x != (int)regionAvailSize.x || m_SceneViewportSize.y != (int)regionAvailSize.y)
             {
-                const wchar_t *path = (const wchar_t *)payload->Data;
-                std::filesystem::path filepath(path);
-                ENGINE_INFO("Accept payload: {}", filepath.string());
-                LoadScene(filepath);
+                m_SceneViewportSize.x = (int)regionAvailSize.x;
+                m_SceneViewportSize.y = (int)regionAvailSize.y;
+                m_FrameBuffer->Resize(m_SceneViewportSize.x, m_SceneViewportSize.y);
+                m_ActiveScene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
+                m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
             }
-            ImGui::EndDragDropTarget();
-        }
-
-        // Gizmos
-        {
-            Engine::Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-            if (selectedEntity && ImGuizmo_operation != -1)
+            uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID(0);
+            auto m_Specs = m_FrameBuffer->GetSpecification();
+            ImGui::Image((void *)(uint64_t)textureID, ImVec2{(float)m_Specs.Width, (float)m_Specs.Height}, ImVec2{0, 1}, ImVec2{1, 0});
+            if (ImGui::BeginDragDropTarget())
             {
-                ImGuizmo::SetDrawlist();
-                float windowWidth = (float)ImGui::GetWindowWidth();
-                float windowHeight = (float)ImGui::GetWindowHeight();
-                ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
-
-                auto &selectedTc = selectedEntity.GetComponent<Engine::TransformComponent>();
-                glm::mat4 selectedTransform = selectedTc.GetTransform();
-
-                ImGuizmo::OPERATION guizmoOperation = static_cast<ImGuizmo::OPERATION>(ImGuizmo_operation);
-                ImGuizmo::MODE guizmoMode = ImGuizmo::MODE::LOCAL;
-
-                bool isOrthographic = false; // TODO: get from camera settings
-                ImGuizmo::SetOrthographic(isOrthographic);
-
-                float tcsnap[3] = {0.5f, 0.5f, 0.5f};
-                float rotationSnap = 45.0f;
-                float scaleSnap = 0.5f;
-                float *snapPtr = nullptr;
-                if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_LEFT_CONTROL))
+                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
                 {
-                    switch (guizmoOperation)
-                    {
-                    case ImGuizmo::OPERATION::TRANSLATE:
-                        snapPtr = tcsnap;
-                        break;
-                    case ImGuizmo::OPERATION::ROTATE:
-                        snapPtr = &rotationSnap;
-                        break;
-                    case ImGuizmo::OPERATION::SCALE:
-                        snapPtr = &scaleSnap;
-                        break;
-                    default:
-                        snapPtr = nullptr;
-                        break;
-                    }
+                    const wchar_t *path = (const wchar_t *)payload->Data;
+                    std::filesystem::path filepath(path);
+                    ENGINE_INFO("Accept payload: {}", filepath.string());
+                    LoadScene(filepath);
                 }
-
-                ImGuizmo::Manipulate(glm::value_ptr(m_EditorCamera.GetViewMatrix()),
-                                     glm::value_ptr(m_EditorCamera.GetProjectionMatrix()),
-                                     guizmoOperation,
-                                     guizmoMode,
-                                     glm::value_ptr(selectedTransform), 0,
-                                     snapPtr);
-
-                if (ImGuizmo::IsUsing())
-                {
-                    glm::vec3 translation, rotation, scale;
-                    Engine::Math::DecomposeTransform(selectedTransform, translation, rotation, scale);
-
-                    auto deltaRotation = rotation - selectedTc.GetRotation();
-
-                    rotation = selectedTc.GetRotation() + deltaRotation;
-
-                    selectedTc.SetPosition(translation);
-                    selectedTc.SetRotation(rotation);
-                    selectedTc.SetScale(scale);
-                }
+                ImGui::EndDragDropTarget();
             }
+
+            RenderGizmos();
+            UpdateSceneViewportBounds();
+
+            ImGui::End();
+            ImGui::PopStyleVar();
         }
-
-        // Set Scene Viewport bounds
-        auto windowPos = ImGui::GetWindowPos();
-        auto viewportMin = ImGui::GetWindowContentRegionMin();
-        auto viewportMax = ImGui::GetWindowContentRegionMax();
-
-        m_SceneViewportBounds[0] = {windowPos.x + viewportMin.x, windowPos.y + viewportMin.y};
-        m_SceneViewportBounds[1] = {windowPos.x + viewportMax.x, windowPos.y + viewportMax.y};
-
-        ImGui::End();
-        ImGui::PopStyleVar();
-
         Engine::Renderer::Renderer2D::SetMaxQuads(maxQuads);
 
         UIToolbar();
@@ -405,6 +339,126 @@ namespace EngineEditor
             }
         }
         ImGui::End();
+    }
+
+    void EngineEditor::UpdateSceneViewportBounds()
+    {
+        auto windowPos = ImGui::GetWindowPos();
+        auto viewportMin = ImGui::GetWindowContentRegionMin();
+        auto viewportMax = ImGui::GetWindowContentRegionMax();
+
+        m_SceneViewportBounds[0] = {windowPos.x + viewportMin.x, windowPos.y + viewportMin.y};
+        m_SceneViewportBounds[1] = {windowPos.x + viewportMax.x, windowPos.y + viewportMax.y};
+    }
+
+    void EngineEditor::RenderGizmos()
+    {
+        Engine::Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+        if (selectedEntity && ImGuizmo_operation != -1)
+        {
+            ImGuizmo::SetDrawlist();
+            float windowWidth = (float)ImGui::GetWindowWidth();
+            float windowHeight = (float)ImGui::GetWindowHeight();
+            ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
+
+            auto &selectedTc = selectedEntity.GetComponent<Engine::TransformComponent>();
+            glm::mat4 selectedTransform = selectedTc.GetTransform();
+
+            ImGuizmo::OPERATION guizmoOperation = static_cast<ImGuizmo::OPERATION>(ImGuizmo_operation);
+            ImGuizmo::MODE guizmoMode = ImGuizmo::MODE::LOCAL;
+
+            bool isOrthographic = false; // TODO: get from camera settings
+            ImGuizmo::SetOrthographic(isOrthographic);
+
+            float tcsnap[3] = {0.5f, 0.5f, 0.5f};
+            float rotationSnap = 45.0f;
+            float scaleSnap = 0.5f;
+            float *snapPtr = nullptr;
+            if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_LEFT_CONTROL))
+            {
+                switch (guizmoOperation)
+                {
+                case ImGuizmo::OPERATION::TRANSLATE:
+                    snapPtr = tcsnap;
+                    break;
+                case ImGuizmo::OPERATION::ROTATE:
+                    snapPtr = &rotationSnap;
+                    break;
+                case ImGuizmo::OPERATION::SCALE:
+                    snapPtr = &scaleSnap;
+                    break;
+                default:
+                    snapPtr = nullptr;
+                    break;
+                }
+            }
+
+            ImGuizmo::Manipulate(glm::value_ptr(m_EditorCamera.GetViewMatrix()),
+                                 glm::value_ptr(m_EditorCamera.GetProjectionMatrix()),
+                                 guizmoOperation,
+                                 guizmoMode,
+                                 glm::value_ptr(selectedTransform), 0,
+                                 snapPtr);
+
+            if (ImGuizmo::IsUsing())
+            {
+                glm::vec3 translation, rotation, scale;
+                Engine::Math::DecomposeTransform(selectedTransform, translation, rotation, scale);
+
+                auto deltaRotation = rotation - selectedTc.GetRotation();
+
+                rotation = selectedTc.GetRotation() + deltaRotation;
+
+                selectedTc.SetPosition(translation);
+                selectedTc.SetRotation(rotation);
+                selectedTc.SetScale(scale);
+            }
+        }
+    }
+
+    void EngineEditor::OnLateRender()
+    {
+        glm::mat4 viewProj;
+        if (m_SceneState == SceneState::Play)
+        {
+            viewProj = m_EditorCamera.GetViewProjectionMatrix();
+        }
+        else
+        {
+            viewProj = m_EditorCamera.GetViewProjectionMatrix();
+        }
+
+        Engine::Renderer::Renderer2D::BeginScene(viewProj);
+
+        if (ShowPhysicsColliders)
+        {
+            auto view = m_ActiveScene->GetRegistry().view<Engine::BoxCollider2DComponent, Engine::TransformComponent>();
+
+            for (auto entity : view)
+            {
+                auto [boxCollider, transform] = view.get<Engine::BoxCollider2DComponent, Engine::TransformComponent>(entity);
+
+                glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(transform.GetPosition() + glm::vec3(boxCollider.Offset, 0.01f)));
+                glm::vec3 scale = transform.GetScale();
+                transformMatrix = glm::scale(transformMatrix, glm::vec3(boxCollider.Size.x * scale.x, boxCollider.Size.y * scale.y, 1.0f));
+                transformMatrix = glm::rotate(transformMatrix, glm::radians(transform.GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+                Engine::Renderer::Renderer2D::DrawRect(transformMatrix, glm::vec4(0.1f, 1.0f, 0.1f, 1.0f));
+            }
+
+            auto viewCircle = m_ActiveScene->GetRegistry().view<Engine::CircleCollider2DComponent, Engine::TransformComponent>();
+            for (auto entity : viewCircle)
+            {
+                ENGINE_INFO("draw circle collider");
+                auto [circleCollider, transform] = viewCircle.get<Engine::CircleCollider2DComponent, Engine::TransformComponent>(entity);
+
+                glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(transform.GetPosition() + glm::vec3(circleCollider.Offset, 0.01f)));
+                glm::vec3 scale = transform.GetScale();
+                transformMatrix = glm::scale(transformMatrix, glm::vec3(circleCollider.Radius * 2.0f * scale.x, circleCollider.Radius * 2.0f * scale.y, 1.0f));
+                Engine::Renderer::Renderer2D::DrawCircle(transformMatrix, glm::vec4(0.1f, 1.0f, 0.1f, 1.0f), 0.1f);
+            }
+        }
+
+        Engine::Renderer::Renderer2D::EndScene();
     }
 
     void EngineEditor::PlayScene()

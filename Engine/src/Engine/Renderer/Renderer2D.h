@@ -54,6 +54,7 @@ namespace Engine::Renderer
         static void DrawQuad(const glm::mat4 &transform, const Ref<Texture2D> &texture, const float tintFactor = 1.0f, const glm::vec4 &tintColor = glm::vec4(1.0f), int entityID = -1);
 
         static void DrawCircle(const glm::vec3 &position, const float radius, const glm::vec4 &color, float thickness = 1.0f, float fade = 0.005f, int entityID = -1);
+        static void DrawCircle(const glm::mat4 &transform, glm::vec4 color, float thickness = 1.0f, float fade = 0.005f, int entityID = -1);
 
         static void DrawLine(const glm::vec2 &p0, const glm::vec2 &p1, const glm::vec4 &color, int entityID = -1);
         static void DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec4 &color, int entityID = -1);

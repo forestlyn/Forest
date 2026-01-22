@@ -450,6 +450,12 @@ namespace Engine::Renderer
         DrawCircleInternal(transform, src.Color, src.Thickness, src.Fade, entityID);
     }
 
+    void Renderer2D::DrawCircle(const glm::mat4 &transform, glm::vec4 color, float thickness, float fade, int entityID)
+    {
+        ENGINE_PROFILING_FUNC();
+        DrawCircleInternal(transform, color, thickness, fade, entityID);
+    }
+
 #pragma endregion
 
     /// @brief get the texture index in slot

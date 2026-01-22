@@ -165,9 +165,6 @@ namespace Engine
             Renderer::Renderer2D::DrawCircle(transformComponent.GetTransform(), circleComponent, (int)entity);
         }
 
-        Renderer::Renderer2D::DrawLine({-10.0f, 0.0f, 0.0f}, {10.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f});
-        Renderer::Renderer2D::DrawRect({0.0f, 0.0f, 0.0f}, {3.0f, 3.0f}, {0.0f, 1.0f, 0.0f, 1.0f});
-
         Engine::Renderer::Renderer2D::EndScene();
     }
 
@@ -241,18 +238,19 @@ namespace Engine
             Entity entity = {entityId, this};
             auto &rigidbody2D = view.get<Rigidbody2DComponent>(entity);
             auto &transform = view.get<TransformComponent>(entity);
-
             b2BodyDef bodyDef = b2DefaultBodyDef();
             bodyDef.type = (b2BodyType)rigidbody2D.Type;
             bodyDef.position = b2Vec2(transform.GetPosition().x, transform.GetPosition().y);
             bodyDef.rotation = b2MakeRot(glm::radians(transform.GetRotation().z));
             rigidbody2D.RuntimeBodyId = b2CreateBody(worldId, &bodyDef);
-
             if (entity.HasComponent<BoxCollider2DComponent>())
             {
                 auto &boxCollider = entity.GetComponent<BoxCollider2DComponent>();
-                b2Polygon dynamicBox = b2MakeBox(boxCollider.Size.x * transform.GetScale().x * 0.5f,
-                                                 boxCollider.Size.y * transform.GetScale().y * 0.5f);
+
+                b2Rot rotation = b2MakeRot(glm::radians(0.0f));
+                b2Polygon dynamicBox = b2MakeOffsetBox(boxCollider.Size.x * transform.GetScale().x * 0.5f,
+                                                       boxCollider.Size.y * transform.GetScale().y * 0.5f,
+                                                       {boxCollider.Offset.x, boxCollider.Offset.y}, rotation);
                 b2ShapeDef shapeDef = b2DefaultShapeDef();
                 shapeDef.density = boxCollider.Density;
                 shapeDef.material.friction = boxCollider.Friction;

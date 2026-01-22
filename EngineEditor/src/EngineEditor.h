@@ -38,13 +38,15 @@ namespace EngineEditor
         void DuplicateEntity(Engine::Entity entity);
 
         void UIToolbar();
+        void UpdateSceneViewportBounds();
+        void RenderGizmos();
+
+        void OnLateRender();
 
         void PlayScene();
         void StopScene();
 
     private:
-        glm::vec4 m_SquareColor = {0.2f, 0.3f, 0.8f, 1.0f};
-
         Engine::Ref<Engine::Renderer::FrameBuffer> m_FrameBuffer;
 
         Engine::Ref<Engine::Renderer::Texture2D> m_PlayIcon;
@@ -74,5 +76,7 @@ namespace EngineEditor
         };
 
         SceneState m_SceneState = SceneState::Edit;
+
+        bool ShowPhysicsColliders = true;
     };
 }
