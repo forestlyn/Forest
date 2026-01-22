@@ -145,6 +145,24 @@ namespace Engine
         return m_CameraEntity ? *m_CameraEntity : Entity{};
     }
 
+    glm::mat4 Scene::GetPrimaryCameraViewProjectionMatrix()
+    {
+        if (m_CameraEntity == nullptr)
+        {
+            LOG_WARN("No primary camera found in the scene!");
+            return glm::mat4(1.0f);
+        }
+
+        auto &cameraComponent = m_CameraEntity->GetComponent<CameraComponent>();
+        auto &transformComponent = m_CameraEntity->GetComponent<TransformComponent>();
+
+        glm::mat4 transform = transformComponent.GetTransform();
+        glm::mat4 viewMatrix = glm::inverse(transform);
+        glm::mat4 viewProjection = cameraComponent.Camera->GetProjectionMatrix() * viewMatrix;
+
+        return viewProjection;
+    }
+
     glm::vec2 Scene::ScreenToWorld(const glm::vec2 &screenPos)
     {
         if (m_CameraEntity == nullptr)

@@ -72,7 +72,11 @@ namespace EngineEditor
                 {
                     m_ActiveScene->OnUpdateRuntime(timestep);
                 }
-                else // Editor update
+                else if (m_SceneState == SceneState::Simulate) // Simulate update
+                {
+                    m_ActiveScene->OnUpdateSimulate(timestep, m_EditorCamera);
+                }
+                else if (m_SceneState == SceneState::Edit) // Editor update
                 {
                     m_ActiveScene->OnUpdateEditor(timestep, m_EditorCamera);
                 }
@@ -443,7 +447,7 @@ namespace EngineEditor
         glm::mat4 viewProj;
         if (m_SceneState == SceneState::Play)
         {
-            viewProj = m_EditorCamera.GetViewProjectionMatrix();
+            viewProj = m_ActiveScene->GetPrimaryCameraViewProjectionMatrix();
         }
         else
         {
@@ -489,6 +493,10 @@ namespace EngineEditor
             ENGINE_ERROR("No editor scene to play!");
             return;
         }
+        if (m_SceneState != SceneState::Edit)
+        {
+            StopScene();
+        }
         m_SceneState = SceneState::Play;
         m_ActiveScene = Engine::Scene::Copy(m_EditorScene);
         m_RuntimeScene = m_ActiveScene;
@@ -503,6 +511,10 @@ namespace EngineEditor
             ENGINE_ERROR("No editor scene to simulate!");
             return;
         }
+        if (m_SceneState != SceneState::Edit)
+        {
+            StopScene();
+        }
         m_SceneState = SceneState::Simulate;
         m_ActiveScene = Engine::Scene::Copy(m_EditorScene);
         m_RuntimeScene = m_ActiveScene;
@@ -512,11 +524,21 @@ namespace EngineEditor
 
     void EngineEditor::StopScene()
     {
-        m_SceneState = SceneState::Edit;
-        m_ActiveScene->OnRuntimeStop();
+        if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
+        {
+            m_SceneState = SceneState::Edit;
+            if (m_SceneState == SceneState::Play)
+            {
+                m_RuntimeScene->OnRuntimeStop();
+            }
+            else
+            {
+                m_RuntimeScene->OnSimulationStop();
+            }
 
-        m_ActiveScene = m_EditorScene;
-        m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+            m_ActiveScene = m_EditorScene;
+            m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+        }
     }
 
     void EngineEditor::OpenDockSpace()
