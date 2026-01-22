@@ -28,6 +28,10 @@ namespace Platform::OpenGL
         stbi_set_flip_vertically_on_load(1);
         int width, height, channels;
         unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+        if (!data)
+        {
+            ENGINE_ERROR("Failed to load texture image at path: {0}", path);
+        }
         ENGINE_ASSERT(data, "Failed to load texture image!");
         m_Width = width;
         m_Height = height;

@@ -322,7 +322,7 @@ namespace EngineEditor
         float center = windowWidth * 0.5f;
         float offset = buttonSize * 0.5f;
 
-        ImGui::SetCursorPosX(center - offset - 80.0f);
+        ImGui::SetCursorPosX(center - offset * 2);
 
         if (m_SceneState == SceneState::Edit)
         {
@@ -330,9 +330,31 @@ namespace EngineEditor
             {
                 PlayScene();
             }
+            ImGui::SameLine();
+            if (ImGui::ImageButton("##SimulateScene", ImTextureRef((void *)m_PlayIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
+            {
+                SimulateScene();
+            }
         }
         else if (m_SceneState == SceneState::Play)
         {
+            if (ImGui::ImageButton("##StopScene", ImTextureRef((void *)m_StopIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
+            {
+                StopScene();
+            }
+            ImGui::SameLine();
+            if (ImGui::ImageButton("##SimulateScene", ImTextureRef((void *)m_PlayIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
+            {
+                SimulateScene();
+            }
+        }
+        else if (m_SceneState == SceneState::Simulate)
+        {
+            if (ImGui::ImageButton("##PlayScene", ImTextureRef((void *)m_PlayIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
+            {
+                PlayScene();
+            }
+            ImGui::SameLine();
             if (ImGui::ImageButton("##StopScene", ImTextureRef((void *)m_StopIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
             {
                 StopScene();
@@ -448,7 +470,6 @@ namespace EngineEditor
             auto viewCircle = m_ActiveScene->GetRegistry().view<Engine::CircleCollider2DComponent, Engine::TransformComponent>();
             for (auto entity : viewCircle)
             {
-                ENGINE_INFO("draw circle collider");
                 auto [circleCollider, transform] = viewCircle.get<Engine::CircleCollider2DComponent, Engine::TransformComponent>(entity);
 
                 glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(transform.GetPosition() + glm::vec3(circleCollider.Offset, 0.01f)));
@@ -473,6 +494,20 @@ namespace EngineEditor
         m_RuntimeScene = m_ActiveScene;
         m_SceneHierarchyPanel.SetContext(m_ActiveScene);
         m_ActiveScene->OnRuntimeStart();
+    }
+
+    void EngineEditor::SimulateScene()
+    {
+        if (!m_EditorScene)
+        {
+            ENGINE_ERROR("No editor scene to simulate!");
+            return;
+        }
+        m_SceneState = SceneState::Simulate;
+        m_ActiveScene = Engine::Scene::Copy(m_EditorScene);
+        m_RuntimeScene = m_ActiveScene;
+        m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+        m_ActiveScene->OnSimulationStart();
     }
 
     void EngineEditor::StopScene()

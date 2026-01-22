@@ -7,7 +7,7 @@
 #include "Engine/Profile/Instrumentor.h"
 namespace Engine
 {
-    void Scene::OnUpdateRuntime(Core::Timestep deltaTime)
+    void Scene::OnUpdateRuntime(Core::Timestep timestep)
     {
         ENGINE_PROFILING_FUNC();
         // update scripts
@@ -20,7 +20,7 @@ namespace Engine
                     nsc.Instance->m_Entity = Entity(entity, this);
                     nsc.Instance->OnCreate();
                 }
-                nsc.Instance->OnUpdate(deltaTime); });
+                nsc.Instance->OnUpdate(timestep); });
         }
 
         // Remove entities marked for deletion
@@ -53,32 +53,7 @@ namespace Engine
         }
 
         // Physics2D update
-        {
-            const float physicsStep = 1.0f / 60.0f;
-            physicsTimeStepAccumulator += deltaTime.GetSeconds();
-            if (physicsTimeStepAccumulator >= physicsStep)
-            {
-                physicsTimeStepAccumulator -= physicsStep;
-                int subStepCount = 4;
-                b2World_Step(worldId, physicsStep, subStepCount);
-
-                // update transforms from physics
-                {
-                    auto view = m_Registry.view<Rigidbody2DComponent, TransformComponent>();
-                    for (auto entity : view)
-                    {
-                        auto &rigidbody2D = view.get<Rigidbody2DComponent>(entity);
-                        auto &transform = view.get<TransformComponent>(entity);
-
-                        b2Vec2 position = b2Body_GetPosition(rigidbody2D.RuntimeBodyId);
-                        float angle = b2Rot_GetAngle(b2Body_GetRotation(rigidbody2D.RuntimeBodyId));
-
-                        transform.SetPosition(glm::vec3(position.x, position.y, transform.GetPosition().z));
-                        transform.SetRotation(glm::vec3(transform.GetRotation().x, transform.GetRotation().y, glm::degrees(angle)));
-                    }
-                }
-            }
-        }
+        StepPhysicsWorld(timestep);
 
         // Render 2D
         {
@@ -117,25 +92,7 @@ namespace Engine
                 mainCameraViewProjection = cameraComponent.Camera->GetProjectionMatrix() * viewMatrix;
             }
 
-            Renderer::Renderer2D::BeginScene(mainCameraViewProjection);
-            Renderer::Renderer2D::ResetStats();
-            auto view = m_Registry.view<SpriteComponent, TransformComponent>();
-            for (auto entity : view)
-            {
-                auto &spriteComponent = view.get<SpriteComponent>(entity);
-                auto &transformComponent = view.get<TransformComponent>(entity);
-                Renderer::Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
-            }
-
-            auto circleView = m_Registry.view<CircleComponent, TransformComponent>();
-            for (auto entity : circleView)
-            {
-                auto &circleComponent = circleView.get<CircleComponent>(entity);
-                auto &transformComponent = circleView.get<TransformComponent>(entity);
-                Renderer::Renderer2D::DrawCircle(transformComponent.GetTransform(), circleComponent, (int)entity);
-            }
-
-            Engine::Renderer::Renderer2D::EndScene();
+            RenderScene2D(mainCameraViewProjection);
         }
     }
 
@@ -145,27 +102,17 @@ namespace Engine
         // Update Editor Camera
 
         glm::mat4 editorCameraViewProjection = editorCamera.GetViewProjectionMatrix();
+        RenderScene2D(editorCameraViewProjection);
+    }
 
-        Renderer::Renderer2D::BeginScene(editorCameraViewProjection);
-        Renderer::Renderer2D::ResetStats();
-        auto view = m_Registry.view<SpriteComponent, TransformComponent>();
-        for (auto entity : view)
-        {
-            auto &spriteComponent = view.get<SpriteComponent>(entity);
-            auto &transformComponent = view.get<TransformComponent>(entity);
-            Renderer::Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
-            // Renderer::Renderer2D::DrawRect(transformComponent.GetTransform(), {1.0f, 0.0f, 1.0f, 1.0f}, (int)entity);
-        }
+    void Scene::OnUpdateSimulate(Core::Timestep timestep, Renderer::EditorCamera &editorCamera)
+    {
+        ENGINE_PROFILING_FUNC();
+        // Update Editor Camera
+        StepPhysicsWorld(timestep);
 
-        auto circleView = m_Registry.view<CircleComponent, TransformComponent>();
-        for (auto entity : circleView)
-        {
-            auto &circleComponent = circleView.get<CircleComponent>(entity);
-            auto &transformComponent = circleView.get<TransformComponent>(entity);
-            Renderer::Renderer2D::DrawCircle(transformComponent.GetTransform(), circleComponent, (int)entity);
-        }
-
-        Engine::Renderer::Renderer2D::EndScene();
+        glm::mat4 editorCameraViewProjection = editorCamera.GetViewProjectionMatrix();
+        RenderScene2D(editorCameraViewProjection);
     }
 
     Entity Scene::CreateEntity(const std::string &name)
@@ -226,55 +173,20 @@ namespace Engine
     }
     void Scene::OnRuntimeStart()
     {
-        ENGINE_INFO("Starting physics world");
-        b2WorldDef worldDef = b2DefaultWorldDef();
-        worldDef.gravity = b2Vec2(0.0f, -9.8f);
-        worldId = b2CreateWorld(&worldDef);
-
-        auto view = m_Registry.view<Rigidbody2DComponent, TransformComponent>();
-        for (auto entityId : view)
-        {
-            ENGINE_INFO("Creating physics body for entity {}", (int)entityId);
-            Entity entity = {entityId, this};
-            auto &rigidbody2D = view.get<Rigidbody2DComponent>(entity);
-            auto &transform = view.get<TransformComponent>(entity);
-            b2BodyDef bodyDef = b2DefaultBodyDef();
-            bodyDef.type = (b2BodyType)rigidbody2D.Type;
-            bodyDef.position = b2Vec2(transform.GetPosition().x, transform.GetPosition().y);
-            bodyDef.rotation = b2MakeRot(glm::radians(transform.GetRotation().z));
-            rigidbody2D.RuntimeBodyId = b2CreateBody(worldId, &bodyDef);
-            if (entity.HasComponent<BoxCollider2DComponent>())
-            {
-                auto &boxCollider = entity.GetComponent<BoxCollider2DComponent>();
-
-                b2Rot rotation = b2MakeRot(glm::radians(0.0f));
-                b2Polygon dynamicBox = b2MakeOffsetBox(boxCollider.Size.x * transform.GetScale().x * 0.5f,
-                                                       boxCollider.Size.y * transform.GetScale().y * 0.5f,
-                                                       {boxCollider.Offset.x, boxCollider.Offset.y}, rotation);
-                b2ShapeDef shapeDef = b2DefaultShapeDef();
-                shapeDef.density = boxCollider.Density;
-                shapeDef.material.friction = boxCollider.Friction;
-                shapeDef.material.restitution = boxCollider.Restitution;
-                b2CreatePolygonShape(rigidbody2D.RuntimeBodyId, &shapeDef, &dynamicBox);
-            }
-
-            if (entity.HasComponent<CircleCollider2DComponent>())
-            {
-                auto &circleCollider = entity.GetComponent<CircleCollider2DComponent>();
-                b2Circle circleShape;
-                circleShape.radius = circleCollider.Radius * transform.GetScale().x;
-                circleShape.center = {circleCollider.Offset.x, circleCollider.Offset.y};
-                b2ShapeDef shapeDef = b2DefaultShapeDef();
-                shapeDef.density = circleCollider.Density;
-                shapeDef.material.friction = circleCollider.Friction;
-                shapeDef.material.restitution = circleCollider.Restitution;
-                b2CreateCircleShape(rigidbody2D.RuntimeBodyId, &shapeDef, &circleShape);
-            }
-        }
+        SetupPhysicsWorld();
     }
     void Scene::OnRuntimeStop()
     {
-        b2DestroyWorld(worldId);
+        DestroyPhysicsWorld();
+    }
+
+    void Scene::OnSimulationStart()
+    {
+        SetupPhysicsWorld();
+    }
+    void Scene::OnSimulationStop()
+    {
+        DestroyPhysicsWorld();
     }
 
     template <typename T>
@@ -356,5 +268,113 @@ namespace Engine
                 continue;
             cameraComponent.Camera->SetAspectRatio(aspectRatio);
         }
+    }
+
+    void Scene::SetupPhysicsWorld()
+    {
+        ENGINE_INFO("Starting physics world");
+        b2WorldDef worldDef = b2DefaultWorldDef();
+        worldDef.gravity = b2Vec2(0.0f, -9.8f);
+        worldId = b2CreateWorld(&worldDef);
+
+        auto view = m_Registry.view<Rigidbody2DComponent, TransformComponent>();
+        for (auto entityId : view)
+        {
+            ENGINE_INFO("Creating physics body for entity {}", (int)entityId);
+            Entity entity = {entityId, this};
+            auto &rigidbody2D = view.get<Rigidbody2DComponent>(entity);
+            auto &transform = view.get<TransformComponent>(entity);
+            b2BodyDef bodyDef = b2DefaultBodyDef();
+            bodyDef.type = (b2BodyType)rigidbody2D.Type;
+            bodyDef.position = b2Vec2(transform.GetPosition().x, transform.GetPosition().y);
+            bodyDef.rotation = b2MakeRot(glm::radians(transform.GetRotation().z));
+            rigidbody2D.RuntimeBodyId = b2CreateBody(worldId, &bodyDef);
+            if (entity.HasComponent<BoxCollider2DComponent>())
+            {
+                auto &boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+
+                b2Rot rotation = b2MakeRot(glm::radians(0.0f));
+                b2Polygon dynamicBox = b2MakeOffsetBox(boxCollider.Size.x * transform.GetScale().x * 0.5f,
+                                                       boxCollider.Size.y * transform.GetScale().y * 0.5f,
+                                                       {boxCollider.Offset.x, boxCollider.Offset.y}, rotation);
+                b2ShapeDef shapeDef = b2DefaultShapeDef();
+                shapeDef.density = boxCollider.Density;
+                shapeDef.material.friction = boxCollider.Friction;
+                shapeDef.material.restitution = boxCollider.Restitution;
+                b2CreatePolygonShape(rigidbody2D.RuntimeBodyId, &shapeDef, &dynamicBox);
+            }
+
+            if (entity.HasComponent<CircleCollider2DComponent>())
+            {
+                auto &circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+                b2Circle circleShape;
+                circleShape.radius = circleCollider.Radius * transform.GetScale().x;
+                circleShape.center = {circleCollider.Offset.x, circleCollider.Offset.y};
+                b2ShapeDef shapeDef = b2DefaultShapeDef();
+                shapeDef.density = circleCollider.Density;
+                shapeDef.material.friction = circleCollider.Friction;
+                shapeDef.material.restitution = circleCollider.Restitution;
+                b2CreateCircleShape(rigidbody2D.RuntimeBodyId, &shapeDef, &circleShape);
+            }
+        }
+    }
+
+    void Scene::DestroyPhysicsWorld()
+    {
+        ENGINE_INFO("Destroying physics world");
+        b2DestroyWorld(worldId);
+    }
+    void Scene::StepPhysicsWorld(Core::Timestep timestep)
+    {
+        ENGINE_PROFILING_FUNC();
+        const float physicsStep = 1.0f / 60.0f;
+        physicsTimeStepAccumulator += timestep.GetSeconds();
+        if (physicsTimeStepAccumulator >= physicsStep)
+        {
+            physicsTimeStepAccumulator -= physicsStep;
+            int subStepCount = 4;
+            b2World_Step(worldId, physicsStep, subStepCount);
+
+            // update transforms from physics
+            {
+                auto view = m_Registry.view<Rigidbody2DComponent, TransformComponent>();
+                for (auto entity : view)
+                {
+                    auto &rigidbody2D = view.get<Rigidbody2DComponent>(entity);
+                    auto &transform = view.get<TransformComponent>(entity);
+
+                    b2Vec2 position = b2Body_GetPosition(rigidbody2D.RuntimeBodyId);
+                    float angle = b2Rot_GetAngle(b2Body_GetRotation(rigidbody2D.RuntimeBodyId));
+
+                    transform.SetPosition(glm::vec3(position.x, position.y, transform.GetPosition().z));
+                    transform.SetRotation(glm::vec3(transform.GetRotation().x, transform.GetRotation().y, glm::degrees(angle)));
+                }
+            }
+        }
+    }
+    void Scene::RenderScene2D(glm::mat4 viewProjectionMatrix)
+    {
+        ENGINE_PROFILING_FUNC();
+
+        Renderer::Renderer2D::BeginScene(viewProjectionMatrix);
+        Renderer::Renderer2D::ResetStats();
+        auto view = m_Registry.view<SpriteComponent, TransformComponent>();
+        for (auto entity : view)
+        {
+            auto &spriteComponent = view.get<SpriteComponent>(entity);
+            auto &transformComponent = view.get<TransformComponent>(entity);
+            Renderer::Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
+            // Renderer::Renderer2D::DrawRect(transformComponent.GetTransform(), {1.0f, 0.0f, 1.0f, 1.0f}, (int)entity);
+        }
+
+        auto circleView = m_Registry.view<CircleComponent, TransformComponent>();
+        for (auto entity : circleView)
+        {
+            auto &circleComponent = circleView.get<CircleComponent>(entity);
+            auto &transformComponent = circleView.get<TransformComponent>(entity);
+            Renderer::Renderer2D::DrawCircle(transformComponent.GetTransform(), circleComponent, (int)entity);
+        }
+
+        Engine::Renderer::Renderer2D::EndScene();
     }
 }

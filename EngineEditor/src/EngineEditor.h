@@ -44,6 +44,7 @@ namespace EngineEditor
         void OnLateRender();
 
         void PlayScene();
+        void SimulateScene();
         void StopScene();
 
     private:
@@ -72,7 +73,8 @@ namespace EngineEditor
         enum class SceneState
         {
             Edit = 0,
-            Play = 1
+            Play = 1,
+            Simulate = 2
         };
 
         SceneState m_SceneState = SceneState::Edit;

@@ -19,6 +19,7 @@ namespace Engine
         }
         void OnUpdateRuntime(Core::Timestep timestep);
         void OnUpdateEditor(Core::Timestep timestep, Renderer::EditorCamera &editorCamera);
+        void OnUpdateSimulate(Core::Timestep timestep, Renderer::EditorCamera &editorCamera);
 
         // Create an entity with a specific name,will add TagComponent and TransformComponent by default
         Entity CreateEntity(const std::string &name = std::string());
@@ -34,12 +35,21 @@ namespace Engine
         void OnRuntimeStart();
         void OnRuntimeStop();
 
+        void OnSimulationStart();
+        void OnSimulationStop();
+
         static Ref<Scene> Copy(Ref<Scene> other);
 
         void DuplicateEntity(Entity entity);
 
     private:
         void RecalculateCameraProjections();
+
+        void SetupPhysicsWorld();
+        void DestroyPhysicsWorld();
+
+        void StepPhysicsWorld(Core::Timestep timestep);
+        void RenderScene2D(glm::mat4 viewProjectionMatrix);
 
     private:
         entt::registry m_Registry;
