@@ -81,12 +81,24 @@ namespace Engine::Serialization
         if (!stream.is_open())
         {
             LOG_ERROR("Failed to open file for scene deserialization: {}", filePath);
+            return false;
         }
 
-        YAML::Node data = YAML::Load(stream);
+        YAML::Node data;
+
+        try
+        {
+            data = YAML::Load(stream);
+        }
+        catch (const YAML::ParserException &e)
+        {
+            LOG_ERROR("YAML Parser Exception: {} at line {}, column {}", e.what(), e.mark.line + 1, e.mark.column + 1);
+            return false;
+        }
         if (!data["Scene"])
         {
             LOG_ERROR("Scene node not found in YAML file: {}", filePath);
+            return false;
         }
         auto entities = data["Entities"];
         if (entities)

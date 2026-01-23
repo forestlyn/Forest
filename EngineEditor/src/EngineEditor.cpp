@@ -639,7 +639,11 @@ namespace EngineEditor
             m_ActiveScene = m_EditorScene;
             m_EditorScenePath = path;
             Engine::Serialization::SceneSerialize sceneSerialize(m_ActiveScene);
-            sceneSerialize.Deserialize(path.string());
+            if (!sceneSerialize.Deserialize(path.string()))
+            {
+                ENGINE_ERROR("Failed to load scene from path: {}", path.string());
+                return;
+            }
             m_SceneHierarchyPanel.SetContext(m_ActiveScene);
             m_ActiveScene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
         }
