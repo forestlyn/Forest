@@ -16,7 +16,7 @@ namespace Engine::Platform::Windows
     {
         GLFWwindow *window = static_cast<GLFWwindow *>(Engine::Core::Application::Get().GetWindow().GetNativeWindow());
         int state = glfwGetKey(window, keycode);
-        return state == GLFW_PRESS || state == GLFW_REPEAT;
+        return state == GLFW_PRESS;
     }
 
     bool WindowsInput::IsMouseButtonPressedImpl(int button)
