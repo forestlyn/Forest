@@ -1,10 +1,10 @@
 #include "Scene.h"
 #include "Engine/Renderer/Renderer2D.h"
 #include "Engine/Scene/Entity.h"
-#include "Engine/Scene/NativeScriptComponent.h"
 #include "Engine/Renderer/Camera/OrthographicCamera.h"
 #include "Engine/Renderer/Camera/PerspectiveCamera.h"
 #include "Engine/Profile/Instrumentor.h"
+#include "Engine/Scene/ScriptEntity.h"
 namespace Engine
 {
     void Scene::OnUpdateRuntime(Core::Timestep timestep)
@@ -207,17 +207,26 @@ namespace Engine
         DestroyPhysicsWorld();
     }
 
-    template <typename T>
+    template <typename... T>
     static void CopyComponent(entt::registry &dst, entt::registry &src, std::unordered_map<uint64_t, entt::entity> entityMap)
     {
-        auto view = src.view<T>();
-        for (auto e : view)
-        {
-            ENGINE_ASSERT(entityMap.find(src.get<IDComponent>(e).ID) != entityMap.end(), "Entity not found in map!");
-            entt::entity destEntity = entityMap[src.get<IDComponent>(e).ID];
-            T &srcComponent = src.get<T>(e);
-            dst.emplace_or_replace<T>(destEntity, srcComponent);
-        }
+        ([&]<typename T>()
+         {
+            auto view = src.view<T>();
+            for (auto e : view)
+            {
+                ENGINE_ASSERT(entityMap.find(src.get<IDComponent>(e).ID) != entityMap.end(), "Entity not found in map!");
+                entt::entity destEntity = entityMap[src.get<IDComponent>(e).ID];
+                auto &srcComponent = src.get<T>(e);
+                dst.emplace_or_replace<T>(destEntity, srcComponent);
+            } }.template operator()<T>(),
+         ...);
+    }
+
+    template <typename... T>
+    static void CopyComponent(ComponentGroup<T...> group, entt::registry &dst, entt::registry &src, std::unordered_map<uint64_t, entt::entity> entityMap)
+    {
+        CopyComponent<T...>(dst, src, entityMap);
     }
 
     Ref<Scene> Scene::Copy(Ref<Scene> other)
@@ -238,41 +247,35 @@ namespace Engine
         }
 
         // Copy all components
-        CopyComponent<TagComponent>(newScene->m_Registry, other->m_Registry, entityMap);
-        CopyComponent<TransformComponent>(newScene->m_Registry, other->m_Registry, entityMap);
-        CopyComponent<CameraComponent>(newScene->m_Registry, other->m_Registry, entityMap);
-        CopyComponent<SpriteComponent>(newScene->m_Registry, other->m_Registry, entityMap);
-        CopyComponent<CircleComponent>(newScene->m_Registry, other->m_Registry, entityMap);
-        CopyComponent<Rigidbody2DComponent>(newScene->m_Registry, other->m_Registry, entityMap);
-        CopyComponent<BoxCollider2DComponent>(newScene->m_Registry, other->m_Registry, entityMap);
-        CopyComponent<CircleCollider2DComponent>(newScene->m_Registry, other->m_Registry, entityMap);
-        CopyComponent<NativeScriptComponent>(newScene->m_Registry, other->m_Registry, entityMap);
+        CopyComponent(AllComponents{}, newScene->m_Registry, other->m_Registry, entityMap);
 
         return newScene;
     }
 
-    template <typename T>
+    template <typename... T>
     static void CopyComponentIfExists(Entity dst, Entity src)
     {
-        if (src.HasComponent<T>())
-        {
-            T &srcComponent = src.GetComponent<T>();
-            dst.AddOrReplaceComponent<T>(srcComponent);
-        }
+        ([&]<typename T>()
+         {
+            if (src.HasComponent<T>())
+            {
+                T &srcComponent = src.GetComponent<T>();
+                dst.AddOrReplaceComponent<T>(srcComponent);
+            } }.template operator()<T>(),
+         ...);
+    }
+
+    template <typename... T>
+    static void CopyComponentIfExists(ComponentGroup<T...> group, Entity dst, Entity src)
+    {
+        CopyComponentIfExists<T...>(dst, src);
     }
 
     void Scene::DuplicateEntity(Entity entity)
     {
         std::string name = entity.GetName();
         Entity newEntity = CreateEntity(name + "_Copy");
-        CopyComponentIfExists<TransformComponent>(newEntity, entity);
-        CopyComponentIfExists<CameraComponent>(newEntity, entity);
-        CopyComponentIfExists<SpriteComponent>(newEntity, entity);
-        CopyComponentIfExists<CircleComponent>(newEntity, entity);
-        CopyComponentIfExists<Rigidbody2DComponent>(newEntity, entity);
-        CopyComponentIfExists<BoxCollider2DComponent>(newEntity, entity);
-        CopyComponentIfExists<CircleCollider2DComponent>(newEntity, entity);
-        CopyComponentIfExists<NativeScriptComponent>(newEntity, entity);
+        CopyComponentIfExists(AllComponents{}, newEntity, entity);
     }
 
     void Scene::RecalculateCameraProjections()

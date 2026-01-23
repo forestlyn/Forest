@@ -8,3 +8,22 @@
 #include "Components/CircleCollider2DComponent.h"
 #include "Components/Rigidbody2DComponent.h"
 #include "Components/BoxCollider2DComponent.h"
+#include "NativeScriptComponent.h"
+
+namespace Engine
+{
+    template <typename... T>
+    struct ComponentGroup
+    {
+    };
+
+    using AllComponents = ComponentGroup<
+        TransformComponent,
+        CameraComponent,
+        SpriteComponent,
+        CircleComponent,
+        Rigidbody2DComponent,
+        BoxCollider2DComponent,
+        CircleCollider2DComponent,
+        NativeScriptComponent>;
+}

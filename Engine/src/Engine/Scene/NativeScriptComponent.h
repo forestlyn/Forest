@@ -1,9 +1,10 @@
 #pragma once
 #include "Engine/Core/Core.h"
 #include "Engine/Core/Timestep.h"
-#include "ScriptEntity.h"
+
 namespace Engine
 {
+    class ScriptEntity;
     class NativeScriptComponent
     {
     public:
