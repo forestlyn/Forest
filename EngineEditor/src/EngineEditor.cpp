@@ -488,6 +488,15 @@ namespace EngineEditor
             }
         }
 
+        if (Engine::Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
+        {
+            if (selectedEntity.HasComponent<Engine::TransformComponent>())
+            {
+                auto &tc = selectedEntity.GetComponent<Engine::TransformComponent>();
+                glm::mat4 transform = tc.GetTransform();
+                Engine::Renderer::Renderer2D::DrawRect(transform, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+            }
+        }
         Engine::Renderer::Renderer2D::EndScene();
     }
 
