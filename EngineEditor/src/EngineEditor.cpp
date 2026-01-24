@@ -623,7 +623,7 @@ namespace EngineEditor
 
     void EngineEditor::LoadScene(std::filesystem::path path)
     {
-        if (m_SceneState == SceneState::Play)
+        if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
         {
             StopScene();
         }
