@@ -103,54 +103,7 @@ namespace EngineEditor
             }
             if (ImGui::BeginPopup("AddComponent"))
             {
-                if (!entity.HasComponent<Engine::CameraComponent>())
-                {
-                    if (ImGui::MenuItem("Camera"))
-                    {
-                        entity.AddComponent<Engine::CameraComponent>();
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
-                if (!entity.HasComponent<Engine::SpriteComponent>())
-                {
-                    if (ImGui::MenuItem("Sprite Renderer"))
-                    {
-                        entity.AddComponent<Engine::SpriteComponent>();
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
-                if (!entity.HasComponent<Engine::CircleComponent>())
-                {
-                    if (ImGui::MenuItem("Circle Renderer"))
-                    {
-                        entity.AddComponent<Engine::CircleComponent>();
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
-                if (!entity.HasComponent<Engine::Rigidbody2DComponent>())
-                {
-                    if (ImGui::MenuItem("Rigidbody 2D"))
-                    {
-                        entity.AddComponent<Engine::Rigidbody2DComponent>();
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
-                if (!entity.HasComponent<Engine::BoxCollider2DComponent>())
-                {
-                    if (ImGui::MenuItem("Box Collider 2D"))
-                    {
-                        entity.AddComponent<Engine::BoxCollider2DComponent>();
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
-                if (!entity.HasComponent<Engine::CircleCollider2DComponent>())
-                {
-                    if (ImGui::MenuItem("Circle Collider 2D"))
-                    {
-                        entity.AddComponent<Engine::CircleCollider2DComponent>();
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
+                UIUtils::DrawAddComponents(Engine::AddableComponents{}, entity);
                 ImGui::EndPopup();
             }
         }

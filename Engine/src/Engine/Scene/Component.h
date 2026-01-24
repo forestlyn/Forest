@@ -26,4 +26,12 @@ namespace Engine
         BoxCollider2DComponent,
         CircleCollider2DComponent,
         NativeScriptComponent>;
+
+    using AddableComponents = ComponentGroup<
+        CameraComponent,
+        SpriteComponent,
+        CircleComponent,
+        Rigidbody2DComponent,
+        BoxCollider2DComponent,
+        CircleCollider2DComponent>;
 }
