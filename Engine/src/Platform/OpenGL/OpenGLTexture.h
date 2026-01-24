@@ -20,7 +20,7 @@ namespace Platform::OpenGL
         virtual bool operator==(const Engine::Renderer::Texture &other) const override
         {
             // ENGINE_INFO("Comparing OpenGLTexture2D instances: {0} and {1}", m_RendererID, ((OpenGLTexture2D &)other).m_RendererID);
-            return m_RendererID == ((OpenGLTexture2D &)other).m_RendererID;
+            return m_RendererID == other.GetRendererID();
         }
 
     private:

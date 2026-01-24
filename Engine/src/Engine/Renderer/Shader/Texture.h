@@ -21,6 +21,8 @@ namespace Engine::Renderer
         {
             return a == b;
         }
+
+        virtual uint32_t GetRendererID() const = 0;
     };
 
     class Texture2D : public Texture
@@ -28,8 +30,6 @@ namespace Engine::Renderer
     public:
         static Ref<Texture2D> Create(uint32_t width, uint32_t height);
         static Ref<Texture2D> Create(const std::string &path);
-
-        virtual uint32_t GetRendererID() const = 0;
     };
 
 } // namespace Engine::Renderer
