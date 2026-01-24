@@ -15,7 +15,8 @@ namespace EngineEditor
 	class EngineEditorApp : public Engine::Core::Application
 	{
 	public:
-		EngineEditorApp()
+		EngineEditorApp(Engine::Core::ApplicationCommandLineArgs args)
+			: Engine::Core::Application(Engine::Core::ApplicationSpecification{"Engine Editor", 1600, 900, true, true, args})
 		{
 			LOG_INFO("EngineEditorApp created!");
 
@@ -27,7 +28,7 @@ namespace EngineEditor
 	};
 }
 
-Engine::Core::Application *Engine::Core::CreateApplication()
+Engine::Core::Application *Engine::Core::CreateApplication(Engine::Core::ApplicationCommandLineArgs args)
 {
-	return new EngineEditor::EngineEditorApp();
+	return new EngineEditor::EngineEditorApp(args);
 }

@@ -11,13 +11,19 @@ namespace Engine::Core
 
 	Application *Application::s_Instance = nullptr;
 
-	Application::Application()
+	Application::Application(const ApplicationSpecification &spec)
 	{
-
 		ENGINE_PROFILING_SCOPE("START");
-		m_Window = Scope<Window>(Window::Create());
-		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
+		m_Specification = spec;
+		WindowProps windowSpec;
+		windowSpec.Title = m_Specification.Name;
+		windowSpec.Width = m_Specification.Width;
+		windowSpec.Height = m_Specification.Height;
+		m_Window = Scope<Window>(Window::Create(windowSpec));
+		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+		m_Window->SetVSync(m_Specification.VSync);
+		m_Window->SetFullScreen(m_Specification.Fullscreen);
 		Renderer::Renderer::Init();
 
 		ENGINE_ASSERT(!s_Instance, "Application already exists!");
@@ -32,7 +38,6 @@ namespace Engine::Core
 		m_ProfileLayer = new Engine::Profile::ProfileLayer();
 		PushOverlay(m_ProfileLayer);
 #endif
-		// m_Window->SetVSync(false);
 	}
 
 	Application::~Application()
@@ -85,6 +90,11 @@ namespace Engine::Core
 		}
 	}
 
+	void Application::Shutdown()
+	{
+		m_Running = false;
+	}
+
 	bool Application::OnEvent(Event::Event &e)
 	{
 		ENGINE_PROFILING_FUNC();
@@ -105,8 +115,7 @@ namespace Engine::Core
 	bool Application::OnWindowClose(Event::WindowCloseEvent &e)
 	{
 		ENGINE_PROFILING_FUNC();
-
-		m_Running = false;
+		Shutdown();
 		return true;
 	}
 

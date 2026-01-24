@@ -14,7 +14,8 @@
 class ForestApp : public Engine::Core::Application
 {
 public:
-	ForestApp()
+	ForestApp(Engine::Core::ApplicationCommandLineArgs args)
+		: Engine::Core::Application(Engine::Core::ApplicationSpecification{"Forest", 1600, 900, false, true, args})
 	{
 		LOG_INFO("ForestApp created!");
 
@@ -26,7 +27,7 @@ public:
 	}
 };
 
-Engine::Core::Application *Engine::Core::CreateApplication()
+Engine::Core::Application *Engine::Core::CreateApplication(Engine::Core::ApplicationCommandLineArgs args)
 {
-	return new ForestApp();
+	return new ForestApp(args);
 }

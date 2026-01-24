@@ -9,13 +9,35 @@
 
 namespace Engine::Core
 {
+	struct ApplicationCommandLineArgs
+	{
+		int Count = 0;
+		char **Args = nullptr;
+
+		const char *operator[](int index) const
+		{
+			ENGINE_ASSERT(index < Count, "Index out of bounds!");
+			return Args[index];
+		}
+	};
+
+	struct ApplicationSpecification
+	{
+		std::string Name = "Engine Application";
+		uint32_t Width = 1280;
+		uint32_t Height = 720;
+		bool Fullscreen = false;
+		bool VSync = true;
+		ApplicationCommandLineArgs CommandLineArgs;
+	};
 	class Application
 	{
 	public:
-		Application();
+		Application(const ApplicationSpecification &spec = ApplicationSpecification());
 		virtual ~Application();
 
 		void Run();
+		void Shutdown();
 
 		void PushLayer(Layer *layer);
 		void PushOverlay(Layer *overlay);
@@ -29,9 +51,12 @@ namespace Engine::Core
 
 		Engine::MyImGui::ImGuiLayer &GetImGuiLayer() { return *m_ImGuiLayer; }
 
+		const ApplicationSpecification &GetSpecification() const { return m_Specification; }
+
 	private:
 		bool m_Running = true;
 		bool m_Minimized = false;
+		ApplicationSpecification m_Specification;
 
 		float m_LastFrameTime = 0.0f;
 		Scope<Window> m_Window;
@@ -48,5 +73,5 @@ namespace Engine::Core
 		Engine::Profile::ProfileLayer *m_ProfileLayer;
 #endif
 	};
-	Application *CreateApplication();
+	Application *CreateApplication(ApplicationCommandLineArgs args);
 }

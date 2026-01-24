@@ -1,6 +1,6 @@
 #pragma once
 #ifdef FOREST_PLATFORM_WINDOWS
-extern Engine::Core::Application *Engine::Core::CreateApplication();
+extern Engine::Core::Application *Engine::Core::CreateApplication(Engine::Core::ApplicationCommandLineArgs args);
 
 int main(int argc, char **argv)
 {
@@ -11,11 +11,13 @@ int main(int argc, char **argv)
 #else
 	ENGINE_INFO("Profiling is DISABLED in EntryPoint.h");
 #endif
-
+	Engine::Core::ApplicationCommandLineArgs args;
+	args.Count = argc;
+	args.Args = argv;
 	Engine::Core::Application *app;
 	{
 		ENGINE_PROFILING_BEGIN("Application::", "start.json");
-		app = Engine::Core::CreateApplication();
+		app = Engine::Core::CreateApplication(args);
 		ENGINE_PROFILING_END();
 	}
 	{

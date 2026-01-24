@@ -167,4 +167,30 @@ namespace Platform::Windows
     {
         return m_Data.VSync;
     }
+    void WindowsWindow::SetFullScreen(bool enabled)
+    {
+        if (enabled == m_Data.Fullscreen)
+            return;
+
+        if (enabled)
+        {
+            GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+            const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+            glfwSetWindowMonitor(m_Window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+        }
+        else
+        {
+            glfwSetWindowMonitor(m_Window, nullptr, 100, 100, m_Data.Width, m_Data.Height, 0);
+        }
+        m_Data.Fullscreen = enabled;
+    }
+
+    bool WindowsWindow::IsFullscreen() const
+    {
+        return m_Data.Fullscreen;
+    }
+    void WindowsWindow::Minimize()
+    {
+        glfwIconifyWindow(m_Window);
+    }
 }

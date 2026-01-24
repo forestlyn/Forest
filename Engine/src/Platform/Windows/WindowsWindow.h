@@ -21,6 +21,9 @@ namespace Platform::Windows
         void SetEventCallback(const EventCallbackFn &callback) override;
         void SetVSync(bool enabled) override;
         bool IsVSync() const override;
+        void SetFullScreen(bool enabled) override;
+        bool IsFullscreen() const override;
+        void Minimize() override;
 
         void *GetNativeWindow() const override { return m_Window; }
 
@@ -36,7 +39,7 @@ namespace Platform::Windows
             std::string Title;
             uint32_t Width, Height;
             bool VSync;
-
+            bool Fullscreen;
             EventCallbackFn EventCallback;
         } m_Data;
     };

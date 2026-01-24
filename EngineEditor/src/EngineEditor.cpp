@@ -115,7 +115,6 @@ namespace EngineEditor
     void EngineEditor::OnImGuiRender()
     {
         OpenDockSpace();
-
         ENGINE_PROFILING_FUNC();
         if (ImGui::BeginMainMenuBar())
         {
@@ -140,6 +139,26 @@ namespace EngineEditor
                 ImGui::EndMenu();
             }
 
+            ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 85);
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+            if (ImGui::Button("-", ImVec2(25, 25)))
+            {
+                Engine::Core::Application::Get().GetWindow().Minimize();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("[]", ImVec2(25, 25)))
+            {
+                bool isFullScreen = Engine::Core::Application::Get().GetWindow().IsFullscreen();
+                Engine::Core::Application::Get().GetWindow().SetFullScreen(!isFullScreen);
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("X", ImVec2(25, 25)))
+            {
+                Engine::Core::Application::Get().Shutdown();
+            }
+            ImGui::PopStyleVar();
+            ImGui::PopStyleColor();
             ImGui::EndMainMenuBar();
         }
 
