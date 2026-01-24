@@ -52,7 +52,8 @@ namespace EngineEditor
     {
         {
             ENGINE_PROFILING_FUNC();
-            m_EditorCamera.OnUpdate(timestep);
+            if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
+                m_EditorCamera.OnUpdate(timestep);
             // m_ParticleSystem->OnUpdate(timestep);
             {
                 ENGINE_PROFILING_SCOPE("EngineEditor::PreRenderer");
@@ -209,6 +210,10 @@ namespace EngineEditor
 
     bool EngineEditor::OnEvent(Engine::Event::Event &event)
     {
+        if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
+        {
+            m_EditorCamera.OnEvent(event);
+        }
         Engine::Event::EventDispatcher dispatcher(event);
         event.Handled |= dispatcher.Dispatch<Engine::Event::KeyPressedEvent>(BIND_EVENT_FN(EngineEditor::KeyPressedEventHandlerInEditorMode));
         event.Handled |= dispatcher.Dispatch<Engine::Event::KeyPressedEvent>(BIND_EVENT_FN(EngineEditor::KeyPressedEventHandler));
