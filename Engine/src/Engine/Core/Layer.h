@@ -6,7 +6,7 @@
 #include "Engine/Profile/Instrumentor.h"
 namespace Engine::Core
 {
-    class FOREST_API Layer
+    class Layer
     {
     public:
         Layer(const std::string &name = "Layer");

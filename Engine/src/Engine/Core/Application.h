@@ -9,7 +9,7 @@
 
 namespace Engine::Core
 {
-	class FOREST_API Application
+	class Application
 	{
 	public:
 		Application();

@@ -21,7 +21,7 @@ namespace Engine::Core
         {
         }
     };
-    class FOREST_API Window
+    class Window
     {
     public:
         using EventCallbackFn = std::function<void(Engine::Event::Event &)>;

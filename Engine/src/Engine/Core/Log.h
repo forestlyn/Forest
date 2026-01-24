@@ -5,7 +5,7 @@
 
 namespace Engine::Core
 {
-	class FOREST_API Log
+	class Log
 	{
 	public:
 		static void Init();

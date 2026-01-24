@@ -7,7 +7,7 @@
 #include "Engine/Events/WindowEvent.h"
 namespace Engine::MyImGui
 {
-    class FOREST_API ImGuiLayer : public Engine::Core::Layer
+    class ImGuiLayer : public Engine::Core::Layer
     {
     public:
         ImGuiLayer()

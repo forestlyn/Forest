@@ -3,7 +3,7 @@
 
 namespace Engine::Core
 {
-    class FOREST_API LayerStack
+    class LayerStack
     {
     public:
         LayerStack();

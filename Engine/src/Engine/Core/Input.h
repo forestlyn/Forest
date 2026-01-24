@@ -3,7 +3,7 @@
 #include "Engine/pcheader.h"
 namespace Engine::Core
 {
-    class FOREST_API Input
+    class Input
     {
     public:
         static bool IsKeyPressed(int keycode)
