@@ -38,8 +38,7 @@ namespace EngineEditor
         {
             const auto &path = entry.path();
             // ImGui::Text("%s", path.string().c_str());
-            auto relativePath = std::filesystem::relative(path, AssetsDirectory);
-            std::string filenameString = relativePath.filename().string();
+            std::string filenameString = path.filename().string();
 
             ImGui::PushID(filenameString.c_str());
             Engine::Ref<Engine::Renderer::Texture2D> icon = entry.is_directory() ? m_DirectoryIcon : m_FileIcon;
