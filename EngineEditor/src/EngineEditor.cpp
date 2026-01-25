@@ -26,9 +26,19 @@ namespace EngineEditor
         fbSpec.Height = 720;
         m_FrameBuffer = Engine::Renderer::FrameBuffer::Create(fbSpec);
 
-        m_ActiveScene = Engine::CreateRef<Engine::Scene>();
-        m_SceneHierarchyPanel = SceneHierarchyPanel(m_ActiveScene);
+        m_SceneHierarchyPanel = SceneHierarchyPanel();
         m_ContentBrowserPanel = ContentBrowserPanel();
+
+        auto &args = Engine::Core::Application::Get().GetSpecification().CommandLineArgs;
+        if (args.Count > 1)
+        {
+            std::filesystem::path scenePath = args[1];
+            LoadScene(scenePath);
+        }
+        else
+        {
+            NewScene();
+        }
 
         m_PlayIcon = Engine::Renderer::Texture2D::Create("assets/textures/icon/play_icon.png");
         m_StopIcon = Engine::Renderer::Texture2D::Create("assets/textures/icon/stop_icon.png");
