@@ -243,6 +243,7 @@ namespace Engine
             UUID uuid = other->m_Registry.get<IDComponent>(e).ID;
             std::string name = other->m_Registry.get<TagComponent>(e).Tag;
             Entity newEntity = newScene->CreateEntityWithID(uuid);
+            newEntity.AddComponent<TagComponent>(name);
             entityMap[uuid] = (entt::entity)newEntity;
         }
 

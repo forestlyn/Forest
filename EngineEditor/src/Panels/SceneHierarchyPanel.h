@@ -12,25 +12,25 @@ namespace EngineEditor
         void SetContext(const Engine::Ref<Engine::Scene> &context)
         {
             m_Context = context;
-            if (m_SelectionContext)
+            if (m_SelectionEntity)
             {
-                Engine::UUID uuid = m_SelectionContext.GetUUID();
+                Engine::UUID uuid = m_SelectionEntity.GetUUID();
                 auto view = m_Context->GetRegistry().view<Engine::IDComponent>();
                 for (auto entity : view)
                 {
                     if (view.get<Engine::IDComponent>(entity).ID == uuid)
                     {
-                        m_SelectionContext = Engine::Entity(entity, m_Context.get());
+                        m_SelectionEntity = Engine::Entity(entity, m_Context.get());
                         return;
                     }
                 }
-                m_SelectionContext = {};
+                m_SelectionEntity = {};
             }
         }
         void OnImGuiRender();
 
-        Engine::Entity GetSelectedEntity() const { return m_SelectionContext; }
-        void SetSelectedEntity(Engine::Entity entity) { m_SelectionContext = entity; }
+        Engine::Entity GetSelectedEntity() const { return m_SelectionEntity; }
+        void SetSelectedEntity(Engine::Entity entity) { m_SelectionEntity = entity; }
 
     private:
         void DrawEntityNode(Engine::Entity entity);
@@ -38,6 +38,6 @@ namespace EngineEditor
 
     private:
         Engine::Ref<Engine::Scene> m_Context;
-        Engine::Entity m_SelectionContext;
+        Engine::Entity m_SelectionEntity;
     };
 };

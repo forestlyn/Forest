@@ -22,7 +22,7 @@ namespace EngineEditor
         {
             if (ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered())
             {
-                m_SelectionContext = {};
+                m_SelectionEntity = {};
             }
 
             if (ImGui::BeginPopupContextWindow("HierarchyContextMenu", ImGuiPopupFlags_MouseButtonRight))
@@ -40,14 +40,22 @@ namespace EngineEditor
                 Engine::Entity e{entity, m_Context.get()};
                 DrawEntityNode(e);
             }
+            if (view.empty())
+            {
+                ImGui::Text("Right click to create an entity.");
+            }
+        }
+        else
+        {
+            ImGui::Text("No scene loaded.");
         }
 
         ImGui::End();
 
         ImGui::Begin("Properties");
-        if (m_SelectionContext)
+        if (m_SelectionEntity)
         {
-            DrawComponents(m_SelectionContext);
+            DrawComponents(m_SelectionEntity);
         }
         ImGui::End();
     }
@@ -56,12 +64,12 @@ namespace EngineEditor
     {
         const auto &tag = entity.GetComponent<Engine::TagComponent>().Tag;
 
-        ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+        ImGuiTreeNodeFlags flags = ((m_SelectionEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
         flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
         bool opened = ImGui::TreeNodeEx((void *)(uint64_t)(uint32_t)(entt::entity)entity, flags, tag.c_str());
         if (ImGui::IsItemClicked())
         {
-            m_SelectionContext = entity;
+            m_SelectionEntity = entity;
         }
 
         if (ImGui::BeginPopupContextItem())
@@ -69,9 +77,9 @@ namespace EngineEditor
             if (ImGui::MenuItem("Delete Entity"))
             {
                 entity.GetComponent<Engine::TagComponent>().SetRemove(true);
-                if (m_SelectionContext == entity)
+                if (m_SelectionEntity == entity)
                 {
-                    m_SelectionContext = {};
+                    m_SelectionEntity = {};
                 }
             }
             ImGui::EndPopup();
