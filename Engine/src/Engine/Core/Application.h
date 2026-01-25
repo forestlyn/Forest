@@ -28,6 +28,7 @@ namespace Engine::Core
 		uint32_t Height = 720;
 		bool Fullscreen = false;
 		bool VSync = true;
+		std::string WorkingDirectory = "";
 		ApplicationCommandLineArgs CommandLineArgs;
 	};
 	class Application

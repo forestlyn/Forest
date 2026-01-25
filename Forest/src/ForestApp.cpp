@@ -14,8 +14,7 @@
 class ForestApp : public Engine::Core::Application
 {
 public:
-	ForestApp(Engine::Core::ApplicationCommandLineArgs args)
-		: Engine::Core::Application(Engine::Core::ApplicationSpecification{"Forest", 1600, 900, false, true, args})
+	ForestApp(Engine::Core::ApplicationSpecification spec) : Engine::Core::Application(spec)
 	{
 		LOG_INFO("ForestApp created!");
 
@@ -29,5 +28,13 @@ public:
 
 Engine::Core::Application *Engine::Core::CreateApplication(Engine::Core::ApplicationCommandLineArgs args)
 {
-	return new ForestApp(args);
+	Engine::Core::ApplicationSpecification spec;
+	spec.Name = "Forest";
+	spec.Width = 1600;
+	spec.Height = 900;
+	spec.Fullscreen = false;
+	spec.VSync = true;
+	spec.CommandLineArgs = args;
+	spec.WorkingDirectory = "../../Forest";
+	return new ForestApp(spec);
 }

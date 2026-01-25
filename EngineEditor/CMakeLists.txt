@@ -44,13 +44,13 @@ endif()
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets")
     add_custom_command(TARGET EngineEditor POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_CURRENT_SOURCE_DIR}/assets"
+            "${CMAKE_CURRENT_SOURCE_DIR}/resources/assets"
             "$<TARGET_FILE_DIR:EngineEditor>/assets"
         COMMENT "Copying assets to runtime folder"
     )
     add_custom_command(TARGET EngineEditor POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${CMAKE_CURRENT_SOURCE_DIR}/settings/imgui.ini"
+            "${CMAKE_CURRENT_SOURCE_DIR}/resources/imgui.ini"
             "$<TARGET_FILE_DIR:EngineEditor>/"
         COMMENT "Copying imgui.ini to runtime folder")
 endif()

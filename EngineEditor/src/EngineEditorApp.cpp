@@ -15,8 +15,7 @@ namespace EngineEditor
 	class EngineEditorApp : public Engine::Core::Application
 	{
 	public:
-		EngineEditorApp(Engine::Core::ApplicationCommandLineArgs args)
-			: Engine::Core::Application(Engine::Core::ApplicationSpecification{"Engine Editor", 1600, 900, true, true, args})
+		EngineEditorApp(Engine::Core::ApplicationSpecification spec) : Engine::Core::Application(spec)
 		{
 			LOG_INFO("EngineEditorApp created!");
 
@@ -30,5 +29,13 @@ namespace EngineEditor
 
 Engine::Core::Application *Engine::Core::CreateApplication(Engine::Core::ApplicationCommandLineArgs args)
 {
-	return new EngineEditor::EngineEditorApp(args);
+	Engine::Core::ApplicationSpecification spec;
+	spec.Name = "Engine Editor";
+	spec.Width = 1600;
+	spec.Height = 900;
+	spec.Fullscreen = true;
+	spec.VSync = true;
+	spec.WorkingDirectory = "../../../EngineEditor/resources/";
+	spec.CommandLineArgs = args;
+	return new EngineEditor::EngineEditorApp(spec);
 }
