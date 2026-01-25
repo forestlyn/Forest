@@ -41,19 +41,19 @@ if(WIN32)
 endif()
 
 # 拷贝 assets 到可执行文件目录（在构建后执行）
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets")
-    add_custom_command(TARGET EngineEditor POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_CURRENT_SOURCE_DIR}/resources/assets"
-            "$<TARGET_FILE_DIR:EngineEditor>/assets"
-        COMMENT "Copying assets to runtime folder"
-    )
-    add_custom_command(TARGET EngineEditor POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${CMAKE_CURRENT_SOURCE_DIR}/resources/imgui.ini"
-            "$<TARGET_FILE_DIR:EngineEditor>/"
-        COMMENT "Copying imgui.ini to runtime folder")
-endif()
+# if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets")
+#     add_custom_command(TARGET EngineEditor POST_BUILD
+#         COMMAND ${CMAKE_COMMAND} -E copy_directory
+#             "${CMAKE_CURRENT_SOURCE_DIR}/resources/assets"
+#             "$<TARGET_FILE_DIR:EngineEditor>/assets"
+#         COMMENT "Copying assets to runtime folder"
+#     )
+#     add_custom_command(TARGET EngineEditor POST_BUILD
+#         COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#             "${CMAKE_CURRENT_SOURCE_DIR}/resources/imgui.ini"
+#             "$<TARGET_FILE_DIR:EngineEditor>/"
+#         COMMENT "Copying imgui.ini to runtime folder")
+# endif()
 
 # 安装配置
 install(TARGETS EngineEditor

@@ -31,9 +31,9 @@ Engine::Core::Application *Engine::Core::CreateApplication(Engine::Core::Applica
 {
 	Engine::Core::ApplicationSpecification spec;
 	spec.Name = "Engine Editor";
-	spec.Width = 1600;
-	spec.Height = 900;
-	spec.Fullscreen = true;
+	spec.Width = 1920;
+	spec.Height = 1080;
+	spec.Fullscreen = false;
 	spec.VSync = true;
 	spec.WorkingDirectory = "../../../EngineEditor/resources/";
 	spec.CommandLineArgs = args;

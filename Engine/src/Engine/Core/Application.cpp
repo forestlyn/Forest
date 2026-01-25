@@ -17,6 +17,12 @@ namespace Engine::Core
 		ENGINE_PROFILING_SCOPE("START");
 
 		m_Specification = spec;
+
+		// Set working directory
+		if (!m_Specification.WorkingDirectory.empty())
+			std::filesystem::current_path(m_Specification.WorkingDirectory);
+
+		// Create Window
 		WindowProps windowSpec;
 		windowSpec.Title = m_Specification.Name;
 		windowSpec.Width = m_Specification.Width;
@@ -34,10 +40,6 @@ namespace Engine::Core
 		m_ImGuiLayer = new MyImGui::ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
 		m_ImGuiLayer->SetDarkThemeColors();
-
-		// Set working directory
-		if (!m_Specification.WorkingDirectory.empty())
-			std::filesystem::current_path(m_Specification.WorkingDirectory);
 
 #if defined(ENGINE_ENABLE_PROFILELAYER)
 		m_ProfileLayer = new Engine::Profile::ProfileLayer();
