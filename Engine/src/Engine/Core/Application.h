@@ -6,8 +6,6 @@
 #include "Engine/pcheader.h"
 #include "Engine/Events/WindowEvent.h"
 #include "Engine/Profile/ProfileLayer.h"
-#include <mono/jit/jit.h>
-#include <mono/metadata/assembly.h>
 namespace Engine::Core
 {
 	struct ApplicationCommandLineArgs
@@ -67,9 +65,6 @@ namespace Engine::Core
 		bool OnEvent(Event::Event &e);
 		bool OnWindowClose(Event::WindowCloseEvent &e);
 		bool OnWindowResize(Event::WindowResizeEvent &e);
-
-		MonoDomain *m_RootDomain;
-		void InitMono();
 
 		LayerStack m_LayerStack;
 		static Application *s_Instance;
