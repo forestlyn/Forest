@@ -45,6 +45,21 @@ endif()
 set(SHADERC_LIBRARYS "${SHADER_COMBINED_LIB};${SHADERC_LIB};${SPIRV_CROSS_CORE_LIB};${SPIRV_CROSS_GLSL_LIB};${SPIRV_TOOLS_LIB}")
 message("Shaderc Libraries: ${SHADERC_LIBRARYS}")
 
+# find mono lib
+set(MONO_LIB_DIR "ThirdParty/mono/lib")
+message("Current mono dir:${MONO_LIB_DIR}")
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(MONO_CURRENT_LIB_DIR "${MONO_LIB_DIR}/Debug")
+else()
+    set(MONO_CURRENT_LIB_DIR "${MONO_LIB_DIR}/Release")
+endif()
+
+file(GLOB MONO_LIBRARIES "${MONO_CURRENT_LIB_DIR}/*.lib")
+message("Mono Libraries: ${MONO_LIBRARIES}")
+
+# mono dependency
+set(MONO_DEPENDENCIES Ws2_32 Winmm Version Bcrypt)
+
 # Configure Profiling
 set(SOURCE_FILES ${ENGINE_SOURCES})
 include("src/Engine/Profile/CMakeLists.txt")
@@ -61,6 +76,7 @@ target_include_directories(Engine
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/entt/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/yaml-cpp/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Box2D/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/mono/include>
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glfw/include>
@@ -71,7 +87,7 @@ target_include_directories(Engine
 )
 
 target_link_libraries(Engine PUBLIC glfw glad opengl32 imgui yaml-cpp box2d)
-target_link_libraries(Engine PRIVATE ${SHADERC_LIBRARYS})
+target_link_libraries(Engine PRIVATE ${SHADERC_LIBRARYS} ${MONO_LIBRARIES} ${MONO_DEPENDENCIES})
 # 设置编译器特性
 target_compile_features(Engine PUBLIC cxx_std_20)
 

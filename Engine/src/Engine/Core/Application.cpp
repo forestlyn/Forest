@@ -7,6 +7,7 @@
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Profile/Instrumentor.h"
 #include <filesystem>
+
 namespace Engine::Core
 {
 
@@ -140,6 +141,21 @@ namespace Engine::Core
 			Renderer::Renderer::SetViewport(0, 0, e.GetWidth(), e.GetHeight());
 		}
 		return false;
+	}
+
+	void Application::InitMono()
+	{
+		mono_set_assemblies_path("E:\\code\\C++\\Forest\\Engine\\ThirdParty\\mono\4.5");
+
+		MonoDomain *rootDomain = mono_jit_init("MyScriptRuntime");
+		if (rootDomain == nullptr)
+		{
+			// Maybe log some error here
+			return;
+		}
+
+		// Store the root domain pointer
+		m_RootDomain = rootDomain;
 	}
 
 	void Application::PushLayer(Layer *layer)
