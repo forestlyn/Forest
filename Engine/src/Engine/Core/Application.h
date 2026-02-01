@@ -28,6 +28,7 @@ namespace Engine::Core
 		bool Fullscreen = false;
 		bool VSync = true;
 		std::string WorkingDirectory = "";
+		std::string MonoAssemblyPath = "";
 		ApplicationCommandLineArgs CommandLineArgs;
 	};
 	class Application

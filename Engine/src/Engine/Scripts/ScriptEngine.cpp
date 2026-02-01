@@ -1,6 +1,7 @@
 #include "ScriptEngine.h"
 #include "Engine/pcheader.h"
 #include "Engine/Core/Core.h"
+#include "Engine/Core/Application.h"
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/object.h>
@@ -101,7 +102,8 @@ namespace Engine
 
     void ScriptEngine::InitMono()
     {
-        mono_set_assemblies_path("E:\\code\\C++\\Forest\\Engine\\ThirdParty\\mono\\4.5");
+        Core::Application &app = Core::Application::Get();
+        mono_set_assemblies_path(app.GetSpecification().MonoAssemblyPath.c_str());
 
         MonoDomain *rootDomain = mono_jit_init("EngineJITRuntime");
         ENGINE_ASSERT(rootDomain);

@@ -36,6 +36,7 @@ Engine::Core::Application *Engine::Core::CreateApplication(Engine::Core::Applica
 	spec.Fullscreen = false;
 	spec.VSync = true;
 	spec.WorkingDirectory = "../../../EngineEditor/resources/";
+	spec.MonoAssemblyPath = "../../Engine/ThirdParty/mono/4.5";
 	spec.CommandLineArgs = args;
 	return new EngineEditor::EngineEditorApp(spec);
 }

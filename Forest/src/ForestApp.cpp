@@ -36,5 +36,6 @@ Engine::Core::Application *Engine::Core::CreateApplication(Engine::Core::Applica
 	spec.VSync = true;
 	spec.CommandLineArgs = args;
 	spec.WorkingDirectory = "../../Forest";
+	spec.MonoAssemblyPath = "../Engine/ThirdParty/mono/4.5";
 	return new ForestApp(spec);
 }
