@@ -4,7 +4,14 @@ namespace Engine
 
     public class CSharpTesting
     {
-        public float MyPublicFloatVar = 5.0f;
+        private float myPrivateFloatVar = 5.0f;
+        public int MyPublicIntVar = 10;
+        public string MyPublicStringVar = "Hello from C#";
+        public float MyPublicFloatVar
+        {
+            get { return myPrivateFloatVar; }
+            set { myPrivateFloatVar = value; }
+        }
 
         public void PrintFloatVar()
         {
@@ -14,6 +21,7 @@ namespace Engine
         private void IncrementFloatVar(float value)
         {
             MyPublicFloatVar += value;
+            throw new Exception("Test exception from C# IncrementFloatVar");
         }
 
     }
