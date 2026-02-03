@@ -2,6 +2,7 @@
 #include "Engine/pcheader.h"
 #include "Engine/Core/Core.h"
 #include "Engine/Core/Application.h"
+#include "ScriptGlue.h"
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/object.h>
@@ -18,17 +19,7 @@ namespace Engine
     };
     static ScriptEngineData *m_ScriptEngineData = nullptr;
 
-    void ScriptEngine::Init()
-    {
-        m_ScriptEngineData = new ScriptEngineData();
-        InitMono();
-    }
-    void ScriptEngine::Shutdown()
-    {
-        ShutdownMono();
-        delete m_ScriptEngineData;
-    }
-
+#pragma region Utils
     char *ReadBytes(const std::string &filepath, uint32_t *outSize)
     {
         std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
@@ -293,6 +284,102 @@ namespace Engine
         mono_free(utf8);
         return result;
     }
+#pragma endregion
+
+    void ScriptEngine::Init()
+    {
+        m_ScriptEngineData = new ScriptEngineData();
+
+        InitMono();
+
+        ScriptGlue::RegisterFuncs();
+
+        // // Example usage
+        // // 1. get class
+        // MonoClass *monoClass = GetClassFromAssembly(m_ScriptEngineData->CoreAssembly, "Engine", "CSharpTesting");
+        // ENGINE_ASSERT(monoClass);
+        // // 2. create instance
+        // MonoObject *instance = InitializeClass(monoClass);
+        // ENGINE_ASSERT(instance);
+
+        // // 3. call function
+        // MonoObject *exception = nullptr;
+        // MonoMethod *printMessageFunc = GetMethodFromClass(monoClass, "PrintFloatVar", 0);
+        // mono_runtime_invoke(printMessageFunc, instance, nullptr, &exception);
+        // CheckException(exception);
+
+        // // 4. call function with param
+        // MonoMethod *incrementFunc = GetMethodFromClass(monoClass, "IncrementFloatVar", 1);
+        // float value = 5;
+        // void *param = &value;
+
+        // mono_runtime_invoke(incrementFunc, instance, &param, &exception);
+        // CheckException(exception);
+
+        // mono_runtime_invoke(printMessageFunc, instance, nullptr, &exception);
+        // CheckException(exception);
+
+        // // 5. get property
+        // MonoProperty *floatVarProperty = GetPropertyFromClass(monoClass, "MyPublicFloatVar");
+        // ENGINE_ASSERT(floatVarProperty);
+
+        // uint32_t flags = mono_property_get_flags(floatVarProperty);
+        // ENGINE_INFO("Property flags: {}", flags);
+
+        // MonoMethod *getter = mono_property_get_get_method(floatVarProperty);
+        // MonoObject *result = mono_runtime_invoke(getter, instance, nullptr, &exception);
+        // CheckException(exception);
+
+        // float *floatVarValue = (float *)mono_object_unbox(result);
+        // ENGINE_INFO("FloatVar property value: {}", *floatVarValue);
+        // MonoMethod *setter = mono_property_get_set_method(floatVarProperty);
+        // float newValue = 42.0f;
+        // void *setterParam = &newValue;
+        // // mono_runtime_invoke(setter, instance, &setterParam, &exception);
+        // mono_property_set_value(floatVarProperty, instance, &setterParam, &exception);
+        // CheckException(exception);
+
+        // result = mono_runtime_invoke(getter, instance, nullptr, &exception);
+        // floatVarValue = (float *)mono_object_unbox(result);
+        // ENGINE_INFO("FloatVar property new value: {}", *floatVarValue);
+        // CheckException(exception);
+
+        // // 6. get field
+        // MonoClassField *field = mono_class_get_field_from_name(monoClass, "MyPublicIntVar");
+        // ENGINE_ASSERT(field);
+        // uint8_t accessibility = GetFieldAccessibility(field);
+        // ENGINE_INFO("Field accessibility: {}", accessibility);
+
+        // MonoObject *fieldValueObject = mono_field_get_value_object(m_ScriptEngineData->AppDomain, field, instance);
+        // int *fieldValue = (int *)mono_object_unbox(fieldValueObject);
+        // ENGINE_INFO("Field value: {}", *fieldValue);
+
+        // MonoClassField *stringField = mono_class_get_field_from_name(monoClass, "MyPublicStringVar");
+        // ENGINE_ASSERT(stringField);
+        // MonoObject *stringFieldValueObject = mono_field_get_value_object(m_ScriptEngineData->AppDomain, stringField, instance);
+        // MonoString *stringFieldValue = (MonoString *)stringFieldValueObject;
+        // std::string stringValue = MonoStringToUTF8(stringFieldValue);
+        // ENGINE_INFO("String Field value: {}", stringValue);
+
+        MonoClass *monoClass = GetClassFromAssembly(m_ScriptEngineData->CoreAssembly, "Engine", "Entity");
+        ENGINE_ASSERT(monoClass);
+        MonoObject *entityInstance = InitializeClass(monoClass);
+        ENGINE_ASSERT(entityInstance);
+
+        MonoMethod *printMessageMethod = GetMethodFromClass(monoClass, "PrintMessage", 1);
+        MonoObject *exception = nullptr;
+        const char *message = "Hello from C++!";
+        MonoString *monoMessage = mono_string_new(m_ScriptEngineData->AppDomain, message);
+        void *param = monoMessage;
+        mono_runtime_invoke(printMessageMethod, entityInstance, &param, &exception);
+        CheckException(exception);
+    }
+
+    void ScriptEngine::Shutdown()
+    {
+        ShutdownMono();
+        delete m_ScriptEngineData;
+    }
 
     void ScriptEngine::InitMono()
     {
@@ -311,73 +398,6 @@ namespace Engine
 
         m_ScriptEngineData->CoreAssembly = LoadCSharpAssembly("scripts/bin/Engine-ScriptCore.dll");
         PrintAssemblyTypes(m_ScriptEngineData->CoreAssembly);
-
-        // Example usage
-        // 1. get class
-        MonoClass *monoClass = GetClassFromAssembly(m_ScriptEngineData->CoreAssembly, "Engine", "CSharpTesting");
-        ENGINE_ASSERT(monoClass);
-        // 2. create instance
-        MonoObject *instance = InitializeClass(monoClass);
-        ENGINE_ASSERT(instance);
-
-        // 3. call function
-        MonoObject *exception = nullptr;
-        MonoMethod *printMessageFunc = GetMethodFromClass(monoClass, "PrintFloatVar", 0);
-        mono_runtime_invoke(printMessageFunc, instance, nullptr, &exception);
-        CheckException(exception);
-
-        // 4. call function with param
-        MonoMethod *incrementFunc = GetMethodFromClass(monoClass, "IncrementFloatVar", 1);
-        float value = 5;
-        void *param = &value;
-
-        mono_runtime_invoke(incrementFunc, instance, &param, &exception);
-        CheckException(exception);
-
-        mono_runtime_invoke(printMessageFunc, instance, nullptr, &exception);
-        CheckException(exception);
-
-        // 5. get property
-        MonoProperty *floatVarProperty = GetPropertyFromClass(monoClass, "MyPublicFloatVar");
-        ENGINE_ASSERT(floatVarProperty);
-
-        uint32_t flags = mono_property_get_flags(floatVarProperty);
-        ENGINE_INFO("Property flags: {}", flags);
-
-        MonoMethod *getter = mono_property_get_get_method(floatVarProperty);
-        MonoObject *result = mono_runtime_invoke(getter, instance, nullptr, &exception);
-        CheckException(exception);
-
-        float *floatVarValue = (float *)mono_object_unbox(result);
-        ENGINE_INFO("FloatVar property value: {}", *floatVarValue);
-        MonoMethod *setter = mono_property_get_set_method(floatVarProperty);
-        float newValue = 42.0f;
-        void *setterParam = &newValue;
-        // mono_runtime_invoke(setter, instance, &setterParam, &exception);
-        mono_property_set_value(floatVarProperty, instance, &setterParam, &exception);
-        CheckException(exception);
-
-        result = mono_runtime_invoke(getter, instance, nullptr, &exception);
-        floatVarValue = (float *)mono_object_unbox(result);
-        ENGINE_INFO("FloatVar property new value: {}", *floatVarValue);
-        CheckException(exception);
-
-        // 6. get field
-        MonoClassField *field = mono_class_get_field_from_name(monoClass, "MyPublicIntVar");
-        ENGINE_ASSERT(field);
-        uint8_t accessibility = GetFieldAccessibility(field);
-        ENGINE_INFO("Field accessibility: {}", accessibility);
-
-        MonoObject *fieldValueObject = mono_field_get_value_object(m_ScriptEngineData->AppDomain, field, instance);
-        int *fieldValue = (int *)mono_object_unbox(fieldValueObject);
-        ENGINE_INFO("Field value: {}", *fieldValue);
-
-        MonoClassField *stringField = mono_class_get_field_from_name(monoClass, "MyPublicStringVar");
-        ENGINE_ASSERT(stringField);
-        MonoObject *stringFieldValueObject = mono_field_get_value_object(m_ScriptEngineData->AppDomain, stringField, instance);
-        MonoString *stringFieldValue = (MonoString *)stringFieldValueObject;
-        std::string stringValue = MonoStringToUTF8(stringFieldValue);
-        ENGINE_INFO("String Field value: {}", stringValue);
     }
 
     void ScriptEngine::ShutdownMono()

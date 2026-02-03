@@ -364,36 +364,36 @@ namespace EngineEditor
 
         if (m_SceneState == SceneState::Edit)
         {
-            if (ImGui::ImageButton("##PlayScene", ImTextureRef((void *)m_PlayIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
+            if (ImGui::ImageButton("##PlayScene", ImTextureRef((void *)(uint64_t)m_PlayIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
             {
                 PlayScene();
             }
             ImGui::SameLine();
-            if (ImGui::ImageButton("##SimulateScene", ImTextureRef((void *)m_PlayIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
+            if (ImGui::ImageButton("##SimulateScene", ImTextureRef((void *)(uint64_t)m_PlayIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
             {
                 SimulateScene();
             }
         }
         else if (m_SceneState == SceneState::Play)
         {
-            if (ImGui::ImageButton("##StopScene", ImTextureRef((void *)m_StopIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
+            if (ImGui::ImageButton("##StopScene", ImTextureRef((void *)(uint64_t)m_StopIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
             {
                 StopScene();
             }
             ImGui::SameLine();
-            if (ImGui::ImageButton("##SimulateScene", ImTextureRef((void *)m_PlayIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
+            if (ImGui::ImageButton("##SimulateScene", ImTextureRef((void *)(uint64_t)m_PlayIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
             {
                 SimulateScene();
             }
         }
         else if (m_SceneState == SceneState::Simulate)
         {
-            if (ImGui::ImageButton("##PlayScene", ImTextureRef((void *)m_PlayIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
+            if (ImGui::ImageButton("##PlayScene", ImTextureRef((void *)(uint64_t)m_PlayIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
             {
                 PlayScene();
             }
             ImGui::SameLine();
-            if (ImGui::ImageButton("##StopScene", ImTextureRef((void *)m_StopIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
+            if (ImGui::ImageButton("##StopScene", ImTextureRef((void *)(uint64_t)m_StopIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
             {
                 StopScene();
             }
