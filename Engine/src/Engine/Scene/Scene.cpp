@@ -133,6 +133,11 @@ namespace Engine
         return entity;
     }
 
+    Entity Scene::GetEntityByUUID(UUID uuid)
+    {
+        return Entity();
+    }
+
     void Scene::SetViewportSize(uint32_t width, uint32_t height)
     {
         m_ViewportWidth = width;

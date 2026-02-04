@@ -6,5 +6,6 @@ namespace Engine
     {
     public:
         static void RegisterFuncs();
+        static void RegisterComponents();
     };
 }

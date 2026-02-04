@@ -1,22 +1,67 @@
 #pragma once
+#include "Engine/Scene/Entity.h"
+#include "Engine/Scene/Scene.h"
+extern "C"
+{
+    typedef struct _MonoObject MonoObject;
+    typedef struct _MonoClass MonoClass;
+    typedef struct _MonoMethod MonoMethod;
+    typedef struct _MonoDomain MonoDomain;
+    typedef struct _MonoAssembly MonoAssembly;
+    typedef struct _MonoImage MonoImage;
+}
 namespace Engine
 {
-    enum class Accessibility : uint8_t
-    {
-        None = 0,
-        Private = (1 << 0),
-        Internal = (1 << 1),
-        Protected = (1 << 2),
-        Public = (1 << 3)
-    };
     class ScriptEngine
     {
     public:
         static void Init();
         static void Shutdown();
 
+        static Scene *GetSceneContext();
+        static MonoImage *GetCoreAssemblyImage();
+
+        static void OnRuntimeStart(Scene *scene);
+
     private:
         static void InitMono();
         static void ShutdownMono();
+    };
+
+    class ScriptClass
+    {
+    public:
+        ScriptClass() = default;
+        ScriptClass(const std::string &namespaceName, const std::string &className);
+        ~ScriptClass();
+
+        MonoObject *Instantiate();
+        MonoClass *GetMonoClass() { return m_MonoClass; }
+        MonoMethod *GetMethod(const std::string &methodName, int paramCount);
+        void InvokeMethod(MonoObject *instance, const std::string &methodName, int paramCount = 0, void **params = nullptr);
+        void InvokeMethod(MonoObject *instance, MonoMethod *method, int paramCount = 0, void **params = nullptr);
+
+    private:
+        std::string m_Namespace;
+        std::string m_ClassName;
+        MonoClass *m_MonoClass = nullptr;
+    };
+
+    class ScriptInstance
+    {
+    public:
+        ScriptInstance(Ref<ScriptClass> scriptClass, Entity entityID);
+        ~ScriptInstance();
+
+        void InvokeOnCreate();
+        void InvokeOnUpdate(float deltaTime);
+
+    private:
+        Ref<ScriptClass> m_ScriptClass;
+        MonoObject *m_Instance = nullptr;
+
+        MonoMethod *m_Constructor = nullptr;
+        MonoMethod *m_OnCreateMethod = nullptr;
+        MonoMethod *m_OnUpdateMethod = nullptr;
     };
 }
