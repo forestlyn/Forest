@@ -39,6 +39,8 @@ namespace Engine
 
         m_ScriptEngineData->EntityClass = new ScriptClass("Engine", "Entity");
         ENGINE_ASSERT(m_ScriptEngineData->EntityClass);
+
+        LoadAssemblyClasses(m_ScriptEngineData->CoreAssembly);
     }
 
     void ScriptEngine::Shutdown()
@@ -60,6 +62,36 @@ namespace Engine
     void ScriptEngine::OnRuntimeStart(Scene *scene)
     {
         m_ScriptEngineData->SceneContext = scene;
+    }
+
+    void ScriptEngine::OnCreateEntity(Entity entity)
+    {
+        std::string scriptClassName = entity.GetComponent<ScriptComponent>().ScriptClassName;
+        if (EntityClassExists(scriptClassName))
+        {
+            ENGINE_INFO("Creating script instance for entity '{}' (id:{}) with class '{}'", entity.GetName(), (uint64_t)entity.GetUUID(), scriptClassName);
+            Ref<ScriptClass> scriptClass = m_ScriptEngineData->EntityClasses[scriptClassName];
+            Ref<ScriptInstance> instance = CreateRef<ScriptInstance>(scriptClass, entity);
+            m_ScriptEngineData->EntityInstances[entity.GetComponent<IDComponent>().ID] = instance;
+            instance->InvokeOnCreate();
+        }
+        else
+        {
+            ENGINE_WARN("Script class '{}' not found for entity '{}'", scriptClassName, entity.GetName());
+        }
+    }
+
+    void ScriptEngine::OnUpdateEntity(Entity entity, Core::Timestep ts)
+    {
+        UUID entityID = entity.GetComponent<IDComponent>().ID;
+        ENGINE_ASSERT(m_ScriptEngineData->EntityInstances.find(entityID) != m_ScriptEngineData->EntityInstances.end(), "Script instance not found for entity!");
+        Ref<ScriptInstance> instance = m_ScriptEngineData->EntityInstances[entityID];
+        instance->InvokeOnUpdate(ts.GetSeconds());
+    }
+
+    bool ScriptEngine::EntityClassExists(const std::string &className)
+    {
+        return m_ScriptEngineData->EntityClasses.find(className) != m_ScriptEngineData->EntityClasses.end();
     }
 
     void ScriptEngine::InitMono()
@@ -88,6 +120,35 @@ namespace Engine
         mono_assemblies_cleanup();
         mono_domain_unload(m_ScriptEngineData->AppDomain);
         mono_domain_unload(m_ScriptEngineData->RootDomain);
+    }
+
+    void ScriptEngine::LoadAssemblyClasses(MonoAssembly *assembly)
+    {
+        MonoImage *image = mono_assembly_get_image(assembly);
+        const MonoTableInfo *typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
+        int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
+
+        for (int32_t i = 0; i < numTypes; i++)
+        {
+            uint32_t cols[MONO_TYPEDEF_SIZE];
+            mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
+
+            const char *nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
+            const char *name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
+
+            std::string fullClassName = std::string(nameSpace) + "." + std::string(name);
+
+            MonoClass *monoClass = mono_class_from_name(image, nameSpace, name);
+            if (!monoClass)
+                continue;
+            if (fullClassName == "Engine.Entity")
+                continue;
+            if (mono_class_is_subclass_of(monoClass, m_ScriptEngineData->EntityClass->GetMonoClass(), false) == false)
+                continue;
+            Ref<ScriptClass> scriptClass = CreateRef<ScriptClass>(nameSpace, name);
+            m_ScriptEngineData->EntityClasses[fullClassName] = scriptClass;
+            ENGINE_INFO("Loaded script class: {}", fullClassName);
+        }
     }
 
 #pragma region ScriptClass Implementation
@@ -130,7 +191,7 @@ namespace Engine
 #pragma endregion
 
 #pragma region ScriptInstance Implementation
-    ScriptInstance::ScriptInstance(Ref<ScriptClass> scriptClass, Entity entityID)
+    ScriptInstance::ScriptInstance(Ref<ScriptClass> scriptClass, Entity entity)
     {
         m_ScriptClass = scriptClass;
         m_Instance = m_ScriptClass->Instantiate();
@@ -141,9 +202,19 @@ namespace Engine
         m_OnUpdateMethod = m_ScriptClass->GetMethod("OnUpdate", 1);
 
         {
+            UUID entityID = entity.GetUUID();
             void *params = &entityID;
             m_ScriptClass->InvokeMethod(m_Instance, m_Constructor, 1, &params);
         }
+    }
+    void ScriptInstance::InvokeOnCreate()
+    {
+        m_ScriptClass->InvokeMethod(m_Instance, m_OnCreateMethod);
+    }
+    void ScriptInstance::InvokeOnUpdate(float deltaTime)
+    {
+        void *params = &deltaTime;
+        m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateMethod, 1, &params);
     }
 #pragma endregion
 }

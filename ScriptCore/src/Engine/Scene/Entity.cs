@@ -4,6 +4,10 @@ namespace Engine
     {
         public readonly ulong ID;
 
+        public Entity()
+        {
+            ID = 0;
+        }
         public Entity(ulong id)
         {
             ID = id;
@@ -16,13 +20,15 @@ namespace Engine
 
         public bool HasComponent<T>() where T : Component, new()
         {
-            ComponentInternalCall.HasComponent(ID, typeof(T));
-            return true;
+            return ComponentInternalCall.HasComponent(ID, typeof(T));
         }
 
-        public void AddComponent<T>() where T : Component, new()
+        public T AddComponent<T>() where T : Component, new()
         {
             ComponentInternalCall.AddComponent(ID, typeof(T));
+            T component = new T();
+            component.Entity = this;
+            return component;
         }
 
         public void RemoveComponent<T>() where T : Component, new()
@@ -41,7 +47,14 @@ namespace Engine
             return null;
         }
 
+        public virtual void OnCreate()
+        {
+        }
 
+        public virtual void OnUpdate(float deltaTime)
+        {
+
+        }
 
     }
 }

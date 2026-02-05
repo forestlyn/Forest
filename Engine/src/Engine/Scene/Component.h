@@ -8,6 +8,7 @@
 #include "Components/CircleCollider2DComponent.h"
 #include "Components/Rigidbody2DComponent.h"
 #include "Components/BoxCollider2DComponent.h"
+#include "Components/ScriptComponent.h"
 #include "NativeScriptComponent.h"
 
 namespace Engine
@@ -25,6 +26,7 @@ namespace Engine
         Rigidbody2DComponent,
         BoxCollider2DComponent,
         CircleCollider2DComponent,
+        ScriptComponent,
         NativeScriptComponent>;
 
     using AddableComponents = ComponentGroup<

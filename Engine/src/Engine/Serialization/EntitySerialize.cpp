@@ -2,7 +2,7 @@
 
 namespace Engine::Serialization
 {
-    void SerilizaEntity(YAML::Emitter &out, Entity entity)
+    void SerializeEntity(YAML::Emitter &out, Entity entity)
     {
         out << YAML::BeginMap; // Entity
         out << YAML::Key << "EntityID" << YAML::Value << entity.GetUUID();
@@ -10,42 +10,47 @@ namespace Engine::Serialization
         if (entity.HasComponent<TagComponent>())
         {
             auto &tagComp = entity.GetComponent<TagComponent>();
-            SerilizaTagComponent(out, tagComp);
+            SerializeTagComponent(out, tagComp);
         }
         if (entity.HasComponent<TransformComponent>())
         {
             auto &transformComp = entity.GetComponent<TransformComponent>();
-            SerilizaTransformComponent(out, transformComp);
+            SerializeTransformComponent(out, transformComp);
         }
         if (entity.HasComponent<CameraComponent>())
         {
             auto &cameraComp = entity.GetComponent<CameraComponent>();
-            SerilizaCameraComponent(out, cameraComp);
+            SerializeCameraComponent(out, cameraComp);
         }
         if (entity.HasComponent<SpriteComponent>())
         {
             auto &spriteComp = entity.GetComponent<SpriteComponent>();
-            SerilizaSpriteComponent(out, spriteComp);
+            SerializeSpriteComponent(out, spriteComp);
         }
         if (entity.HasComponent<CircleComponent>())
         {
             auto &circleComp = entity.GetComponent<CircleComponent>();
-            SerilizaCircleComponent(out, circleComp);
+            SerializeCircleComponent(out, circleComp);
         }
         if (entity.HasComponent<Rigidbody2DComponent>())
         {
             auto &rigidbody2DComp = entity.GetComponent<Rigidbody2DComponent>();
-            SerilizaRigidbody2DComponent(out, rigidbody2DComp);
+            SerializeRigidbody2DComponent(out, rigidbody2DComp);
         }
         if (entity.HasComponent<BoxCollider2DComponent>())
         {
             auto &boxCollider2DComp = entity.GetComponent<BoxCollider2DComponent>();
-            SerilizaBoxCollider2DComponent(out, boxCollider2DComp);
+            SerializeBoxCollider2DComponent(out, boxCollider2DComp);
         }
         if (entity.HasComponent<CircleCollider2DComponent>())
         {
             auto &circleCollider2DComp = entity.GetComponent<CircleCollider2DComponent>();
-            SerilizaCircleCollider2DComponent(out, circleCollider2DComp);
+            SerializeCircleCollider2DComponent(out, circleCollider2DComp);
+        }
+        if (entity.HasComponent<ScriptComponent>())
+        {
+            auto &scriptComp = entity.GetComponent<ScriptComponent>();
+            SerializeScriptComponent(out, scriptComp);
         }
         out << YAML::EndMap; // Entity
     }
@@ -121,6 +126,15 @@ namespace Engine::Serialization
             auto circleCollider2DNode = entityNode["CircleCollider2DComponent"];
             auto &circleCollider2DComp = entity.AddComponent<CircleCollider2DComponent>();
             if (!DeserializeCircleCollider2DComponent(circleCollider2DNode, circleCollider2DComp))
+            {
+                return false;
+            }
+        }
+        if (entityNode["ScriptComponent"])
+        {
+            auto scriptNode = entityNode["ScriptComponent"];
+            auto &scriptComp = entity.AddComponent<ScriptComponent>();
+            if (!DeserializeScriptComponent(scriptNode, scriptComp))
             {
                 return false;
             }

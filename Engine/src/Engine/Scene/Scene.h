@@ -62,6 +62,8 @@ namespace Engine
 
         float physicsTimeStepAccumulator = 0.0f;
 
+        std::unordered_map<UUID, entt::entity> m_EntityMap;
+
         friend class Entity;
         friend class EngineEditor::SceneHierarchyPanel;
     };

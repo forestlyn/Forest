@@ -18,6 +18,7 @@ Entities:
       FixedRotation: false
     CircleCollider2DComponent:
       Radius: 0.5
+      Offset: [0, 0]
       Density: 1
       Friction: 0.5
       Restitution: 0.45
@@ -31,6 +32,8 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Color: [0.8, 0.2, 0.3, 1]
+      TexturePath: None
+      TilingFactor: 1
     Rigidbody2DComponent:
       Type: 2
       Velocity: [0, 9.8]
@@ -55,7 +58,7 @@ Entities:
       FixedAspectRatio: false
       Camera:
         ProjectionType: 1
-        AspectRatio: 1.7752066
+        AspectRatio: 1.9506934
         OrthographicSize: 10
         OrthographicNearClip: -1
         OrthographicFarClip: 1
@@ -74,7 +77,7 @@ Entities:
       FixedAspectRatio: false
       Camera:
         ProjectionType: 0
-        AspectRatio: 1.7752066
+        AspectRatio: 1.9506934
         OrthographicSize: 10
         OrthographicNearClip: -1
         OrthographicFarClip: 1
@@ -90,6 +93,8 @@ Entities:
       Scale: [11.9, 1, 1]
     SpriteComponent:
       Color: [0.4283616, 0.76567656, 0.22490169, 1]
+      TexturePath: None
+      TilingFactor: 1
     Rigidbody2DComponent:
       Type: 0
       Velocity: [0, 9.8]
@@ -102,3 +107,16 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
+  - EntityID: 12292112353008337462
+    TagComponent:
+      Tag: Player
+    TransformComponent:
+      Position: [-2, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleComponent:
+      Color: [1, 0.57425743, 0.57425743, 1]
+      Thickness: 0.19
+      Fade: 0.005
+    ScriptComponent:
+      ScriptClassName: Engine.Player

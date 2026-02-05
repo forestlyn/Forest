@@ -50,7 +50,7 @@ namespace Engine::Serialization
         for (auto entity : view)
         {
             Entity e{entity, m_Scene.get()};
-            SerilizaEntity(out, e);
+            SerializeEntity(out, e);
         }
         out << YAML::EndSeq;
         out << YAML::EndMap;

@@ -1,6 +1,6 @@
 namespace Engine
 {
-    public class Vector3
+    public struct Vector3
     {
         public float X;
         public float Y;
@@ -15,7 +15,7 @@ namespace Engine
     }
 
 
-    public class Vector2
+    public struct Vector2
     {
         public float X;
         public float Y;

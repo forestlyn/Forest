@@ -2,7 +2,7 @@
 #include "Engine/Core/Core.h"
 namespace Engine::Serialization
 {
-    void SerilizaTagComponent(YAML::Emitter &out, TagComponent &entity)
+    void SerializeTagComponent(YAML::Emitter &out, TagComponent &entity)
     {
         out << YAML::Key << "TagComponent";
         out << YAML::BeginMap;
@@ -10,7 +10,7 @@ namespace Engine::Serialization
         out << YAML::EndMap;
     }
 
-    void SerilizaTransformComponent(YAML::Emitter &out, TransformComponent &component)
+    void SerializeTransformComponent(YAML::Emitter &out, TransformComponent &component)
     {
         out << YAML::Key << "TransformComponent";
         out << YAML::BeginMap;
@@ -20,7 +20,7 @@ namespace Engine::Serialization
         out << YAML::EndMap;
     }
 
-    void SerilizaCameraComponent(YAML::Emitter &out, CameraComponent &component)
+    void SerializeCameraComponent(YAML::Emitter &out, CameraComponent &component)
     {
         out << YAML::Key << "CameraComponent";
         out << YAML::BeginMap;
@@ -46,7 +46,7 @@ namespace Engine::Serialization
         out << YAML::EndMap;
     }
 
-    void SerilizaSpriteComponent(YAML::Emitter &out, SpriteComponent &component)
+    void SerializeSpriteComponent(YAML::Emitter &out, SpriteComponent &component)
     {
         out << YAML::Key << "SpriteComponent";
         out << YAML::BeginMap;
@@ -63,7 +63,7 @@ namespace Engine::Serialization
         out << YAML::EndMap;
     }
 
-    void SerilizaCircleComponent(YAML::Emitter &out, CircleComponent &component)
+    void SerializeCircleComponent(YAML::Emitter &out, CircleComponent &component)
     {
         out << YAML::Key << "CircleComponent";
         out << YAML::BeginMap;
@@ -73,7 +73,7 @@ namespace Engine::Serialization
         out << YAML::EndMap;
     }
 
-    void SerilizaRigidbody2DComponent(YAML::Emitter &out, Rigidbody2DComponent &component)
+    void SerializeRigidbody2DComponent(YAML::Emitter &out, Rigidbody2DComponent &component)
     {
         out << YAML::Key << "Rigidbody2DComponent";
         out << YAML::BeginMap;
@@ -84,7 +84,7 @@ namespace Engine::Serialization
         out << YAML::EndMap;
     }
 
-    void SerilizaBoxCollider2DComponent(YAML::Emitter &out, BoxCollider2DComponent &component)
+    void SerializeBoxCollider2DComponent(YAML::Emitter &out, BoxCollider2DComponent &component)
     {
         out << YAML::Key << "BoxCollider2DComponent";
         out << YAML::BeginMap;
@@ -97,7 +97,7 @@ namespace Engine::Serialization
         out << YAML::EndMap;
     }
 
-    void SerilizaCircleCollider2DComponent(YAML::Emitter &out, CircleCollider2DComponent &component)
+    void SerializeCircleCollider2DComponent(YAML::Emitter &out, CircleCollider2DComponent &component)
     {
         out << YAML::Key << "CircleCollider2DComponent";
         out << YAML::BeginMap;
@@ -107,6 +107,14 @@ namespace Engine::Serialization
         out << YAML::Key << "Friction" << YAML::Value << component.Friction;
         out << YAML::Key << "Restitution" << YAML::Value << component.Restitution;
         out << YAML::Key << "RestitutionThreshold" << YAML::Value << component.RestitutionThreshold;
+        out << YAML::EndMap;
+    }
+
+    void SerializeScriptComponent(YAML::Emitter &out, ScriptComponent &component)
+    {
+        out << YAML::Key << "ScriptComponent";
+        out << YAML::BeginMap;
+        out << YAML::Key << "ScriptClassName" << YAML::Value << component.ScriptClassName;
         out << YAML::EndMap;
     }
 
@@ -334,5 +342,18 @@ namespace Engine::Serialization
         }
         return true;
     }
-
+    bool DeserializeScriptComponent(const YAML::Node &componentNode, ScriptComponent &component)
+    {
+        if (componentNode["ScriptClassName"])
+        {
+            component.ScriptClassName = componentNode["ScriptClassName"].as<std::string>();
+            return true;
+        }
+        else
+        {
+            LOG_WARN("ScriptComponent missing ScriptClassName during deserialization. Setting to default empty string.");
+            component.ScriptClassName = "";
+            return true;
+        }
+    }
 } // namespace Engine::Serialization

@@ -15,6 +15,7 @@ namespace Engine
 
     static std::unordered_map<MonoType *, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
     static std::unordered_map<MonoType *, std::function<void(Entity)>> s_EntityRemoveComponentFuncs;
+    static std::unordered_map<MonoType *, std::function<void(Entity)>> s_EntityAddComponentFuncs;
 
 #define ADD_ENGINE_INTERNAL_CALL(namespace, func_name) mono_add_internal_call("Engine." #namespace "::" #func_name, func_name)
 
@@ -71,6 +72,78 @@ namespace Engine
         s_EntityRemoveComponentFuncs.at(managedType)(entity);
     }
 
+    static void AddComponent(UUID entityID, MonoReflectionType *componentType)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        ENGINE_ASSERT(scene);
+        Entity entity = scene->GetEntityByUUID(entityID);
+        ENGINE_ASSERT(entity);
+
+        MonoType *managedType = mono_reflection_type_get_type(componentType);
+        ENGINE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end());
+        s_EntityAddComponentFuncs.at(managedType)(entity);
+    }
+
+    static void GetPosition(UUID entityID, glm::vec3 *outPosition)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        ENGINE_ASSERT(scene);
+        Entity entity = scene->GetEntityByUUID(entityID);
+        ENGINE_ASSERT(entity);
+
+        *outPosition = entity.GetComponent<TransformComponent>().GetPosition();
+    }
+
+    static void SetPosition(UUID entityID, glm::vec3 *position)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        ENGINE_ASSERT(scene);
+        Entity entity = scene->GetEntityByUUID(entityID);
+        ENGINE_ASSERT(entity);
+        ENGINE_INFO("Setting position of entity '{}' to ({}, {}, {})", entity.GetName(), position->x, position->y, position->z);
+        entity.GetComponent<TransformComponent>().SetPosition(*position);
+    }
+
+    static void GetRotation(UUID entityID, glm::vec3 *outRotation)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        ENGINE_ASSERT(scene);
+        Entity entity = scene->GetEntityByUUID(entityID);
+        ENGINE_ASSERT(entity);
+
+        *outRotation = entity.GetComponent<TransformComponent>().GetRotation();
+    }
+
+    static void SetRotation(UUID entityID, glm::vec3 *rotation)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        ENGINE_ASSERT(scene);
+        Entity entity = scene->GetEntityByUUID(entityID);
+        ENGINE_ASSERT(entity);
+
+        entity.GetComponent<TransformComponent>().SetRotation(*rotation);
+    }
+
+    static void GetScale(UUID entityID, glm::vec3 *outScale)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        ENGINE_ASSERT(scene);
+        Entity entity = scene->GetEntityByUUID(entityID);
+        ENGINE_ASSERT(entity);
+
+        *outScale = entity.GetComponent<TransformComponent>().GetScale();
+    }
+
+    static void SetScale(UUID entityID, glm::vec3 *scale)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        ENGINE_ASSERT(scene);
+        Entity entity = scene->GetEntityByUUID(entityID);
+        ENGINE_ASSERT(entity);
+
+        entity.GetComponent<TransformComponent>().SetScale(*scale);
+    }
+
     template <typename... Component>
     void RegisterComponent()
     {
@@ -91,6 +164,10 @@ namespace Engine
             {
                 return entity.HasComponent<T>();
             }; 
+            s_EntityAddComponentFuncs[managedType] = [](Entity entity)
+            {
+                entity.AddComponent<T>();
+            };
             s_EntityRemoveComponentFuncs[managedType] = [](Entity entity)
             {
                 entity.RemoveComponent<T>();
@@ -118,7 +195,14 @@ namespace Engine
         ADD_ENGINE_INTERNAL_CALL(Input, IsKeyPressed);
 
         ADD_ENGINE_INTERNAL_CALL(ComponentInternalCall, HasComponent);
+        ADD_ENGINE_INTERNAL_CALL(ComponentInternalCall, AddComponent);
         ADD_ENGINE_INTERNAL_CALL(ComponentInternalCall, RemoveComponent);
-    }
 
+        ADD_ENGINE_INTERNAL_CALL(TransformComponentInternalCall, GetPosition);
+        ADD_ENGINE_INTERNAL_CALL(TransformComponentInternalCall, SetPosition);
+        ADD_ENGINE_INTERNAL_CALL(TransformComponentInternalCall, GetRotation);
+        ADD_ENGINE_INTERNAL_CALL(TransformComponentInternalCall, SetRotation);
+        ADD_ENGINE_INTERNAL_CALL(TransformComponentInternalCall, GetScale);
+        ADD_ENGINE_INTERNAL_CALL(TransformComponentInternalCall, SetScale);
+    }
 }

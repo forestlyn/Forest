@@ -22,10 +22,17 @@ namespace Engine
         static MonoImage *GetCoreAssemblyImage();
 
         static void OnRuntimeStart(Scene *scene);
+        static void OnCreateEntity(Entity entity);
+
+        static void OnUpdateEntity(Entity entity, Core::Timestep ts);
+
+        static bool EntityClassExists(const std::string &className);
 
     private:
         static void InitMono();
         static void ShutdownMono();
+
+        static void LoadAssemblyClasses(MonoAssembly *assembly);
     };
 
     class ScriptClass
@@ -50,8 +57,8 @@ namespace Engine
     class ScriptInstance
     {
     public:
-        ScriptInstance(Ref<ScriptClass> scriptClass, Entity entityID);
-        ~ScriptInstance();
+        ScriptInstance(Ref<ScriptClass> scriptClass, Entity entity);
+        ~ScriptInstance() = default;
 
         void InvokeOnCreate();
         void InvokeOnUpdate(float deltaTime);

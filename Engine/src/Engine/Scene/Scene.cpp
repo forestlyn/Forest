@@ -5,6 +5,7 @@
 #include "Engine/Renderer/Camera/PerspectiveCamera.h"
 #include "Engine/Profile/Instrumentor.h"
 #include "Engine/Scene/ScriptEntity.h"
+#include "Engine/Scripts/ScriptEngine.h"
 namespace Engine
 {
     void Scene::OnUpdateRuntime(Core::Timestep timestep)
@@ -12,6 +13,13 @@ namespace Engine
         ENGINE_PROFILING_FUNC();
         // update scripts
         {
+            auto view = m_Registry.view<ScriptComponent>();
+            for (auto e : view)
+            {
+                Entity entity = {e, this};
+                ScriptEngine::OnUpdateEntity(entity, timestep);
+            }
+
             m_Registry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent &nsc)
                                                           {
                 if (!nsc.Instance)
@@ -49,6 +57,7 @@ namespace Engine
                     }
                 }
                 m_Registry.destroy(entity);
+                m_EntityMap.erase(e.GetUUID());
             }
         }
 
@@ -122,6 +131,7 @@ namespace Engine
         entity.AddComponent<IDComponent>();
         entity.AddComponent<TagComponent>(name);
         entity.AddComponent<TransformComponent>();
+        m_EntityMap[entity.GetUUID()] = entityHandle;
         return entity;
     }
 
@@ -130,12 +140,18 @@ namespace Engine
         entt::entity entityHandle = m_Registry.create();
         Entity entity = Entity(entityHandle, this);
         entity.AddComponent<IDComponent>(uuid);
+        m_EntityMap[uuid] = entityHandle;
         return entity;
     }
 
     Entity Scene::GetEntityByUUID(UUID uuid)
     {
-        return Entity();
+        if (m_EntityMap.find(uuid) != m_EntityMap.end())
+        {
+            return Entity(m_EntityMap[uuid], this);
+        }
+        ENGINE_WARN("Entity with UUID {} not found!", (uint64_t)uuid);
+        return {};
     }
 
     void Scene::SetViewportSize(uint32_t width, uint32_t height)
@@ -197,6 +213,19 @@ namespace Engine
     void Scene::OnRuntimeStart()
     {
         SetupPhysicsWorld();
+
+        // Script
+        {
+            ScriptEngine::OnRuntimeStart(this);
+            ENGINE_INFO("Creating script instances for entities with ScriptComponent");
+            auto view = m_Registry.view<ScriptComponent>();
+            for (auto entity : view)
+            {
+                ENGINE_INFO("Creating script instance for entity with ID {}", (uint64_t)m_Registry.get<IDComponent>(entity).ID);
+                Entity e = {entity, this};
+                ScriptEngine::OnCreateEntity(e);
+            }
+        }
     }
     void Scene::OnRuntimeStop()
     {
