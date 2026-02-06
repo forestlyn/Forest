@@ -6,12 +6,12 @@ namespace Engine
     public static class Log
     {
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void NativeLog(string text);
+        public extern static void NativeLog(string text);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void NativeLogWarn(string text);
+        public extern static void NativeLogWarn(string text);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void NativeLogError(string text);
+        public extern static void NativeLogError(string text);
     }
 }

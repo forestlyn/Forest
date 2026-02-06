@@ -24,7 +24,7 @@ Entities:
       Restitution: 0.45
       RestitutionThreshold: 0.5
     ScriptComponent:
-      ScriptClassName: Engine.Player
+      ScriptClassName: Sandbox.Player
   - EntityID: 10581122825863251169
     TagComponent:
       Tag: Platform

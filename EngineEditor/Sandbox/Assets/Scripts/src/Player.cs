@@ -1,4 +1,5 @@
-namespace Engine
+using Engine;
+namespace Sandbox
 {
     public class Player : Entity
     {

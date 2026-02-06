@@ -39,7 +39,7 @@ namespace Engine
     {
     public:
         ScriptClass() = default;
-        ScriptClass(const std::string &namespaceName, const std::string &className);
+        ScriptClass(const std::string &namespaceName, const std::string &className, bool isCore = false);
         ~ScriptClass();
 
         MonoObject *Instantiate();

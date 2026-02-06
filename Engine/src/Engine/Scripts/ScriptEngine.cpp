@@ -19,6 +19,9 @@ namespace Engine
         MonoAssembly *CoreAssembly = nullptr;
         MonoImage *CoreAssemblyImage = nullptr;
 
+        MonoAssembly *AppAssembly = nullptr;
+        MonoImage *AppAssemblyImage = nullptr;
+
         std::unordered_map<std::string, Ref<ScriptClass>> EntityClasses;
         std::unordered_map<UUID, Ref<ScriptInstance>> EntityInstances;
 
@@ -37,10 +40,11 @@ namespace Engine
         ScriptGlue::RegisterFuncs();
         ScriptGlue::RegisterComponents();
 
-        m_ScriptEngineData->EntityClass = new ScriptClass("Engine", "Entity");
+        m_ScriptEngineData->EntityClass = new ScriptClass("Engine", "Entity", true);
         ENGINE_ASSERT(m_ScriptEngineData->EntityClass);
 
         LoadAssemblyClasses(m_ScriptEngineData->CoreAssembly);
+        LoadAssemblyClasses(m_ScriptEngineData->AppAssembly);
     }
 
     void ScriptEngine::Shutdown()
@@ -113,6 +117,10 @@ namespace Engine
         m_ScriptEngineData->CoreAssemblyImage = mono_assembly_get_image(m_ScriptEngineData->CoreAssembly);
         ENGINE_ASSERT(m_ScriptEngineData->CoreAssemblyImage);
         PrintAssemblyTypes(m_ScriptEngineData->CoreAssembly);
+
+        m_ScriptEngineData->AppAssembly = LoadCSharpAssembly("scripts/bin/Sandbox.dll");
+        m_ScriptEngineData->AppAssemblyImage = mono_assembly_get_image(m_ScriptEngineData->AppAssembly);
+        ENGINE_ASSERT(m_ScriptEngineData->AppAssemblyImage);
     }
 
     void ScriptEngine::ShutdownMono()
@@ -152,11 +160,12 @@ namespace Engine
     }
 
 #pragma region ScriptClass Implementation
-    ScriptClass::ScriptClass(const std::string &namespaceName, const std::string &className)
+    ScriptClass::ScriptClass(const std::string &namespaceName, const std::string &className, bool isCore)
     {
         m_Namespace = namespaceName;
         m_ClassName = className;
-        m_MonoClass = GetClassFromAssembly(m_ScriptEngineData->CoreAssembly, m_Namespace, m_ClassName);
+        MonoAssembly *assembly = isCore ? m_ScriptEngineData->CoreAssembly : m_ScriptEngineData->AppAssembly;
+        m_MonoClass = GetClassFromAssembly(assembly, m_Namespace, m_ClassName);
     }
 
     ScriptClass::~ScriptClass()

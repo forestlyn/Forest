@@ -59,3 +59,5 @@ endif()
 install(TARGETS EngineEditor
     RUNTIME DESTINATION bin
 )
+
+add_subdirectory(Sandbox/Assets/Scripts)
