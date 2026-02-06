@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using System;
 namespace Engine
 {
-    public static class ComponentInternalCall
+    public static class ComponentInternalCalls
     {
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool HasComponent(ulong entityID, Type componentType);

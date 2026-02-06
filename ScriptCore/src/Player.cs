@@ -2,7 +2,8 @@ namespace Engine
 {
     public class Player : Entity
     {
-        public TransformComponent Transform;
+        private TransformComponent m_Transform;
+        private Rigidbody2DComponent m_Rigidbody;
 
         public string Name { get; set; }
 
@@ -13,8 +14,8 @@ namespace Engine
             Score = 0;
             Name = "Player_" + ID;
             Log.NativeLog($"Player {Name} created with initial score {Score}");
-            Transform = GetComponent<TransformComponent>();
-            
+            m_Transform = GetComponent<TransformComponent>();
+            m_Rigidbody = GetComponent<Rigidbody2DComponent>();
         }
 
         public override void OnUpdate(float deltaTime)
@@ -25,24 +26,22 @@ namespace Engine
                 Log.NativeLog($"Player {Name} scored! New score: {Score}");
             }
 
-            Vector3 position = Transform.Position;
+            float speed = 0.01f;
+            Vector3 velocity = Vector3.Zero;
+
             if (Input.IsKeyPressed(KeyCode.W))
-            {
-                position.Y += 1.0f * deltaTime;
-            }
-            if (Input.IsKeyPressed(KeyCode.S))
-            {
-                position.Y -= 1.0f * deltaTime;
-            }
+                velocity.Y = 1.0f;
+            else if (Input.IsKeyPressed(KeyCode.S))
+                velocity.Y = -1.0f;
+
             if (Input.IsKeyPressed(KeyCode.A))
-            {
-                position.X -= 1.0f * deltaTime;
-            }
-            if (Input.IsKeyPressed(KeyCode.D))
-            {
-                position.X += 1.0f * deltaTime;
-            }
-            Transform.Position = position;
+                velocity.X = -1.0f;
+            else if (Input.IsKeyPressed(KeyCode.D))
+                velocity.X = 1.0f;
+
+            velocity *= speed;
+
+            m_Rigidbody.ApplyLinearImpulse(velocity.XY, true);
         }
 
         public void IncreaseScore(int amount)

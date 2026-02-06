@@ -20,12 +20,12 @@ namespace Engine
 
         public bool HasComponent<T>() where T : Component, new()
         {
-            return ComponentInternalCall.HasComponent(ID, typeof(T));
+            return ComponentInternalCalls.HasComponent(ID, typeof(T));
         }
 
         public T AddComponent<T>() where T : Component, new()
         {
-            ComponentInternalCall.AddComponent(ID, typeof(T));
+            ComponentInternalCalls.AddComponent(ID, typeof(T));
             T component = new T();
             component.Entity = this;
             return component;
@@ -33,7 +33,7 @@ namespace Engine
 
         public void RemoveComponent<T>() where T : Component, new()
         {
-            ComponentInternalCall.RemoveComponent(ID, typeof(T));
+            ComponentInternalCalls.RemoveComponent(ID, typeof(T));
         }
 
         public T GetComponent<T>() where T : Component, new()

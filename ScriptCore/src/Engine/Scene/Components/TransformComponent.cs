@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 
 namespace Engine
 {
-    public class TransformComponentInternalCall
+    public class TransformComponentInternalCalls
     {
         [MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.InternalCall)]
         internal extern static void SetPosition(ulong entityID, ref Vector3 position);
@@ -25,30 +25,30 @@ namespace Engine
         {
             get
             {
-                TransformComponentInternalCall.GetPosition(Entity.ID, out Vector3 position);
+                TransformComponentInternalCalls.GetPosition(Entity.ID, out Vector3 position);
                 return position;
             }
-            set => TransformComponentInternalCall.SetPosition(Entity.ID, ref value);
+            set => TransformComponentInternalCalls.SetPosition(Entity.ID, ref value);
         }
 
         public Vector3 Rotation
         {
             get
             {
-                TransformComponentInternalCall.GetRotation(Entity.ID, out Vector3 rotation);
+                TransformComponentInternalCalls.GetRotation(Entity.ID, out Vector3 rotation);
                 return rotation;
             }
-            set => TransformComponentInternalCall.SetRotation(Entity.ID, ref value);
+            set => TransformComponentInternalCalls.SetRotation(Entity.ID, ref value);
         }
 
         public Vector3 Scale
         {
             get
             {
-                TransformComponentInternalCall.GetScale(Entity.ID, out Vector3 scale);
+                TransformComponentInternalCalls.GetScale(Entity.ID, out Vector3 scale);
                 return scale;
             }
-            set => TransformComponentInternalCall.SetScale(Entity.ID, ref value);
+            set => TransformComponentInternalCalls.SetScale(Entity.ID, ref value);
         }
 
 
