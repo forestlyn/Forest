@@ -369,6 +369,7 @@ namespace Engine
                 b2ShapeDef shapeDef = b2DefaultShapeDef();
                 shapeDef.density = circleCollider.Density;
                 shapeDef.material.friction = circleCollider.Friction;
+                shapeDef.material.rollingResistance = circleCollider.RollingResistance;
                 shapeDef.material.restitution = circleCollider.Restitution;
                 b2CreateCircleShape(rigidbody2D.RuntimeBodyId, &shapeDef, &circleShape);
             }

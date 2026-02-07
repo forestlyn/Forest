@@ -10,6 +10,7 @@ namespace Engine
 
         float Density = 1.0f;
         float Friction = 0.5f;
+        float RollingResistance = 0.05f;
         float Restitution = 0.0f;
         float RestitutionThreshold = 0.5f;
 
