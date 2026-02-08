@@ -1,5 +1,6 @@
 #include "SceneHierarchyPanel.h"
 #include "Engine/Profile/Instrumentor.h"
+#include "Engine/Scripts/ScriptEngine.h"
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -257,5 +258,78 @@ namespace EngineEditor
                                                                     ImGui::DragFloat("Friction", &circleCollider.Friction, 0.01f, 0.0f, 1.0f);
                                                                     ImGui::DragFloat("Restitution", &circleCollider.Restitution, 0.01f, 0.0f, 1.0f);
                                                                     ImGui::DragFloat("Restitution Threshold", &circleCollider.RestitutionThreshold, 0.1f, 0.0f); });
+
+        UIUtils::DrawComponent<Engine::ScriptComponent>("Script", entity, [entity](Engine::ScriptComponent &scriptComponent)
+                                                        {
+            bool exists = Engine::ScriptEngine::EntityClassExists(scriptComponent.ScriptClassName);
+            char buffer[256];
+            memset(buffer, 0, sizeof(buffer));
+            strcpy_s(buffer, sizeof(buffer), scriptComponent.ScriptClassName.c_str());
+            if (!exists)
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.3f, 1.0f));
+            if (ImGui::InputText("Script Class", buffer, sizeof(buffer)))
+            {
+                scriptComponent.ScriptClassName = std::string(buffer);
+            }
+            auto instance = Engine::ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
+            for (const auto &fieldPair : instance->GetScriptClass()->GetFields())
+            {
+                const auto &field = fieldPair.second;
+
+                switch (field.FieldType)
+                {
+                case Engine::ScriptFieldType::Int:
+                {
+                    int value = instance->GetFieldValue<int>(field.Name);
+                    if (ImGui::DragInt(field.Name.c_str(), &value))
+                    {
+                        instance->SetFieldValue<int>(field.Name, value);
+                    }
+                    break;
+                }
+                case Engine::ScriptFieldType::Float:
+                {
+                    float value = instance->GetFieldValue<float>(field.Name);
+                    if (ImGui::DragFloat(field.Name.c_str(), &value))
+                    {
+                        instance->SetFieldValue<float>(field.Name, value);
+                    }
+                    break;
+                }
+                case Engine::ScriptFieldType::Bool:
+                {
+                    bool value = instance->GetFieldValue<bool>(field.Name);
+                    if (ImGui::Checkbox(field.Name.c_str(), &value))
+                    {
+                        instance->SetFieldValue<bool>(field.Name, value);
+                    }
+                    break;
+                }
+                case Engine::ScriptFieldType::Vector2:
+                {
+                    glm::vec2 value = instance->GetFieldValue<glm::vec2>(field.Name);
+                    if (ImGui::DragFloat2(field.Name.c_str(), glm::value_ptr(value), 0.1f))
+                    {
+                        instance->SetFieldValue<glm::vec2>(field.Name, value);
+                    }
+                    break;
+                }
+                case Engine::ScriptFieldType::Vector3:
+                {
+                    glm::vec3 value = instance->GetFieldValue<glm::vec3>(field.Name);
+                    if (ImGui::DragFloat3(field.Name.c_str(), glm::value_ptr(value), 0.1f))
+                    {
+                        instance->SetFieldValue<glm::vec3>(field.Name, value);
+                    }
+                    break;
+                }
+                default:
+                    break;
+                }
+            }
+            if (!exists)
+            {
+                ImGui::PopStyleColor();
+            } });
     }
 }

@@ -60,7 +60,7 @@ Entities:
       FixedAspectRatio: false
       Camera:
         ProjectionType: 0
-        AspectRatio: 1.9506934
+        AspectRatio: 1.8474576
         OrthographicSize: 10
         OrthographicNearClip: -1
         OrthographicFarClip: 1
@@ -79,7 +79,7 @@ Entities:
       FixedAspectRatio: false
       Camera:
         ProjectionType: 1
-        AspectRatio: 1.9506934
+        AspectRatio: 1.8474576
         OrthographicSize: 10
         OrthographicNearClip: -1
         OrthographicFarClip: 1

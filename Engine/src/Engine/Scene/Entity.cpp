@@ -6,7 +6,7 @@ namespace Engine
         : m_EntityHandle(handle), m_Scene(scene)
     {
     }
-    UUID Entity::GetUUID()
+    UUID Entity::GetUUID() const
     {
         return m_Scene->m_Registry.get<IDComponent>(m_EntityHandle).ID;
     }

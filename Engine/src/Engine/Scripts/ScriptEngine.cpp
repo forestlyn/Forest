@@ -11,6 +11,7 @@
 #include <fstream>
 namespace Engine
 {
+
     struct ScriptEngineData
     {
         MonoDomain *RootDomain = nullptr;
@@ -31,6 +32,7 @@ namespace Engine
     };
     static ScriptEngineData *m_ScriptEngineData = nullptr;
 
+#pragma region ScriptEngine Implementation
     void ScriptEngine::Init()
     {
         m_ScriptEngineData = new ScriptEngineData();
@@ -67,7 +69,14 @@ namespace Engine
     {
         m_ScriptEngineData->SceneContext = scene;
     }
+    Ref<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID entityID)
+    {
+        auto it = m_ScriptEngineData->EntityInstances.find(entityID);
+        if (it == m_ScriptEngineData->EntityInstances.end())
+            return nullptr;
 
+        return it->second;
+    }
     void ScriptEngine::OnCreateEntity(Entity entity)
     {
         std::string scriptClassName = entity.GetComponent<ScriptComponent>().ScriptClassName;
@@ -88,7 +97,11 @@ namespace Engine
     void ScriptEngine::OnUpdateEntity(Entity entity, Core::Timestep ts)
     {
         UUID entityID = entity.GetComponent<IDComponent>().ID;
-        ENGINE_ASSERT(m_ScriptEngineData->EntityInstances.find(entityID) != m_ScriptEngineData->EntityInstances.end(), "Script instance not found for entity!");
+        if (m_ScriptEngineData->EntityInstances.find(entityID) == m_ScriptEngineData->EntityInstances.end())
+        {
+            ENGINE_WARN("No script instance found for entity ID {}", (uint64_t)entityID);
+            return;
+        }
         Ref<ScriptInstance> instance = m_ScriptEngineData->EntityInstances[entityID];
         instance->InvokeOnUpdate(ts.GetSeconds());
     }
@@ -143,8 +156,11 @@ namespace Engine
 
             const char *nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
             const char *name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
-
-            std::string fullClassName = std::string(nameSpace) + "." + std::string(name);
+            std::string fullClassName;
+            if (nameSpace == nullptr || strlen(nameSpace) == 0)
+                fullClassName = std::string(name);
+            else
+                fullClassName = std::string(nameSpace) + "." + std::string(name);
 
             MonoClass *monoClass = mono_class_from_name(image, nameSpace, name);
             if (!monoClass)
@@ -156,8 +172,33 @@ namespace Engine
             Ref<ScriptClass> scriptClass = CreateRef<ScriptClass>(nameSpace, name);
             m_ScriptEngineData->EntityClasses[fullClassName] = scriptClass;
             ENGINE_INFO("Loaded script class: {}", fullClassName);
+
+            int fieldCount = mono_class_num_fields(monoClass);
+            if (fieldCount > 0)
+            {
+                ENGINE_INFO("\t{} fields found for class {}", fieldCount, fullClassName);
+                void *iter = nullptr;
+                MonoClassField *field = nullptr;
+                while ((field = mono_class_get_fields(monoClass, &iter)) != nullptr)
+                {
+                    std::string fieldName = mono_field_get_name(field);
+                    uint32_t fieldAccessibility = mono_field_get_flags(field);
+                    ENGINE_INFO("\t\tField: {} (flags: {})", fieldName, fieldAccessibility);
+                    if (fieldAccessibility & MONO_FIELD_ATTR_PUBLIC)
+                    {
+                        ScriptField scriptField;
+                        scriptField.Name = fieldName;
+                        scriptField.MonoField = field;
+                        MonoType *fieldType = mono_field_get_type(field);
+                        scriptField.FieldType = MonoTypeToScriptFieldType(fieldType);
+                        scriptClass->m_Fields[fieldName] = scriptField;
+                        ENGINE_INFO("\t\tPublic field: {}", fieldName);
+                    }
+                }
+            }
         }
     }
+#pragma endregion
 
 #pragma region ScriptClass Implementation
     ScriptClass::ScriptClass(const std::string &namespaceName, const std::string &className, bool isCore)
@@ -225,5 +266,29 @@ namespace Engine
         void *params = &deltaTime;
         m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateMethod, 1, &params);
     }
+    bool ScriptInstance::GetFieldValueInternal(const std::string &fieldName, void *value)
+    {
+        auto &fields = m_ScriptClass->GetFields();
+        auto it = fields.find(fieldName);
+        if (it == fields.end())
+            return false;
+
+        const ScriptField &scriptField = it->second;
+        mono_field_get_value(m_Instance, scriptField.MonoField, value);
+        return true;
+    }
+
+    bool ScriptInstance::SetFieldValueInternal(const std::string &fieldName, const void *value)
+    {
+        auto &fields = m_ScriptClass->GetFields();
+        auto it = fields.find(fieldName);
+        if (it == fields.end())
+            return false;
+
+        const ScriptField &scriptField = it->second;
+        mono_field_set_value(m_Instance, scriptField.MonoField, (void *)value);
+        return true;
+    }
+
 #pragma endregion
 }

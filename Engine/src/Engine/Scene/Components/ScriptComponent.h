@@ -3,7 +3,7 @@
 #include <string>
 namespace Engine
 {
-    struct ScriptComponent
+    struct ScriptComponent : public BaseComponent
     {
         ScriptComponent() = default;
         ScriptComponent(const ScriptComponent &other) = default;

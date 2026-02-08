@@ -3,15 +3,44 @@
 #include "Engine/Scene/Scene.h"
 extern "C"
 {
-    typedef struct _MonoObject MonoObject;
-    typedef struct _MonoClass MonoClass;
-    typedef struct _MonoMethod MonoMethod;
     typedef struct _MonoDomain MonoDomain;
     typedef struct _MonoAssembly MonoAssembly;
     typedef struct _MonoImage MonoImage;
+    typedef struct _MonoObject MonoObject;
+    typedef struct _MonoClass MonoClass;
+    typedef struct _MonoMethod MonoMethod;
+    typedef struct _MonoClassField MonoClassField;
 }
 namespace Engine
 {
+    enum class ScriptFieldType
+    {
+        None = 0,
+        Float,
+        Double,
+        Bool,
+        Char,
+        UByte,
+        Byte,
+        Short,
+        UShort,
+        Int,
+        UInt,
+        Long,
+        ULong,
+        String,
+        Vector2,
+        Vector3,
+        Vector4,
+        Entity
+    };
+    struct ScriptField
+    {
+        std::string Name;
+        ScriptFieldType FieldType;
+        MonoClassField *MonoField;
+    };
+    class ScriptInstance;
     class ScriptEngine
     {
     public:
@@ -20,6 +49,8 @@ namespace Engine
 
         static Scene *GetSceneContext();
         static MonoImage *GetCoreAssemblyImage();
+
+        static Ref<ScriptInstance> GetEntityScriptInstance(UUID entityID);
 
         static void OnRuntimeStart(Scene *scene);
         static void OnCreateEntity(Entity entity);
@@ -42,16 +73,23 @@ namespace Engine
         ScriptClass(const std::string &namespaceName, const std::string &className, bool isCore = false);
         ~ScriptClass();
 
+        std::string GetFullClassName() { return m_Namespace + "." + m_ClassName; }
+
         MonoObject *Instantiate();
         MonoClass *GetMonoClass() { return m_MonoClass; }
         MonoMethod *GetMethod(const std::string &methodName, int paramCount);
         void InvokeMethod(MonoObject *instance, const std::string &methodName, int paramCount = 0, void **params = nullptr);
         void InvokeMethod(MonoObject *instance, MonoMethod *method, int paramCount = 0, void **params = nullptr);
 
+        const std::map<std::string, ScriptField> &GetFields() const { return m_Fields; }
+
     private:
+        friend class ScriptEngine;
         std::string m_Namespace;
         std::string m_ClassName;
         MonoClass *m_MonoClass = nullptr;
+
+        std::map<std::string, ScriptField> m_Fields;
     };
 
     class ScriptInstance
@@ -63,6 +101,29 @@ namespace Engine
         void InvokeOnCreate();
         void InvokeOnUpdate(float deltaTime);
 
+        Ref<ScriptClass> GetScriptClass() const { return m_ScriptClass; }
+
+        template <typename T>
+        T GetFieldValue(const std::string &fieldName)
+        {
+            if (GetFieldValueInternal(fieldName, s_FieldValueBuffer) == false)
+            {
+                ENGINE_WARN("Failed to get field value for field '{}'!", fieldName);
+                return T();
+            }
+            return *(T *)s_FieldValueBuffer;
+        }
+
+        template <typename T>
+        void SetFieldValue(const std::string &fieldName, const T &value)
+        {
+            SetFieldValueInternal(fieldName, &value);
+        }
+
+    private:
+        bool GetFieldValueInternal(const std::string &fieldName, void *value);
+        bool SetFieldValueInternal(const std::string &fieldName, const void *value);
+
     private:
         Ref<ScriptClass> m_ScriptClass;
         MonoObject *m_Instance = nullptr;
@@ -70,5 +131,7 @@ namespace Engine
         MonoMethod *m_Constructor = nullptr;
         MonoMethod *m_OnCreateMethod = nullptr;
         MonoMethod *m_OnUpdateMethod = nullptr;
+
+        inline static char s_FieldValueBuffer[8];
     };
 }

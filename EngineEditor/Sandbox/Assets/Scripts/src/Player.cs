@@ -6,6 +6,8 @@ namespace Sandbox
         private TransformComponent m_Transform;
         private Rigidbody2DComponent m_Rigidbody;
 
+        public float speed = 0.1f;
+
         public string Name { get; set; }
 
         public int Score { get; set; }
@@ -27,7 +29,6 @@ namespace Sandbox
                 Log.NativeLog($"Player {Name} scored! New score: {Score}");
             }
 
-            float speed = 0.01f;
             Vector3 velocity = Vector3.Zero;
 
             if (Input.IsKeyPressed(KeyCode.W))

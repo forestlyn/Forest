@@ -7,6 +7,7 @@
 #include <mono/metadata/metadata.h>
 namespace Engine
 {
+    enum class ScriptFieldType;
     enum class Accessibility : uint8_t
     {
         None = 0,
@@ -26,4 +27,7 @@ namespace Engine
     MonoProperty *GetPropertyFromClass(MonoClass *monoClass, const std::string &propertyName);
     uint8_t GetPropertyAccessibility(MonoProperty *property);
     void CheckException(MonoObject *exception);
+
+    const char *ScriptFieldTypeToString(ScriptFieldType type);
+    ScriptFieldType MonoTypeToScriptFieldType(MonoType *type);
 }
