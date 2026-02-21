@@ -25,6 +25,7 @@ namespace Engine
 
         std::unordered_map<std::string, Ref<ScriptClass>> EntityClasses;
         std::unordered_map<UUID, Ref<ScriptInstance>> EntityInstances;
+        std::unordered_map<UUID, ScriptFieldMap> EntityFieldMaps;
 
         ScriptClass *EntityClass = nullptr;
         // Runtime
@@ -77,6 +78,25 @@ namespace Engine
 
         return it->second;
     }
+    Ref<ScriptClass> ScriptEngine::GetEntityClass(std::string className)
+    {
+        auto it = m_ScriptEngineData->EntityClasses.find(className);
+        if (it == m_ScriptEngineData->EntityClasses.end())
+            return nullptr;
+
+        return it->second;
+    }
+
+    ScriptFieldMap &ScriptEngine::GetScriptFieldMap(UUID entityID)
+    {
+        auto it = m_ScriptEngineData->EntityFieldMaps.find(entityID);
+        if (it == m_ScriptEngineData->EntityFieldMaps.end())
+        {
+            m_ScriptEngineData->EntityFieldMaps[entityID] = ScriptFieldMap();
+            return m_ScriptEngineData->EntityFieldMaps[entityID];
+        }
+        return it->second;
+    }
     void ScriptEngine::OnCreateEntity(Entity entity)
     {
         std::string scriptClassName = entity.GetComponent<ScriptComponent>().ScriptClassName;
@@ -85,7 +105,15 @@ namespace Engine
             ENGINE_INFO("Creating script instance for entity '{}' (id:{}) with class '{}'", entity.GetName(), (uint64_t)entity.GetUUID(), scriptClassName);
             Ref<ScriptClass> scriptClass = m_ScriptEngineData->EntityClasses[scriptClassName];
             Ref<ScriptInstance> instance = CreateRef<ScriptInstance>(scriptClass, entity);
-            m_ScriptEngineData->EntityInstances[entity.GetComponent<IDComponent>().ID] = instance;
+            UUID entityID = entity.GetUUID();
+            m_ScriptEngineData->EntityInstances[entityID] = instance;
+            if (m_ScriptEngineData->EntityFieldMaps.find(entityID) != m_ScriptEngineData->EntityFieldMaps.end())
+            {
+                const ScriptFieldMap &fieldMap = m_ScriptEngineData->EntityFieldMaps.at(entityID);
+                for (const auto &[name, fieldInstance] : fieldMap)
+                    instance->SetFieldValueInternal(name, fieldInstance.m_Buffer);
+            }
+
             instance->InvokeOnCreate();
         }
         else

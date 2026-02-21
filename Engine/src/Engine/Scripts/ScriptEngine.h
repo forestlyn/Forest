@@ -41,6 +41,9 @@ namespace Engine
         MonoClassField *MonoField;
     };
     class ScriptInstance;
+    class ScriptClass;
+    struct ScriptFieldInstance;
+    using ScriptFieldMap = std::unordered_map<std::string, ScriptFieldInstance>;
     class ScriptEngine
     {
     public:
@@ -51,6 +54,8 @@ namespace Engine
         static MonoImage *GetCoreAssemblyImage();
 
         static Ref<ScriptInstance> GetEntityScriptInstance(UUID entityID);
+        static Ref<ScriptClass> GetEntityClass(std::string className);
+        static ScriptFieldMap &GetScriptFieldMap(UUID entityID);
 
         static void OnRuntimeStart(Scene *scene);
         static void OnCreateEntity(Entity entity);
@@ -90,6 +95,35 @@ namespace Engine
         MonoClass *m_MonoClass = nullptr;
 
         std::map<std::string, ScriptField> m_Fields;
+    };
+    struct ScriptFieldInstance
+    {
+        ScriptField Field;
+
+        ScriptFieldInstance()
+        {
+            memset(m_Buffer, 0, sizeof(m_Buffer));
+        }
+
+        template <typename T>
+        T GetValue()
+        {
+            static_assert(sizeof(T) <= 8, "Type too large!");
+            return *(T *)m_Buffer;
+        }
+
+        template <typename T>
+        void SetValue(T value)
+        {
+            static_assert(sizeof(T) <= 8, "Type too large!");
+            memcpy(m_Buffer, &value, sizeof(T));
+        }
+
+    private:
+        uint8_t m_Buffer[8];
+
+        friend class ScriptEngine;
+        friend class ScriptInstance;
     };
 
     class ScriptInstance
@@ -133,5 +167,8 @@ namespace Engine
         MonoMethod *m_OnUpdateMethod = nullptr;
 
         inline static char s_FieldValueBuffer[8];
+
+        friend class ScriptEngine;
+        friend struct ScriptFieldInstance;
     };
 }

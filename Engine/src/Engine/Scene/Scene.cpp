@@ -226,9 +226,11 @@ namespace Engine
                 ScriptEngine::OnCreateEntity(e);
             }
         }
+        m_Running = true;
     }
     void Scene::OnRuntimeStop()
     {
+        m_Running = false;
         DestroyPhysicsWorld();
     }
 

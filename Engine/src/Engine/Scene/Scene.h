@@ -41,6 +41,11 @@ namespace Engine
         void OnSimulationStart();
         void OnSimulationStop();
 
+        bool IsRunning() const
+        {
+            return m_Running;
+        };
+
         static Ref<Scene> Copy(Ref<Scene> other);
 
         void DuplicateEntity(Entity entity);
@@ -59,6 +64,8 @@ namespace Engine
         uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
         Ref<Entity> m_CameraEntity = nullptr;
         b2WorldId worldId;
+
+        bool m_Running = false;
 
         float physicsTimeStepAccumulator = 0.0f;
 

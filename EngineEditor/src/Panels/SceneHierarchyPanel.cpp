@@ -259,7 +259,7 @@ namespace EngineEditor
                                                                     ImGui::DragFloat("Restitution", &circleCollider.Restitution, 0.01f, 0.0f, 1.0f);
                                                                     ImGui::DragFloat("Restitution Threshold", &circleCollider.RestitutionThreshold, 0.1f, 0.0f); });
 
-        UIUtils::DrawComponent<Engine::ScriptComponent>("Script", entity, [entity](Engine::ScriptComponent &scriptComponent)
+        UIUtils::DrawComponent<Engine::ScriptComponent>("Script", entity, [entity, scene = m_Context](Engine::ScriptComponent &scriptComponent)
                                                         {
             bool exists = Engine::ScriptEngine::EntityClassExists(scriptComponent.ScriptClassName);
             char buffer[256];
@@ -271,62 +271,162 @@ namespace EngineEditor
             {
                 scriptComponent.ScriptClassName = std::string(buffer);
             }
-            auto instance = Engine::ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
-            for (const auto &fieldPair : instance->GetScriptClass()->GetFields())
+            if (scene->IsRunning())
             {
-                const auto &field = fieldPair.second;
+                auto instance = Engine::ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
+                if (!instance)
+                {
+                    ImGui::Text("Script instance not found");
+                    if (!exists)
+                        ImGui::PopStyleColor();
+                    return;
+                }
+                for (const auto &fieldPair : instance->GetScriptClass()->GetFields())
+                {
+                    const auto &field = fieldPair.second;
 
-                switch (field.FieldType)
-                {
-                case Engine::ScriptFieldType::Int:
-                {
-                    int value = instance->GetFieldValue<int>(field.Name);
-                    if (ImGui::DragInt(field.Name.c_str(), &value))
+                    switch (field.FieldType)
                     {
-                        instance->SetFieldValue<int>(field.Name, value);
-                    }
-                    break;
-                }
-                case Engine::ScriptFieldType::Float:
-                {
-                    float value = instance->GetFieldValue<float>(field.Name);
-                    if (ImGui::DragFloat(field.Name.c_str(), &value))
+                    case Engine::ScriptFieldType::Int:
                     {
-                        instance->SetFieldValue<float>(field.Name, value);
+                        int value = instance->GetFieldValue<int>(field.Name);
+                        if (ImGui::DragInt(field.Name.c_str(), &value))
+                        {
+                            instance->SetFieldValue<int>(field.Name, value);
+                        }
+                        break;
                     }
-                    break;
-                }
-                case Engine::ScriptFieldType::Bool:
-                {
-                    bool value = instance->GetFieldValue<bool>(field.Name);
-                    if (ImGui::Checkbox(field.Name.c_str(), &value))
+                    case Engine::ScriptFieldType::Float:
                     {
-                        instance->SetFieldValue<bool>(field.Name, value);
+                        float value = instance->GetFieldValue<float>(field.Name);
+                        if (ImGui::DragFloat(field.Name.c_str(), &value))
+                        {
+                            instance->SetFieldValue<float>(field.Name, value);
+                        }
+                        break;
                     }
-                    break;
-                }
-                case Engine::ScriptFieldType::Vector2:
-                {
-                    glm::vec2 value = instance->GetFieldValue<glm::vec2>(field.Name);
-                    if (ImGui::DragFloat2(field.Name.c_str(), glm::value_ptr(value), 0.1f))
+                    case Engine::ScriptFieldType::Bool:
                     {
-                        instance->SetFieldValue<glm::vec2>(field.Name, value);
+                        bool value = instance->GetFieldValue<bool>(field.Name);
+                        if (ImGui::Checkbox(field.Name.c_str(), &value))
+                        {
+                            instance->SetFieldValue<bool>(field.Name, value);
+                        }
+                        break;
                     }
-                    break;
-                }
-                case Engine::ScriptFieldType::Vector3:
-                {
-                    glm::vec3 value = instance->GetFieldValue<glm::vec3>(field.Name);
-                    if (ImGui::DragFloat3(field.Name.c_str(), glm::value_ptr(value), 0.1f))
+                    case Engine::ScriptFieldType::Vector2:
                     {
-                        instance->SetFieldValue<glm::vec3>(field.Name, value);
+                        glm::vec2 value = instance->GetFieldValue<glm::vec2>(field.Name);
+                        if (ImGui::DragFloat2(field.Name.c_str(), glm::value_ptr(value), 0.1f))
+                        {
+                            instance->SetFieldValue<glm::vec2>(field.Name, value);
+                        }
+                        break;
                     }
-                    break;
-                }
-                default:
-                    break;
+                    case Engine::ScriptFieldType::Vector3:
+                    {
+                        glm::vec3 value = instance->GetFieldValue<glm::vec3>(field.Name);
+                        if (ImGui::DragFloat3(field.Name.c_str(), glm::value_ptr(value), 0.1f))
+                        {
+                            instance->SetFieldValue<glm::vec3>(field.Name, value);
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                    }
                 }
             }
+            else
+            {
+                if (exists)
+                {
+                    auto entityClass = Engine::ScriptEngine::GetEntityClass(scriptComponent.ScriptClassName);
+                    if(!entityClass)
+                    {
+                        ImGui::Text("Script class '%s' not found", scriptComponent.ScriptClassName.c_str());
+                        return;
+                    }
+                    const auto &fields = entityClass->GetFields();
+                    if(fields.empty())
+                    {
+                        ImGui::Text("No script fields found in class '%s'", scriptComponent.ScriptClassName.c_str());
+                        return;
+                    }
+                    auto& scriptFieldMap = Engine::ScriptEngine::GetScriptFieldMap(entity.GetUUID());
+                    for (const auto &[fieldName, field] : fields)
+                    {
+                        if (scriptFieldMap.find(fieldName) != scriptFieldMap.end())
+                        {
+                            auto &fieldInstance = scriptFieldMap.at(fieldName);
+                            switch (field.FieldType)
+                            {
+                            case Engine::ScriptFieldType::Int:
+                            {
+                                int value = fieldInstance.GetValue<int>();
+                                if (ImGui::DragInt(field.Name.c_str(), &value))
+                                {
+                                    fieldInstance.SetValue<int>(value);
+                                }
+                                break;
+                            }
+                            case Engine::ScriptFieldType::Float:
+                            {
+                                float value = fieldInstance.GetValue<float>();
+                                if (ImGui::DragFloat(field.Name.c_str(), &value))
+                                {
+                                    fieldInstance.SetValue<float>(value);
+                                }
+                                break;
+                            }
+                            case Engine::ScriptFieldType::Bool:
+                            {
+                                bool value = fieldInstance.GetValue<bool>();
+                                if (ImGui::Checkbox(field.Name.c_str(), &value))
+                                {
+                                    fieldInstance.SetValue<bool>(value);
+                                }
+                                break;
+                            }
+                            default:
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            ImGui::Text("Field '%s' not found in script field map", field.Name.c_str());
+                            auto& scriptFieldInstance = scriptFieldMap[fieldName];
+                            if(field.FieldType == Engine::ScriptFieldType::Int)
+                            {
+                                int value = 0;
+                                if (ImGui::DragInt(field.Name.c_str(), &value))
+                                {
+                                    scriptFieldInstance.SetValue<int>(value);
+                                }
+                            }
+                            else if(field.FieldType == Engine::ScriptFieldType::Float)
+                            {
+                                float value = 0.0f;
+                                 if (ImGui::DragFloat(field.Name.c_str(), &value))
+                                {
+                                scriptFieldInstance.SetValue<float>(value);
+                            }
+                            }
+                            else if(field.FieldType == Engine::ScriptFieldType::Bool)
+                            {
+                                bool value = false;
+                                 if (ImGui::Checkbox(field.Name.c_str(), &value))
+                                {
+                                scriptFieldInstance.SetValue<bool>(value);}
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    ImGui::Text("Script class not found");
+                }
+            } 
             if (!exists)
             {
                 ImGui::PopStyleColor();
