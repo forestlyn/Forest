@@ -106,7 +106,7 @@ namespace Engine
         }
 
         template <typename T>
-        T GetValue()
+        T GetValue() const
         {
             static_assert(sizeof(T) <= 8, "Type too large!");
             return *(T *)m_Buffer;

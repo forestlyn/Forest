@@ -396,6 +396,7 @@ namespace EngineEditor
                         {
                             ImGui::Text("Field '%s' not found in script field map", field.Name.c_str());
                             auto& scriptFieldInstance = scriptFieldMap[fieldName];
+                            scriptFieldInstance.Field = field;
                             if(field.FieldType == Engine::ScriptFieldType::Int)
                             {
                                 int value = 0;
@@ -407,17 +408,18 @@ namespace EngineEditor
                             else if(field.FieldType == Engine::ScriptFieldType::Float)
                             {
                                 float value = 0.0f;
-                                 if (ImGui::DragFloat(field.Name.c_str(), &value))
+                                if (ImGui::DragFloat(field.Name.c_str(), &value))
                                 {
-                                scriptFieldInstance.SetValue<float>(value);
-                            }
+                                    scriptFieldInstance.SetValue<float>(value);
+                                }
                             }
                             else if(field.FieldType == Engine::ScriptFieldType::Bool)
                             {
                                 bool value = false;
-                                 if (ImGui::Checkbox(field.Name.c_str(), &value))
+                                if (ImGui::Checkbox(field.Name.c_str(), &value))
                                 {
-                                scriptFieldInstance.SetValue<bool>(value);}
+                                    scriptFieldInstance.SetValue<bool>(value);
+                                }
                             }
                         }
                     }

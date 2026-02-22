@@ -1,5 +1,6 @@
 #include "ComponentSerialize.h"
 #include "Engine/Core/Core.h"
+#include "Engine/Scripts/ScriptEngine.h"
 namespace Engine::Serialization
 {
     void SerializeTagComponent(YAML::Emitter &out, TagComponent &entity)
