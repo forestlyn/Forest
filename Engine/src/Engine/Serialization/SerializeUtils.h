@@ -1,7 +1,7 @@
 #pragma once
 #include "yaml-cpp/yaml.h"
 #include <glm/glm.hpp>
-
+#include "Engine/Core/UUID.h"
 namespace YAML
 {
     // Serialize to YAML
@@ -29,5 +29,13 @@ namespace YAML
     {
         static Node encode(const glm::vec4 &rhs);
         static bool decode(const Node &node, glm::vec4 &rhs);
+    };
+
+    template <>
+    struct convert<Engine::UUID>
+    {
+        static Node encode(const Engine::UUID &uuid);
+
+        static bool decode(const Node &node, Engine::UUID &uuid);
     };
 } // namespace YAML

@@ -1,5 +1,26 @@
 #include "EntitySerialize.h"
 #include "Engine/Scripts/ScriptEngine.h"
+#define SERIALIZE_SCRIPT_FIELD(fieldType, type)            \
+    case fieldType:                                        \
+    {                                                      \
+        out << YAML::Key << "Value";                       \
+        out << YAML::Value << fieldValue.GetValue<type>(); \
+        break;                                             \
+    }
+#define DESERIALIZE_SCRIPT_FIELD(fieldType, type)                                                 \
+    case fieldType:                                                                               \
+    {                                                                                             \
+        if (fieldDataNode["Value"])                                                               \
+        {                                                                                         \
+            fieldInstance.SetValue<type>(fieldDataNode["Value"].as<type>());                      \
+        }                                                                                         \
+        else                                                                                      \
+        {                                                                                         \
+            ENGINE_WARN("Failed to deserialize script field of type " + std::string(#fieldType)); \
+        }                                                                                         \
+        break;                                                                                    \
+    }
+
 namespace Engine::Serialization
 {
     void SerializeEntity(YAML::Emitter &out, Entity entity)
@@ -66,17 +87,24 @@ namespace Engine::Serialization
                     out << YAML::BeginMap;
                     out << YAML::Key << "Name" << YAML::Value << fieldValue.Field.Name;
                     out << YAML::Key << "Type" << YAML::Value << (int)fieldValue.Field.FieldType;
-                    if (fieldValue.Field.FieldType == ScriptFieldType::Int)
+                    switch (fieldValue.Field.FieldType)
                     {
-                        out << YAML::Key << "Value" << YAML::Value << fieldValue.GetValue<int>();
-                    }
-                    else if (fieldValue.Field.FieldType == ScriptFieldType::Float)
-                    {
-                        out << YAML::Key << "Value" << YAML::Value << fieldValue.GetValue<float>();
-                    }
-                    else if (fieldValue.Field.FieldType == ScriptFieldType::Bool)
-                    {
-                        out << YAML::Key << "Value" << YAML::Value << fieldValue.GetValue<bool>();
+                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Float, float);
+                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Double, double);
+                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Bool, bool);
+                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Char, char);
+                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::UByte, uint8_t);
+                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Byte, int8_t);
+                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Short, int16_t);
+                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::UShort, uint16_t);
+                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Int, int);
+                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::UInt, uint32_t);
+                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Long, int64_t);
+                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::ULong, uint64_t);
+                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector2, glm::vec2);
+                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector3, glm::vec3);
+                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector4, glm::vec4);
+                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Entity, UUID);
                     }
                     out << YAML::EndMap; // Field
                 }
@@ -182,21 +210,29 @@ namespace Engine::Serialization
                     ScriptFieldInstance fieldInstance;
                     fieldInstance.Field.Name = fieldDataNode["Name"].as<std::string>();
                     fieldInstance.Field.FieldType = (ScriptFieldType)fieldDataNode["Type"].as<int>();
-                    if (fieldInstance.Field.FieldType == ScriptFieldType::Int)
+                    switch (fieldInstance.Field.FieldType)
                     {
-                        int value = fieldDataNode["Value"].as<int>();
-                        fieldInstance.SetValue<int>(value);
+                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Float, float);
+                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Double, double);
+                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Bool, bool);
+                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Char, char);
+                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::UByte, uint8_t);
+                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Byte, int8_t);
+                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Short, int16_t);
+                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::UShort, uint16_t);
+                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Int, int);
+                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::UInt, uint32_t);
+                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Long, int64_t);
+                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::ULong, uint64_t);
+                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector2, glm::vec2);
+                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector3, glm::vec3);
+                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector4, glm::vec4);
+                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Entity, UUID);
+                    default:
+                    {
+                        ENGINE_WARN("Unknown script field type for field " + fieldName);
+                        break;
                     }
-                    else if (fieldInstance.Field.FieldType == ScriptFieldType::Float)
-                    {
-                        float value = fieldDataNode["Value"].as<float>();
-                        ENGINE_INFO("Deserialized field '{}' with value {}", fieldName, value);
-                        fieldInstance.SetValue<float>(value);
-                    }
-                    else if (fieldInstance.Field.FieldType == ScriptFieldType::Bool)
-                    {
-                        bool value = fieldDataNode["Value"].as<bool>();
-                        fieldInstance.SetValue<bool>(value);
                     }
                     fieldMap[fieldName] = fieldInstance;
                 }

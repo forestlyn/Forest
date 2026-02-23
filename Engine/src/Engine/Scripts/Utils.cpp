@@ -18,7 +18,6 @@ namespace Engine
         {"System.UInt32", ScriptFieldType::UInt},
         {"System.Int64", ScriptFieldType::Long},
         {"System.UInt64", ScriptFieldType::ULong},
-        {"System.String", ScriptFieldType::String},
         {"Engine.Vector2", ScriptFieldType::Vector2},
         {"Engine.Vector3", ScriptFieldType::Vector3},
         {"Engine.Vector4", ScriptFieldType::Vector4},

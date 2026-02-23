@@ -4,7 +4,7 @@
 #include <functional>
 #include "Engine/Scene/Entity.h"
 #include <imgui.h>
-
+#include "Engine/Scripts/ScriptEngine.h"
 namespace EngineEditor
 {
     class UIUtils
@@ -35,5 +35,8 @@ namespace EngineEditor
         {
             DrawAddComponents<T...>(entity);
         }
+
+        static void DrawScriptField(const Engine::ScriptField &field, Engine::Ref<Engine::ScriptFieldInstance> scriptFieldInstance);
+        static void DrawScriptInstance(const Engine::ScriptField &field, Engine::Ref<Engine::ScriptInstance> scriptInstance);
     };
 }

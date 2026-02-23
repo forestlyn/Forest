@@ -1,112 +1,5 @@
 Scene: Untitled
 Entities:
-  - EntityID: 9096553039105538474
-    TagComponent:
-      Tag: Circle
-    TransformComponent:
-      Position: [-2, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CircleComponent:
-      Color: [1, 0.57425743, 0.57425743, 1]
-      Thickness: 0.19
-      Fade: 0.005
-    Rigidbody2DComponent:
-      Type: 2
-      Velocity: [0, 9.8]
-      AngularVelocity: 0
-      FixedRotation: false
-    CircleCollider2DComponent:
-      Radius: 0.5
-      Offset: [0, 0]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0.45
-      RestitutionThreshold: 0.5
-  - EntityID: 5589837931712714978
-    TagComponent:
-      Tag: Square
-    TransformComponent:
-      Position: [1.2640316, 5.3411304e-07, 0]
-      Rotation: [0, 0, -89.99997]
-      Scale: [0.9999986, 0.9999986, 1]
-    SpriteComponent:
-      Color: [0.8, 0.2, 0.3, 1]
-      TexturePath: None
-      TilingFactor: 1
-    Rigidbody2DComponent:
-      Type: 2
-      Velocity: [0, 9.8]
-      AngularVelocity: 0
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [1, 1]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0.84
-      RestitutionThreshold: 0.9
-  - EntityID: 15481874266898090421
-    TagComponent:
-      Tag: Main Camera
-    TransformComponent:
-      Position: [0, 0, 10]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Primary: true
-      FixedAspectRatio: false
-      Camera:
-        ProjectionType: 1
-        AspectRatio: 1.8474576
-        OrthographicSize: 10
-        OrthographicNearClip: -1
-        OrthographicFarClip: 1
-        PerspectiveFOV: 45
-        PerspectiveNearClip: 0.1
-        PerspectiveFarClip: 1000
-  - EntityID: 1108859090500040080
-    TagComponent:
-      Tag: Second Camera
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Primary: false
-      FixedAspectRatio: false
-      Camera:
-        ProjectionType: 0
-        AspectRatio: 1.8474576
-        OrthographicSize: 10
-        OrthographicNearClip: -1
-        OrthographicFarClip: 1
-        PerspectiveFOV: 0.7853982
-        PerspectiveNearClip: 0.1
-        PerspectiveFarClip: 1000
-  - EntityID: 10581122825863251169
-    TagComponent:
-      Tag: Platform
-    TransformComponent:
-      Position: [0, -2.096222, 0]
-      Rotation: [0, 0, 0]
-      Scale: [11.9, 1, 1]
-    SpriteComponent:
-      Color: [0.4283616, 0.76567656, 0.22490169, 1]
-      TexturePath: None
-      TilingFactor: 1
-    Rigidbody2DComponent:
-      Type: 0
-      Velocity: [0, 9.8]
-      AngularVelocity: 0
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [1, 1]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
   - EntityID: 12292112353008337462
     TagComponent:
       Tag: Player
@@ -133,7 +26,134 @@ Entities:
     ScriptComponent:
       ScriptClassName: Sandbox.Player
     Sandbox.Player_Fields:
+      Vector3Value:
+        Name: Vector3Value
+        Type: 14
+        Value: [0, 0, -4.2201683e+37]
       speed:
         Name: speed
         Type: 1
-        Value: 2
+        Value: 16.1
+      Vector2Value:
+        Name: Vector2Value
+        Type: 13
+        Value: [0, 0]
+      DoubleValue:
+        Name: DoubleValue
+        Type: 2
+        Value: 0
+      IsActive:
+        Name: IsActive
+        Type: 3
+        Value: true
+      IntValue:
+        Name: IntValue
+        Type: 9
+        Value: 8
+  - EntityID: 10581122825863251169
+    TagComponent:
+      Tag: Platform
+    TransformComponent:
+      Position: [0, -2.096222, 0]
+      Rotation: [0, 0, 0]
+      Scale: [11.9, 1, 1]
+    SpriteComponent:
+      Color: [0.4283616, 0.76567656, 0.22490169, 1]
+      TexturePath: None
+      TilingFactor: 1
+    Rigidbody2DComponent:
+      Type: 0
+      Velocity: [0, 9.8]
+      AngularVelocity: 0
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - EntityID: 1108859090500040080
+    TagComponent:
+      Tag: Second Camera
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Primary: false
+      FixedAspectRatio: false
+      Camera:
+        ProjectionType: 0
+        AspectRatio: 1.8474576
+        OrthographicSize: 10
+        OrthographicNearClip: -1
+        OrthographicFarClip: 1
+        PerspectiveFOV: 0.7853982
+        PerspectiveNearClip: 0.1
+        PerspectiveFarClip: 1000
+  - EntityID: 15481874266898090421
+    TagComponent:
+      Tag: Main Camera
+    TransformComponent:
+      Position: [0, 0, 10]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Primary: true
+      FixedAspectRatio: false
+      Camera:
+        ProjectionType: 1
+        AspectRatio: 1.8474576
+        OrthographicSize: 10
+        OrthographicNearClip: -1
+        OrthographicFarClip: 1
+        PerspectiveFOV: 45
+        PerspectiveNearClip: 0.1
+        PerspectiveFarClip: 1000
+  - EntityID: 5589837931712714978
+    TagComponent:
+      Tag: Square
+    TransformComponent:
+      Position: [1.2640316, 5.3411304e-07, 0]
+      Rotation: [0, 0, -89.99997]
+      Scale: [0.9999986, 0.9999986, 1]
+    SpriteComponent:
+      Color: [0.8, 0.2, 0.3, 1]
+      TexturePath: None
+      TilingFactor: 1
+    Rigidbody2DComponent:
+      Type: 2
+      Velocity: [0, 9.8]
+      AngularVelocity: 0
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.84
+      RestitutionThreshold: 0.9
+  - EntityID: 9096553039105538474
+    TagComponent:
+      Tag: Circle
+    TransformComponent:
+      Position: [-2, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleComponent:
+      Color: [1, 0.57425743, 0.57425743, 1]
+      Thickness: 0.19
+      Fade: 0.005
+    Rigidbody2DComponent:
+      Type: 2
+      Velocity: [0, 9.8]
+      AngularVelocity: 0
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Radius: 0.5
+      Offset: [0, 0]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.45
+      RestitutionThreshold: 0.5

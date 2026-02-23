@@ -1,3 +1,4 @@
+using System.Numerics;
 using Engine;
 namespace Sandbox
 {
@@ -7,6 +8,11 @@ namespace Sandbox
         private Rigidbody2DComponent m_Rigidbody;
 
         public float speed = 0.1f;
+        public int IntValue = 42;
+        public double DoubleValue = 3.14;
+        public bool IsActive = true;
+        public Vector3 Vector3Value = new Vector3(0.0f, 0.0f, 0.0f);
+        public Vector2 Vector2Value = new Vector2(1.0f, 2.0f);
 
         public string Name { get; set; }
 

@@ -89,6 +89,25 @@ namespace YAML
         rhs.w = node[3].as<float>();
         return true;
     }
+
+    Node convert<Engine::UUID>::encode(const Engine::UUID &uuid)
+    {
+        Node node;
+        node.push_back((uint64_t)uuid);
+        return node;
+    }
+
+    bool convert<Engine::UUID>::decode(const Node &node, Engine::UUID &uuid)
+    {
+        if (!node.IsScalar())
+        {
+            return false;
+        }
+        uint64_t uuidValue = node.as<uint64_t>();
+        uuid = Engine::UUID(uuidValue);
+        return true;
+    }
+
 #pragma endregion
 
 }
