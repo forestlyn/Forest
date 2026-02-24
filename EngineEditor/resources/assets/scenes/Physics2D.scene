@@ -26,14 +26,26 @@ Entities:
     ScriptComponent:
       ScriptClassName: Sandbox.Player
     Sandbox.Player_Fields:
+      IsActive:
+        Name: IsActive
+        Type: 3
+        Value: true
+      IntValue:
+        Name: IntValue
+        Type: 9
+        Value: 0
+      IntValue2:
+        Name: IntValue2
+        Type: 9
+        Value: 2
       Vector3Value:
         Name: Vector3Value
         Type: 14
-        Value: [0, 0, -4.2201683e+37]
+        Value: [0, 0, 0]
       speed:
         Name: speed
         Type: 1
-        Value: 16.1
+        Value: 0.1
       Vector2Value:
         Name: Vector2Value
         Type: 13
@@ -42,14 +54,6 @@ Entities:
         Name: DoubleValue
         Type: 2
         Value: 0
-      IsActive:
-        Name: IsActive
-        Type: 3
-        Value: true
-      IntValue:
-        Name: IntValue
-        Type: 9
-        Value: 8
   - EntityID: 10581122825863251169
     TagComponent:
       Tag: Platform
@@ -85,7 +89,7 @@ Entities:
       FixedAspectRatio: false
       Camera:
         ProjectionType: 0
-        AspectRatio: 1.8474576
+        AspectRatio: 1.98151
         OrthographicSize: 10
         OrthographicNearClip: -1
         OrthographicFarClip: 1
@@ -104,7 +108,7 @@ Entities:
       FixedAspectRatio: false
       Camera:
         ProjectionType: 1
-        AspectRatio: 1.8474576
+        AspectRatio: 1.98151
         OrthographicSize: 10
         OrthographicNearClip: -1
         OrthographicFarClip: 1

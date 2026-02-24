@@ -84,7 +84,7 @@ namespace EngineEditor
         {
         case Engine::ScriptFieldType::Float:
         {
-            float value = 0.0f;
+            float value = scriptInstance->GetFieldValue<float>(field.Name);
             if (ImGui::DragFloat(field.Name.c_str(), &value))
             {
                 scriptInstance->SetFieldValue(field.Name, value);
@@ -93,17 +93,22 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::Double:
         {
-            float value = 0.0;
-            if (ImGui::DragFloat(field.Name.c_str(), &value))
+            double value = scriptInstance->GetFieldValue<double>(field.Name);
+            if (ImGui::DragScalar(field.Name.c_str(),   // 标签
+                                  ImGuiDataType_Double, // 数据类型
+                                  &value,               // 变量地址
+                                  0.1f,                 // 拖拽速度 (注意这里是 float)
+                                  nullptr,              // 最小值地址 (必须是 double*)
+                                  nullptr,              // 最大值地址 (必须是 double*)
+                                  "%.4f"))
             {
-                double doubleValue = static_cast<double>(value);
-                scriptInstance->SetFieldValue(field.Name, doubleValue);
+                scriptInstance->SetFieldValue(field.Name, value);
             }
             break;
         }
         case Engine::ScriptFieldType::Bool:
         {
-            bool value = false;
+            bool value = scriptInstance->GetFieldValue<bool>(field.Name);
             if (ImGui::Checkbox(field.Name.c_str(), &value))
             {
                 scriptInstance->SetFieldValue(field.Name, value);
@@ -112,7 +117,7 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::Char:
         {
-            char value = '\0';
+            char value = scriptInstance->GetFieldValue<char>(field.Name);
             if (ImGui::InputText(field.Name.c_str(), &value, sizeof(char)))
             {
                 scriptInstance->SetFieldValue(field.Name, value);
@@ -121,7 +126,7 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::UByte:
         {
-            uint8_t value = 0;
+            uint8_t value = scriptInstance->GetFieldValue<uint8_t>(field.Name);
             if (ImGui::DragInt(field.Name.c_str(), (int *)&value, 1.0f, 0, 255))
             {
                 scriptInstance->SetFieldValue(field.Name, value);
@@ -130,7 +135,7 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::Byte:
         {
-            int8_t value = 0;
+            int8_t value = scriptInstance->GetFieldValue<int8_t>(field.Name);
             if (ImGui::DragInt(field.Name.c_str(), (int *)&value, 1.0f, -128, 127))
             {
                 scriptInstance->SetFieldValue(field.Name, value);
@@ -139,7 +144,7 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::Short:
         {
-            int16_t value = 0;
+            int16_t value = scriptInstance->GetFieldValue<int16_t>(field.Name);
             if (ImGui::DragInt(field.Name.c_str(), (int *)&value, 1.0f, -32768, 32767))
             {
                 scriptInstance->SetFieldValue(field.Name, value);
@@ -148,7 +153,7 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::UShort:
         {
-            uint16_t value = 0;
+            uint16_t value = scriptInstance->GetFieldValue<uint16_t>(field.Name);
             if (ImGui::DragInt(field.Name.c_str(), (int *)&value, 1.0f, 0, 65535))
             {
                 scriptInstance->SetFieldValue(field.Name, value);
@@ -157,7 +162,7 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::Int:
         {
-            int value = 0;
+            int value = scriptInstance->GetFieldValue<int>(field.Name);
             if (ImGui::DragInt(field.Name.c_str(), &value))
             {
                 scriptInstance->SetFieldValue(field.Name, value);
@@ -166,7 +171,7 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::UInt:
         {
-            uint32_t value = 0;
+            uint32_t value = scriptInstance->GetFieldValue<uint32_t>(field.Name);
             if (ImGui::DragInt(field.Name.c_str(), (int *)&value))
             {
                 scriptInstance->SetFieldValue(field.Name, value);
@@ -175,8 +180,8 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::Long:
         {
-            int64_t value = 0;
-            if (ImGui::DragInt(field.Name.c_str(), (int *)&value))
+            int64_t value = scriptInstance->GetFieldValue<int64_t>(field.Name);
+            if (ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_S64, &value, 1.0f, nullptr, nullptr, "%ld"))
             {
                 scriptInstance->SetFieldValue(field.Name, value);
             }
@@ -184,8 +189,8 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::ULong:
         {
-            uint64_t value = 0;
-            if (ImGui::DragInt(field.Name.c_str(), (int *)&value))
+            uint64_t value = scriptInstance->GetFieldValue<uint64_t>(field.Name);
+            if (ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_U64, &value, 1.0f, nullptr, nullptr, "%lu"))
             {
                 scriptInstance->SetFieldValue(field.Name, value);
             }
@@ -193,7 +198,7 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::Vector2:
         {
-            glm::vec2 value(0.0f);
+            glm::vec2 value = scriptInstance->GetFieldValue<glm::vec2>(field.Name);
             if (ImGui::DragFloat2(field.Name.c_str(), glm::value_ptr(value), 0.1f))
             {
                 scriptInstance->SetFieldValue(field.Name, value);
@@ -202,7 +207,7 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::Vector3:
         {
-            glm::vec3 value(0.0f);
+            glm::vec3 value = scriptInstance->GetFieldValue<glm::vec3>(field.Name);
             if (ImGui::DragFloat3(field.Name.c_str(), glm::value_ptr(value), 0.1f))
             {
                 scriptInstance->SetFieldValue(field.Name, value);
@@ -211,7 +216,7 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::Vector4:
         {
-            glm::vec4 value(0.0f);
+            glm::vec4 value = scriptInstance->GetFieldValue<glm::vec4>(field.Name);
             if (ImGui::DragFloat4(field.Name.c_str(), glm::value_ptr(value), 0.1f))
             {
                 scriptInstance->SetFieldValue(field.Name, value);
@@ -230,143 +235,149 @@ namespace EngineEditor
         }
         }
     }
-    void UIUtils::DrawScriptField(const Engine::ScriptField &field, Engine::Ref<Engine::ScriptFieldInstance> scriptFieldInstance)
+
+    void UIUtils::DrawScriptField(const Engine::ScriptField &field, Engine::ScriptFieldInstance &scriptFieldInstance)
     {
         switch (field.FieldType)
         {
         case Engine::ScriptFieldType::Float:
         {
-            float value = 0.0f;
+            float value = scriptFieldInstance.GetValue<float>();
             if (ImGui::DragFloat(field.Name.c_str(), &value))
             {
-                scriptFieldInstance->SetValue<float>(value);
+                scriptFieldInstance.SetValue<float>(value);
             }
             break;
         }
         case Engine::ScriptFieldType::Double:
         {
-            float value = 0.0;
-            if (ImGui::DragFloat(field.Name.c_str(), &value))
+            double value = scriptFieldInstance.GetValue<double>();
+            if (ImGui::DragScalar(field.Name.c_str(),   // 标签
+                                  ImGuiDataType_Double, // 数据类型
+                                  &value,               // 变量地址
+                                  0.1f,                 // 拖拽速度 (注意这里是 float)
+                                  nullptr,              // 最小值地址 (必须是 double*)
+                                  nullptr,              // 最大值地址 (必须是 double*)
+                                  "%.4f"))
             {
-                double doubleValue = static_cast<double>(value);
-                scriptFieldInstance->SetValue<double>(doubleValue);
+                scriptFieldInstance.SetValue<double>(value);
             }
             break;
         }
         case Engine::ScriptFieldType::Bool:
         {
-            bool value = false;
+            bool value = scriptFieldInstance.GetValue<bool>();
             if (ImGui::Checkbox(field.Name.c_str(), &value))
             {
-                scriptFieldInstance->SetValue<bool>(value);
+                scriptFieldInstance.SetValue<bool>(value);
             }
             break;
         }
         case Engine::ScriptFieldType::Char:
         {
-            char value = '\0';
+            char value = scriptFieldInstance.GetValue<char>();
             if (ImGui::InputText(field.Name.c_str(), &value, sizeof(char)))
             {
-                scriptFieldInstance->SetValue<char>(value);
+                scriptFieldInstance.SetValue<char>(value);
             }
             break;
         }
         case Engine::ScriptFieldType::UByte:
         {
-            uint8_t value = 0;
+            uint8_t value = scriptFieldInstance.GetValue<uint8_t>();
             if (ImGui::DragInt(field.Name.c_str(), (int *)&value, 1.0f, 0, 255))
             {
-                scriptFieldInstance->SetValue<uint8_t>(value);
+                scriptFieldInstance.SetValue<uint8_t>(value);
             }
             break;
         }
         case Engine::ScriptFieldType::Byte:
         {
-            int8_t value = 0;
+            int8_t value = scriptFieldInstance.GetValue<int8_t>();
             if (ImGui::DragInt(field.Name.c_str(), (int *)&value, 1.0f, -128, 127))
             {
-                scriptFieldInstance->SetValue<int8_t>(value);
+                scriptFieldInstance.SetValue<int8_t>(value);
             }
             break;
         }
         case Engine::ScriptFieldType::Short:
         {
-            int16_t value = 0;
+            int16_t value = scriptFieldInstance.GetValue<int16_t>();
             if (ImGui::DragInt(field.Name.c_str(), (int *)&value, 1.0f, -32768, 32767))
             {
-                scriptFieldInstance->SetValue<int16_t>(value);
+                scriptFieldInstance.SetValue<int16_t>(value);
             }
             break;
         }
         case Engine::ScriptFieldType::UShort:
         {
-            uint16_t value = 0;
+            uint16_t value = scriptFieldInstance.GetValue<uint16_t>();
             if (ImGui::DragInt(field.Name.c_str(), (int *)&value, 1.0f, 0, 65535))
             {
-                scriptFieldInstance->SetValue<uint16_t>(value);
+                scriptFieldInstance.SetValue<uint16_t>(value);
             }
             break;
         }
         case Engine::ScriptFieldType::Int:
         {
-            int value = 0;
+            int value = scriptFieldInstance.GetValue<int>();
             if (ImGui::DragInt(field.Name.c_str(), &value))
             {
-                scriptFieldInstance->SetValue<int>(value);
+                scriptFieldInstance.SetValue<int>(value);
             }
             break;
         }
         case Engine::ScriptFieldType::UInt:
         {
-            uint32_t value = 0;
+            uint32_t value = scriptFieldInstance.GetValue<uint32_t>();
             if (ImGui::DragInt(field.Name.c_str(), (int *)&value))
             {
-                scriptFieldInstance->SetValue<uint32_t>(value);
+                scriptFieldInstance.SetValue<uint32_t>(value);
             }
             break;
         }
         case Engine::ScriptFieldType::Long:
         {
-            int64_t value = 0;
-            if (ImGui::DragInt(field.Name.c_str(), (int *)&value))
+            int64_t value = scriptFieldInstance.GetValue<int64_t>();
+            if (ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_S64, &value, 1.0f, nullptr, nullptr, "%lld"))
             {
-                scriptFieldInstance->SetValue<int64_t>(value);
+                scriptFieldInstance.SetValue<int64_t>(value);
             }
             break;
         }
         case Engine::ScriptFieldType::ULong:
         {
             uint64_t value = 0;
-            if (ImGui::DragInt(field.Name.c_str(), (int *)&value))
+            if (ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_U64, &value, 1.0f, nullptr, nullptr, "%llu"))
             {
-                scriptFieldInstance->SetValue<uint64_t>(value);
+                scriptFieldInstance.SetValue<uint64_t>(value);
             }
             break;
         }
         case Engine::ScriptFieldType::Vector2:
         {
-            glm::vec2 value(0.0f);
+            glm::vec2 value = scriptFieldInstance.GetValue<glm::vec2>();
             if (ImGui::DragFloat2(field.Name.c_str(), glm::value_ptr(value), 0.1f))
             {
-                scriptFieldInstance->SetValue<glm::vec2>(value);
+                scriptFieldInstance.SetValue<glm::vec2>(value);
             }
             break;
         }
         case Engine::ScriptFieldType::Vector3:
         {
-            glm::vec3 value(0.0f);
+            glm::vec3 value = scriptFieldInstance.GetValue<glm::vec3>();
             if (ImGui::DragFloat3(field.Name.c_str(), glm::value_ptr(value), 0.1f))
             {
-                scriptFieldInstance->SetValue<glm::vec3>(value);
+                scriptFieldInstance.SetValue<glm::vec3>(value);
             }
             break;
         }
         case Engine::ScriptFieldType::Vector4:
         {
-            glm::vec4 value(0.0f);
+            glm::vec4 value = scriptFieldInstance.GetValue<glm::vec4>();
             if (ImGui::DragFloat4(field.Name.c_str(), glm::value_ptr(value), 0.1f))
             {
-                scriptFieldInstance->SetValue<glm::vec4>(value);
+                scriptFieldInstance.SetValue<glm::vec4>(value);
             }
             break;
         }

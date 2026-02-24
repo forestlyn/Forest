@@ -13,6 +13,7 @@ extern "C"
 }
 namespace Engine
 {
+    const size_t MaxScriptFieldBufferSize = 16;
     enum class ScriptFieldType
     {
         None = 0,
@@ -38,6 +39,20 @@ namespace Engine
         std::string Name;
         ScriptFieldType FieldType;
         MonoClassField *MonoField;
+        uint8_t DefaultValue[MaxScriptFieldBufferSize];
+
+        template <typename T>
+        T GetDefaultValue() const
+        {
+            static_assert(sizeof(T) <= MaxScriptFieldBufferSize, "Type too large!");
+            return *(T *)DefaultValue;
+        }
+        template <typename T>
+        void SetDefaultValue(const T &value)
+        {
+            static_assert(sizeof(T) <= MaxScriptFieldBufferSize, "Type too large!");
+            memcpy(DefaultValue, &value, sizeof(T));
+        }
     };
     class ScriptInstance;
     class ScriptClass;
@@ -95,6 +110,7 @@ namespace Engine
 
         std::map<std::string, ScriptField> m_Fields;
     };
+
     struct ScriptFieldInstance
     {
         ScriptField Field;
@@ -107,24 +123,35 @@ namespace Engine
         template <typename T>
         T GetValue() const
         {
-            static_assert(sizeof(T) <= 16, "Type too large!");
+            static_assert(sizeof(T) <= MaxScriptFieldBufferSize, "Type too large!");
             return *(T *)m_Buffer;
         }
 
         template <typename T>
         void SetValue(T value)
         {
-            static_assert(sizeof(T) <= 16, "Type too large!");
+            static_assert(sizeof(T) <= MaxScriptFieldBufferSize, "Type too large!");
             memcpy(m_Buffer, &value, sizeof(T));
         }
 
+        void CopyValueToBuffer(const uint8_t *value, size_t size)
+        {
+            memset(m_Buffer, 0, sizeof(m_Buffer));
+            ENGINE_ASSERT(size <= MaxScriptFieldBufferSize, "Type too large!");
+            // ENGINE_INFO("Copying default value to buffer for field '{}' with size {}", Field.Name, size);
+            // ENGINE_INFO("Default value for field '{}' is {}", Field.Name, *(int32_t *)value);
+            memcpy(m_Buffer, value, size);
+            // ENGINE_INFO("Buffer value for field '{}' is now {}", Field.Name, *(int32_t *)m_Buffer);
+        }
+
     private:
-        uint8_t m_Buffer[16];
+        uint8_t m_Buffer[MaxScriptFieldBufferSize];
 
         friend class ScriptEngine;
         friend class ScriptInstance;
     };
 
+    /// @brief Represents an instance of a script class attached to an entity.
     class ScriptInstance
     {
     public:
@@ -165,7 +192,7 @@ namespace Engine
         MonoMethod *m_OnCreateMethod = nullptr;
         MonoMethod *m_OnUpdateMethod = nullptr;
 
-        inline static char s_FieldValueBuffer[16];
+        inline static char s_FieldValueBuffer[MaxScriptFieldBufferSize];
 
         friend class ScriptEngine;
         friend struct ScriptFieldInstance;

@@ -207,6 +207,8 @@ namespace Engine
                 ENGINE_INFO("\t{} fields found for class {}", fieldCount, fullClassName);
                 void *iter = nullptr;
                 MonoClassField *field = nullptr;
+                MonoObject *currentClassInstance = InitializeClass(m_ScriptEngineData->AppDomain, monoClass);
+                uint8_t defaultValueBuffer[MaxScriptFieldBufferSize];
                 while ((field = mono_class_get_fields(monoClass, &iter)) != nullptr)
                 {
                     std::string fieldName = mono_field_get_name(field);
@@ -219,8 +221,10 @@ namespace Engine
                         scriptField.MonoField = field;
                         MonoType *fieldType = mono_field_get_type(field);
                         scriptField.FieldType = MonoTypeToScriptFieldType(fieldType);
+                        memset(defaultValueBuffer, 0, sizeof(defaultValueBuffer));
+                        GetFieldDefaultValue(currentClassInstance, field, scriptField.FieldType, defaultValueBuffer);
+                        memcpy(scriptField.DefaultValue, defaultValueBuffer, MaxScriptFieldBufferSize);
                         scriptClass->m_Fields[fieldName] = scriptField;
-                        ENGINE_INFO("\t\tPublic field: {}", fieldName);
                     }
                 }
             }

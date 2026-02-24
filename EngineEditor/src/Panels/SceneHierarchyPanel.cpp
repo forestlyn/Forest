@@ -308,163 +308,17 @@ namespace EngineEditor
                         if (scriptFieldMap.find(fieldName) != scriptFieldMap.end())
                         {
                             auto &fieldInstance = scriptFieldMap.at(fieldName);
-                            Engine::Ref<Engine::ScriptFieldInstance> fieldInstanceRef = Engine::CreateRef<Engine::ScriptFieldInstance>(fieldInstance);
-                            UIUtils::DrawScriptField(field, fieldInstanceRef);
+                            UIUtils::DrawScriptField(field, fieldInstance);
                         }
                         else
                         {
                             ImGui::Text("Field '%s' not found in script field map", field.Name.c_str());
                             auto &scriptFieldInstance = scriptFieldMap[fieldName];
                             scriptFieldInstance.Field = field;
-                            switch (field.FieldType)
-                            {
-                            case Engine::ScriptFieldType::Float:
-                            {
-                                float value = 0.0f;
-                                if (ImGui::DragFloat(field.Name.c_str(), &value))
-                                {
-                                    scriptFieldInstance.SetValue<float>(value);
-                                }
-                                break;
-                            }
-                            case Engine::ScriptFieldType::Double:
-                            {
-                                float value = 0.0;
-                                if (ImGui::DragFloat(field.Name.c_str(), &value))
-                                {
-                                    double doubleValue = static_cast<double>(value);
-                                    scriptFieldInstance.SetValue<double>(doubleValue);
-                                }
-                                break;
-                            }
-                            case Engine::ScriptFieldType::Bool:
-                            {
-                                bool value = false;
-                                if (ImGui::Checkbox(field.Name.c_str(), &value))
-                                {
-                                    scriptFieldInstance.SetValue<bool>(value);
-                                }
-                                break;
-                            }
-                            case Engine::ScriptFieldType::Char:
-                            {
-                                char value = '\0';
-                                if (ImGui::InputText(field.Name.c_str(), &value, sizeof(char)))
-                                {
-                                    scriptFieldInstance.SetValue<char>(value);
-                                }
-                                break;
-                            }
-                            case Engine::ScriptFieldType::UByte:
-                            {
-                                uint8_t value = 0;
-                                if (ImGui::DragInt(field.Name.c_str(), (int *)&value, 1.0f, 0, 255))
-                                {
-                                    scriptFieldInstance.SetValue<uint8_t>(value);
-                                }
-                                break;
-                            }
-                            case Engine::ScriptFieldType::Byte:
-                            {
-                                int8_t value = 0;
-                                if (ImGui::DragInt(field.Name.c_str(), (int *)&value, 1.0f, -128, 127))
-                                {
-                                    scriptFieldInstance.SetValue<int8_t>(value);
-                                }
-                                break;
-                            }
-                            case Engine::ScriptFieldType::Short:
-                            {
-                                int16_t value = 0;
-                                if (ImGui::DragInt(field.Name.c_str(), (int *)&value, 1.0f, -32768, 32767))
-                                {
-                                    scriptFieldInstance.SetValue<int16_t>(value);
-                                }
-                                break;
-                            }
-                            case Engine::ScriptFieldType::UShort:
-                            {
-                                uint16_t value = 0;
-                                if (ImGui::DragInt(field.Name.c_str(), (int *)&value, 1.0f, 0, 65535))
-                                {
-                                    scriptFieldInstance.SetValue<uint16_t>(value);
-                                }
-                                break;
-                            }
-                            case Engine::ScriptFieldType::Int:
-                            {
-                                int value = 0;
-                                if (ImGui::DragInt(field.Name.c_str(), &value))
-                                {
-                                    scriptFieldInstance.SetValue<int>(value);
-                                }
-                                break;
-                            }
-                            case Engine::ScriptFieldType::UInt:
-                            {
-                                uint32_t value = 0;
-                                if (ImGui::DragInt(field.Name.c_str(), (int *)&value))
-                                {
-                                    scriptFieldInstance.SetValue<uint32_t>(value);
-                                }
-                                break;
-                            }
-                            case Engine::ScriptFieldType::Long:
-                            {
-                                int64_t value = 0;
-                                if (ImGui::DragInt(field.Name.c_str(), (int *)&value))
-                                {
-                                    scriptFieldInstance.SetValue<int64_t>(value);
-                                }
-                                break;
-                            }
-                            case Engine::ScriptFieldType::ULong:
-                            {
-                                uint64_t value = 0;
-                                if (ImGui::DragInt(field.Name.c_str(), (int *)&value))
-                                {
-                                    scriptFieldInstance.SetValue<uint64_t>(value);
-                                }
-                                break;
-                            }
-                            case Engine::ScriptFieldType::Vector2:
-                            {
-                                glm::vec2 value(0.0f);
-                                if (ImGui::DragFloat2(field.Name.c_str(), glm::value_ptr(value), 0.1f))
-                                {
-                                    scriptFieldInstance.SetValue<glm::vec2>(value);
-                                }
-                                break;
-                            }
-                            case Engine::ScriptFieldType::Vector3:
-                            {
-                                glm::vec3 value(0.0f);
-                                if (ImGui::DragFloat3(field.Name.c_str(), glm::value_ptr(value), 0.1f))
-                                {
-                                    scriptFieldInstance.SetValue<glm::vec3>(value);
-                                }
-                                break;
-                            }
-                            case Engine::ScriptFieldType::Vector4:
-                            {
-                                glm::vec4 value(0.0f);
-                                if (ImGui::DragFloat4(field.Name.c_str(), glm::value_ptr(value), 0.1f))
-                                {
-                                    scriptFieldInstance.SetValue<glm::vec4>(value);
-                                }
-                                break;
-                            }
-                            case Engine::ScriptFieldType::Entity:
-                            {
-                                ImGui::Text("Entity field type not supported in editor");
-                                break;
-                            }
-                            default:
-                            {
-                                ImGui::Text("Unknown field type");
-                                break;
-                            }
-                            }
+                            ENGINE_INFO("Creating new script field instance for field '{}' with size {} value {}", 
+                                field.Name, sizeof(field.DefaultValue), *(int32_t *)field.DefaultValue);
+                            scriptFieldInstance.CopyValueToBuffer(field.DefaultValue, sizeof(field.DefaultValue));
+                            UIUtils::DrawScriptField(field, scriptFieldInstance);
                         }
                         if (!exists)
                         {

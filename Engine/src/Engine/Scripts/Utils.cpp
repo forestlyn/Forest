@@ -65,6 +65,127 @@ namespace Engine
         return it->second;
     }
 
+    void GetFieldDefaultValue(MonoObject *instance, MonoClassField *field, ScriptFieldType fieldType, uint8_t *outBuffer)
+    {
+        switch (fieldType)
+        {
+        case ScriptFieldType::Float:
+        {
+            float value = 0.0f;
+            mono_field_get_value(instance, field, &value);
+            memcpy(outBuffer, &value, sizeof(float));
+            ENGINE_INFO("Default value for field '{}' is {}", mono_field_get_name(field), value);
+            break;
+        }
+        case ScriptFieldType::Double:
+        {
+            double value = 0.0;
+            mono_field_get_value(instance, field, &value);
+            memcpy(outBuffer, &value, sizeof(double));
+            // ENGINE_INFO("Default value for field '{}' is {}", mono_field_get_name(field), value);
+            break;
+        }
+        case ScriptFieldType::Bool:
+        {
+            bool value = false;
+            mono_field_get_value(instance, field, &value);
+            memcpy(outBuffer, &value, sizeof(bool));
+            break;
+        }
+        case ScriptFieldType::Char:
+        {
+            char value = '\0';
+            mono_field_get_value(instance, field, &value);
+            memcpy(outBuffer, &value, sizeof(char));
+            break;
+        }
+        case ScriptFieldType::Byte:
+        {
+            uint8_t value = 0;
+            mono_field_get_value(instance, field, &value);
+            memcpy(outBuffer, &value, sizeof(uint8_t));
+            break;
+        }
+        case ScriptFieldType::Short:
+        {
+            int16_t value = 0;
+            mono_field_get_value(instance, field, &value);
+            memcpy(outBuffer, &value, sizeof(int16_t));
+            break;
+        }
+        case ScriptFieldType::UShort:
+        {
+            uint16_t value = 0;
+            mono_field_get_value(instance, field, &value);
+            memcpy(outBuffer, &value, sizeof(uint16_t));
+            break;
+        }
+        case ScriptFieldType::Int:
+        {
+            int32_t value = 0;
+            mono_field_get_value(instance, field, &value);
+            memcpy(outBuffer, &value, sizeof(int32_t));
+            ENGINE_INFO("Default value for field '{}' is {}", mono_field_get_name(field), value);
+            ENGINE_INFO("Default value for field '{}' is {}", mono_field_get_name(field), *(int32_t *)outBuffer);
+            break;
+        }
+        case ScriptFieldType::UInt:
+        {
+            uint32_t value = 0;
+            mono_field_get_value(instance, field, &value);
+            memcpy(outBuffer, &value, sizeof(uint32_t));
+            break;
+        }
+        case ScriptFieldType::Long:
+        {
+            int64_t value = 0;
+            mono_field_get_value(instance, field, &value);
+            memcpy(outBuffer, &value, sizeof(int64_t));
+            break;
+        }
+        case ScriptFieldType::ULong:
+        {
+            uint64_t value = 0;
+            mono_field_get_value(instance, field, &value);
+            memcpy(outBuffer, &value, sizeof(uint64_t));
+            break;
+        }
+        case ScriptFieldType::Vector2:
+        {
+            glm::vec2 value(0.0f);
+            mono_field_get_value(instance, field, &value);
+            memcpy(outBuffer, &value, sizeof(glm::vec2));
+            break;
+        }
+        case ScriptFieldType::Vector3:
+        {
+            glm::vec3 value(0.0f);
+            mono_field_get_value(instance, field, &value);
+            memcpy(outBuffer, &value, sizeof(glm::vec3));
+            break;
+        }
+        case ScriptFieldType::Vector4:
+        {
+            glm::vec4 value(0.0f);
+            mono_field_get_value(instance, field, &value);
+            memcpy(outBuffer, &value, sizeof(glm::vec4));
+            break;
+        }
+        case ScriptFieldType::Entity:
+        {
+            uint64_t entityID = 0;
+            mono_field_get_value(instance, field, &entityID);
+            memcpy(outBuffer, &entityID, sizeof(uint64_t));
+            break;
+        }
+        default:
+        {
+            ENGINE_ERROR("Unsupported field type!");
+            break;
+        }
+        }
+    }
+
     const char *ScriptFieldTypeToString(ScriptFieldType type)
     {
         switch (type)
@@ -342,5 +463,4 @@ namespace Engine
         mono_free(utf8);
         return result;
     }
-
 }

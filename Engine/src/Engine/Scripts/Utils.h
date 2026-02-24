@@ -30,4 +30,5 @@ namespace Engine
 
     const char *ScriptFieldTypeToString(ScriptFieldType type);
     ScriptFieldType MonoTypeToScriptFieldType(MonoType *type);
+    void GetFieldDefaultValue(MonoObject *instance, MonoClassField *field, ScriptFieldType fieldType, uint8_t *outBuffer);
 }

@@ -36,7 +36,7 @@ namespace EngineEditor
             DrawAddComponents<T...>(entity);
         }
 
-        static void DrawScriptField(const Engine::ScriptField &field, Engine::Ref<Engine::ScriptFieldInstance> scriptFieldInstance);
+        static void DrawScriptField(const Engine::ScriptField &field, Engine::ScriptFieldInstance &scriptFieldInstance);
         static void DrawScriptInstance(const Engine::ScriptField &field, Engine::Ref<Engine::ScriptInstance> scriptInstance);
     };
 }
