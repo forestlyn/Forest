@@ -23,7 +23,7 @@ namespace EngineEditor
         {
             if (ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered())
             {
-                m_SelectionEntity = {};
+                SetSelectedEntity({});
             }
 
             if (ImGui::BeginPopupContextWindow("HierarchyContextMenu", ImGuiPopupFlags_MouseButtonRight))
@@ -70,7 +70,7 @@ namespace EngineEditor
         bool opened = ImGui::TreeNodeEx((void *)(uint64_t)(uint32_t)(entt::entity)entity, flags, tag.c_str());
         if (ImGui::IsItemClicked())
         {
-            m_SelectionEntity = entity;
+            SetSelectedEntity(entity);
         }
 
         if (ImGui::BeginPopupContextItem())
@@ -80,7 +80,7 @@ namespace EngineEditor
                 entity.GetComponent<Engine::TagComponent>().SetRemove(true);
                 if (m_SelectionEntity == entity)
                 {
-                    m_SelectionEntity = {};
+                    SetSelectedEntity({});
                 }
             }
             ImGui::EndPopup();
