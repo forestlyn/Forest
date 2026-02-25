@@ -28,7 +28,8 @@ namespace Engine
     uint8_t GetPropertyAccessibility(MonoProperty *property);
     void CheckException(MonoObject *exception);
 
+    uint64_t GetEntityIDFromEntityField(MonoObject *instance, MonoClassField *field);
     const char *ScriptFieldTypeToString(ScriptFieldType type);
-    ScriptFieldType MonoTypeToScriptFieldType(MonoType *type);
+    ScriptFieldType MonoTypeToScriptFieldType(MonoType *type, MonoClass *entityClass);
     void GetFieldDefaultValue(MonoObject *instance, MonoClassField *field, ScriptFieldType fieldType, uint8_t *outBuffer);
 }

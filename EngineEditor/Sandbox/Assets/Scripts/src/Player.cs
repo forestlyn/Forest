@@ -15,6 +15,8 @@ namespace Sandbox
         public bool IsActive;
         public Vector3 Vector3Value;
         public Vector2 Vector2Value;
+        public Entity playerEntity;
+        public Player playerEntity2;
 
         public string Name { get; set; }
 
@@ -22,6 +24,8 @@ namespace Sandbox
 
         public override void OnCreate()
         {
+            playerEntity = this;
+            playerEntity2 = playerEntity.As<Player>();
             Score = 0;
             Name = "Player_" + ID;
             Log.NativeLog($"Player {Name} created with initial score {Score}");

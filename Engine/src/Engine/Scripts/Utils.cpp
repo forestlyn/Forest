@@ -3,6 +3,7 @@
 #include "Engine/Core/Log.h"
 #include <fstream>
 #include "ScriptEngine.h"
+#include <mono/jit/jit.h>
 namespace Engine
 {
     static std::unordered_map<std::string, ScriptFieldType> s_ScriptFieldTypeMap = {
@@ -51,18 +52,59 @@ namespace Engine
         return buffer;
     }
 
-    ScriptFieldType MonoTypeToScriptFieldType(MonoType *monoType)
+    bool IsSubtypeOfEntity(MonoType *monoType, MonoClass *entityClass)
+    {
+        MonoClass *monoClass = mono_class_from_mono_type(monoType);
+        if (!monoClass)
+        {
+            ENGINE_ERROR("Failed to get MonoClass from MonoType");
+            return false;
+        }
+        return mono_class_is_subclass_of(monoClass, entityClass, false);
+    }
+
+    ScriptFieldType MonoTypeToScriptFieldType(MonoType *monoType, MonoClass *entityClass)
     {
         std::string typeName = mono_type_get_name(monoType);
 
         auto it = s_ScriptFieldTypeMap.find(typeName);
         if (it == s_ScriptFieldTypeMap.end())
         {
+            if (IsSubtypeOfEntity(monoType, entityClass))
+                return ScriptFieldType::Entity;
             ENGINE_ERROR("Unknown type: {}", typeName);
             return ScriptFieldType::None;
         }
 
         return it->second;
+    }
+
+    uint64_t GetEntityIDFromEntityField(MonoObject *instance, MonoClassField *field)
+    {
+        uint64_t entityID = 0;
+        if (field)
+        {
+            if (instance)
+            {
+                // 首先获取字段的值（可能是一个 Entity 对象）
+                MonoObject *fieldValue = nullptr;
+                mono_field_get_value(instance, field, &fieldValue);
+
+                if (fieldValue)
+                {
+                    // 从 Entity 对象中获取 ID 字段
+                    MonoClass *entityClass = mono_object_get_class(fieldValue);
+                    MonoClassField *idField = mono_class_get_field_from_name(entityClass, "ID");
+
+                    if (idField)
+                    {
+                        // 读取 ID 字段的值
+                        mono_field_get_value(fieldValue, idField, &entityID);
+                    }
+                }
+            }
+        }
+        return entityID;
     }
 
     void GetFieldDefaultValue(MonoObject *instance, MonoClassField *field, ScriptFieldType fieldType, uint8_t *outBuffer)
@@ -173,8 +215,7 @@ namespace Engine
         }
         case ScriptFieldType::Entity:
         {
-            uint64_t entityID = 0;
-            mono_field_get_value(instance, field, &entityID);
+            uint64_t entityID = GetEntityIDFromEntityField(instance, field);
             memcpy(outBuffer, &entityID, sizeof(uint64_t));
             break;
         }

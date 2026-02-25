@@ -8,6 +8,7 @@
 #include "Engine/Scene/Component.h"
 #include "ScriptGlue/Log.h"
 #include "ScriptGlue/Input.h"
+#include "ScriptGlue/Entity.h"
 #include "ScriptGlue/Components/Component.h"
 #include "ScriptGlue/Components/TransformComponent.h"
 #include "ScriptGlue/Components/Rigidbody2DComponent.h"
@@ -43,5 +44,8 @@ namespace Engine
 
         ADD_ENGINE_INTERNAL_CALL(Rigidbody2DComponentInternalCalls, ApplyLinearImpulse);
         ADD_ENGINE_INTERNAL_CALL(Rigidbody2DComponentInternalCalls, ApplyLinearImpulseToCenter);
+
+        ADD_ENGINE_INTERNAL_CALL(EntityInternalCalls, FindEntityByName);
+        ADD_ENGINE_INTERNAL_CALL(EntityInternalCalls, GetScriptInstance);
     }
 }

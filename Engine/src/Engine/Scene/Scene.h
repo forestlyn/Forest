@@ -27,6 +27,7 @@ namespace Engine
         Entity CreateEntityWithID(UUID uuid);
         entt::registry &GetRegistry() { return m_Registry; }
 
+        Entity FindEntityByName(std::string_view name);
         Entity GetEntityByUUID(UUID uuid);
 
         void SetViewportSize(uint32_t width, uint32_t height);

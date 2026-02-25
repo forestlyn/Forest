@@ -97,6 +97,13 @@ namespace Engine
         }
         return it->second;
     }
+    MonoObject *ScriptEngine::GetManagedInstance(UUID entityID)
+    {
+        auto it = m_ScriptEngineData->EntityInstances.find(entityID);
+        if (it == m_ScriptEngineData->EntityInstances.end())
+            return nullptr;
+        return it->second->GetManagedObject();
+    }
     void ScriptEngine::OnCreateEntity(Entity entity)
     {
         std::string scriptClassName = entity.GetComponent<ScriptComponent>().ScriptClassName;
@@ -220,7 +227,7 @@ namespace Engine
                         scriptField.Name = fieldName;
                         scriptField.MonoField = field;
                         MonoType *fieldType = mono_field_get_type(field);
-                        scriptField.FieldType = MonoTypeToScriptFieldType(fieldType);
+                        scriptField.FieldType = MonoTypeToScriptFieldType(fieldType, m_ScriptEngineData->EntityClass->GetMonoClass());
                         memset(defaultValueBuffer, 0, sizeof(defaultValueBuffer));
                         GetFieldDefaultValue(currentClassInstance, field, scriptField.FieldType, defaultValueBuffer);
                         memcpy(scriptField.DefaultValue, defaultValueBuffer, MaxScriptFieldBufferSize);
@@ -305,6 +312,12 @@ namespace Engine
         if (it == fields.end())
             return false;
 
+        if (it->second.IsEntity())
+        {
+            uint64_t entityID = GetEntityIDFromEntityField(m_Instance, it->second.MonoField);
+            memcpy(value, &entityID, sizeof(uint64_t));
+            return true;
+        }
         const ScriptField &scriptField = it->second;
         mono_field_get_value(m_Instance, scriptField.MonoField, value);
         return true;

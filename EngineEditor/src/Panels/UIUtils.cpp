@@ -3,6 +3,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <functional>
 #include "Engine/Scene/Component.h"
+#include "Engine/Core/UUID.h"
 namespace EngineEditor
 {
     bool UIUtils::DrawVector3Control(const std::string &label, glm::vec3 &values, float resetValue, float columnWidth)
@@ -225,7 +226,8 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::Entity:
         {
-            ImGui::Text("Entity field type not supported in editor");
+            Engine::UUID value = scriptInstance->GetFieldValue<Engine::UUID>(field.Name);
+            ImGui::Text("Entity:%s", std::to_string((uint64_t)value).c_str());
             break;
         }
         default:
@@ -383,7 +385,8 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::Entity:
         {
-            ImGui::Text("Entity field type not supported in editor");
+            Engine::UUID value = scriptFieldInstance.GetValue<Engine::UUID>();
+            ImGui::Text("Entity:%s", std::to_string((uint64_t)value).c_str());
             break;
         }
         default:

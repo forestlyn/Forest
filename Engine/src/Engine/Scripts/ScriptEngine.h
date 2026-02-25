@@ -53,6 +53,11 @@ namespace Engine
             static_assert(sizeof(T) <= MaxScriptFieldBufferSize, "Type too large!");
             memcpy(DefaultValue, &value, sizeof(T));
         }
+
+        bool IsEntity() const
+        {
+            return FieldType == ScriptFieldType::Entity;
+        }
     };
     class ScriptInstance;
     class ScriptClass;
@@ -70,6 +75,8 @@ namespace Engine
         static Ref<ScriptInstance> GetEntityScriptInstance(UUID entityID);
         static Ref<ScriptClass> GetEntityClass(std::string className);
         static ScriptFieldMap &GetScriptFieldMap(UUID entityID);
+
+        static MonoObject *GetManagedInstance(UUID entityID);
 
         static void OnRuntimeStart(Scene *scene);
         static void OnCreateEntity(Entity entity);
@@ -179,6 +186,8 @@ namespace Engine
         {
             SetFieldValueInternal(fieldName, &value);
         }
+
+        MonoObject *GetManagedObject() const { return m_Instance; }
 
     private:
         bool GetFieldValueInternal(const std::string &fieldName, void *value);
