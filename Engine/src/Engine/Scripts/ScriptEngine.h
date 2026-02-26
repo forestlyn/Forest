@@ -71,6 +71,7 @@ namespace Engine
 
         static Scene *GetSceneContext();
         static MonoImage *GetCoreAssemblyImage();
+        static void ReloadAssembly();
 
         static Ref<ScriptInstance> GetEntityScriptInstance(UUID entityID);
         static Ref<ScriptClass> GetEntityClass(std::string className);
@@ -89,7 +90,9 @@ namespace Engine
         static void InitMono();
         static void ShutdownMono();
 
+        static void CreateDomainAndLoadAssembly();
         static void LoadAssemblyClasses(MonoAssembly *assembly);
+        static void LoadAllAssemblyClasses();
     };
 
     class ScriptClass

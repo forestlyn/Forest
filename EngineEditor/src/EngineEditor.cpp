@@ -10,7 +10,7 @@
 #include "Engine/Profile/Instrumentor.h"
 #include "Engine/Serialization/SceneSerialize.h"
 #include "Engine/Utils/FilePlatformUtils.h"
-
+#include "Engine/Scripts/ScriptEngine.h"
 namespace EngineEditor
 {
 
@@ -145,6 +145,10 @@ namespace EngineEditor
                 if (ImGui::MenuItem("Save Scene Ctrl+Shift+S"))
                 {
                     SaveSceneAs();
+                }
+                if (ImGui::MenuItem("Reload Assembly Ctrl+R"))
+                {
+                    Engine::ScriptEngine::ReloadAssembly();
                 }
                 ImGui::EndMenu();
             }
@@ -289,6 +293,14 @@ namespace EngineEditor
                 DuplicateEntity(m_SceneHierarchyPanel.GetSelectedEntity());
                 return true;
             }
+        case FOREST_KEY_R:
+        {
+            if (isCtrlPressed)
+            {
+                ENGINE_INFO("ReloadAssembly");
+                Engine::ScriptEngine::ReloadAssembly();
+            }
+        }
         }
         return false;
     }

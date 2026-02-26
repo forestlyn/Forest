@@ -5,6 +5,7 @@
 #include <mono/metadata/object.h>
 #include <mono/metadata/attrdefs.h>
 #include <mono/metadata/metadata.h>
+#include <filesystem>
 namespace Engine
 {
     enum class ScriptFieldType;
@@ -17,8 +18,8 @@ namespace Engine
         Public = (1 << 3)
     };
 
-    char *ReadBytes(const std::string &filepath, uint32_t *outSize);
-    MonoAssembly *LoadCSharpAssembly(const std::string &assemblyPath);
+    char *ReadBytes(const std::filesystem::path &filepath, uint32_t *outSize);
+    MonoAssembly *LoadCSharpAssembly(const std::filesystem::path &assemblyPath);
     void PrintAssemblyTypes(MonoAssembly *assembly);
 
     MonoClass *GetClassFromAssembly(MonoAssembly *assembly, const std::string &namespaceName, const std::string &className);

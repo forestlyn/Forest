@@ -24,7 +24,7 @@ namespace Engine
         {"Engine.Vector4", ScriptFieldType::Vector4},
         {"Engine.Entity", ScriptFieldType::Entity}};
 
-    char *ReadBytes(const std::string &filepath, uint32_t *outSize)
+    char *ReadBytes(const std::filesystem::path &filepath, uint32_t *outSize)
     {
         std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
 
@@ -267,7 +267,7 @@ namespace Engine
         return "<Invalid>";
     }
 
-    MonoAssembly *LoadCSharpAssembly(const std::string &assemblyPath)
+    MonoAssembly *LoadCSharpAssembly(const std::filesystem::path &assemblyPath)
     {
         uint32_t fileSize = 0;
         char *fileData = ReadBytes(assemblyPath, &fileSize);
@@ -284,7 +284,9 @@ namespace Engine
             return nullptr;
         }
 
-        MonoAssembly *assembly = mono_assembly_load_from_full(image, assemblyPath.c_str(), &status, 0);
+        const std::string strpath = assemblyPath.string();
+        const char *path = strpath.c_str();
+        MonoAssembly *assembly = mono_assembly_load_from_full(image, path, &status, 0);
         mono_image_close(image);
 
         // Don't forget to free the file data

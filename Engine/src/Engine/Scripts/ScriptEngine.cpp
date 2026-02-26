@@ -9,6 +9,7 @@
 #include <mono/metadata/object.h>
 #include <mono/metadata/attrdefs.h>
 #include <fstream>
+#include <filesystem>
 namespace Engine
 {
 
@@ -19,9 +20,11 @@ namespace Engine
 
         MonoAssembly *CoreAssembly = nullptr;
         MonoImage *CoreAssemblyImage = nullptr;
+        std::filesystem::path CoreAssemblyPath;
 
         MonoAssembly *AppAssembly = nullptr;
         MonoImage *AppAssemblyImage = nullptr;
+        std::filesystem::path AppAssemblyPath;
 
         std::unordered_map<std::string, Ref<ScriptClass>> EntityClasses;
         std::unordered_map<UUID, Ref<ScriptInstance>> EntityInstances;
@@ -38,7 +41,11 @@ namespace Engine
     {
         m_ScriptEngineData = new ScriptEngineData();
 
+        m_ScriptEngineData->CoreAssemblyPath = "scripts/bin/Engine-ScriptCore.dll";
+        m_ScriptEngineData->AppAssemblyPath = "scripts/bin/Sandbox.dll";
+
         InitMono();
+        CreateDomainAndLoadAssembly();
 
         ScriptGlue::RegisterFuncs();
         ScriptGlue::RegisterComponents();
@@ -46,8 +53,7 @@ namespace Engine
         m_ScriptEngineData->EntityClass = new ScriptClass("Engine", "Entity", true);
         ENGINE_ASSERT(m_ScriptEngineData->EntityClass);
 
-        LoadAssemblyClasses(m_ScriptEngineData->CoreAssembly);
-        LoadAssemblyClasses(m_ScriptEngineData->AppAssembly);
+        LoadAllAssemblyClasses();
     }
 
     void ScriptEngine::Shutdown()
@@ -64,6 +70,22 @@ namespace Engine
     MonoImage *ScriptEngine::GetCoreAssemblyImage()
     {
         return m_ScriptEngineData->CoreAssemblyImage;
+    }
+
+    void ScriptEngine::ReloadAssembly()
+    {
+        mono_domain_set(mono_get_root_domain(), false);
+
+        mono_domain_unload(m_ScriptEngineData->AppDomain);
+
+        CreateDomainAndLoadAssembly();
+
+        m_ScriptEngineData->EntityClass = new ScriptClass("Engine", "Entity", true);
+        ENGINE_ASSERT(m_ScriptEngineData->EntityClass);
+
+        LoadAllAssemblyClasses();
+
+        ScriptGlue::RegisterComponents();
     }
 
     void ScriptEngine::OnRuntimeStart(Scene *scene)
@@ -125,7 +147,7 @@ namespace Engine
         }
         else
         {
-            ENGINE_WARN("Script class '{}' not found for entity '{}'", scriptClassName, entity.GetName());
+            ENGINE_ERROR("Script class '{}' not found for entity '{}'", scriptClassName, entity.GetName());
         }
     }
 
@@ -154,21 +176,6 @@ namespace Engine
         MonoDomain *rootDomain = mono_jit_init("EngineJITRuntime");
         ENGINE_ASSERT(rootDomain);
         m_ScriptEngineData->RootDomain = rootDomain;
-
-        char domainName[] = "EngineScriptRuntime";
-        MonoDomain *appDomain = mono_domain_create_appdomain(domainName, nullptr);
-        ENGINE_ASSERT(appDomain);
-        mono_domain_set(appDomain, true);
-        m_ScriptEngineData->AppDomain = appDomain;
-
-        m_ScriptEngineData->CoreAssembly = LoadCSharpAssembly("scripts/bin/Engine-ScriptCore.dll");
-        m_ScriptEngineData->CoreAssemblyImage = mono_assembly_get_image(m_ScriptEngineData->CoreAssembly);
-        ENGINE_ASSERT(m_ScriptEngineData->CoreAssemblyImage);
-        PrintAssemblyTypes(m_ScriptEngineData->CoreAssembly);
-
-        m_ScriptEngineData->AppAssembly = LoadCSharpAssembly("scripts/bin/Sandbox.dll");
-        m_ScriptEngineData->AppAssemblyImage = mono_assembly_get_image(m_ScriptEngineData->AppAssembly);
-        ENGINE_ASSERT(m_ScriptEngineData->AppAssemblyImage);
     }
 
     void ScriptEngine::ShutdownMono()
@@ -176,6 +183,26 @@ namespace Engine
         mono_assemblies_cleanup();
         mono_domain_unload(m_ScriptEngineData->AppDomain);
         mono_domain_unload(m_ScriptEngineData->RootDomain);
+        m_ScriptEngineData->AppDomain = nullptr;
+        m_ScriptEngineData->RootDomain = nullptr;
+    }
+
+    void ScriptEngine::CreateDomainAndLoadAssembly()
+    {
+        char domainName[] = "EngineScriptRuntime";
+        MonoDomain *appDomain = mono_domain_create_appdomain(domainName, nullptr);
+        ENGINE_ASSERT(appDomain);
+        mono_domain_set(appDomain, true);
+        m_ScriptEngineData->AppDomain = appDomain;
+
+        m_ScriptEngineData->CoreAssembly = LoadCSharpAssembly(m_ScriptEngineData->CoreAssemblyPath);
+        m_ScriptEngineData->CoreAssemblyImage = mono_assembly_get_image(m_ScriptEngineData->CoreAssembly);
+        ENGINE_ASSERT(m_ScriptEngineData->CoreAssemblyImage);
+        PrintAssemblyTypes(m_ScriptEngineData->CoreAssembly);
+
+        m_ScriptEngineData->AppAssembly = LoadCSharpAssembly(m_ScriptEngineData->AppAssemblyPath);
+        m_ScriptEngineData->AppAssemblyImage = mono_assembly_get_image(m_ScriptEngineData->AppAssembly);
+        ENGINE_ASSERT(m_ScriptEngineData->AppAssemblyImage);
     }
 
     void ScriptEngine::LoadAssemblyClasses(MonoAssembly *assembly)
@@ -198,13 +225,20 @@ namespace Engine
                 fullClassName = std::string(nameSpace) + "." + std::string(name);
 
             MonoClass *monoClass = mono_class_from_name(image, nameSpace, name);
+            ENGINE_INFO("fullClassName:{}", fullClassName);
             if (!monoClass)
+            {
                 continue;
+            }
             if (fullClassName == "Engine.Entity")
                 continue;
             if (mono_class_is_subclass_of(monoClass, m_ScriptEngineData->EntityClass->GetMonoClass(), false) == false)
                 continue;
             Ref<ScriptClass> scriptClass = CreateRef<ScriptClass>(nameSpace, name);
+            if (m_ScriptEngineData->EntityClasses.contains(fullClassName))
+            {
+                ENGINE_WARN("Already Loaded script class: {}", fullClassName);
+            }
             m_ScriptEngineData->EntityClasses[fullClassName] = scriptClass;
             ENGINE_INFO("Loaded script class: {}", fullClassName);
 
@@ -236,6 +270,12 @@ namespace Engine
                 }
             }
         }
+    }
+    void ScriptEngine::LoadAllAssemblyClasses()
+    {
+        m_ScriptEngineData->EntityClasses.clear();
+        LoadAssemblyClasses(m_ScriptEngineData->CoreAssembly);
+        LoadAssemblyClasses(m_ScriptEngineData->AppAssembly);
     }
 #pragma endregion
 
