@@ -67,6 +67,9 @@ namespace Engine::Core
 				Timestep time = glfwGetTime(); // Get time in seconds
 				float deltaTime = time - m_LastFrameTime;
 				m_LastFrameTime = time;
+
+				ExecuteMainThreadQueue();
+
 				if (!m_Minimized)
 				{
 					ENGINE_PROFILING_SCOPE("LayerStack OnUpdate");
@@ -146,6 +149,16 @@ namespace Engine::Core
 		return false;
 	}
 
+	void Application::ExecuteMainThreadQueue()
+	{
+		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
+		for (auto func : m_MainThreadQueue)
+		{
+			func();
+		}
+		m_MainThreadQueue.clear();
+	}
+
 	void Application::PushLayer(Layer *layer)
 	{
 		ENGINE_PROFILING_FUNC();
@@ -158,5 +171,10 @@ namespace Engine::Core
 		ENGINE_PROFILING_FUNC();
 		m_LayerStack.PushOverlay(overlay);
 		overlay->OnAttach();
+	}
+	void Application::SubmitToMainThread(const std::function<void()> func)
+	{
+		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
+		m_MainThreadQueue.emplace_back(func);
 	}
 }

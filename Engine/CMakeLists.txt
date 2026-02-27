@@ -13,6 +13,7 @@ file(GLOB_RECURSE ENGINE_HEADERS
 )
 list(APPEND ENGINE_HEADERS "ThirdParty/stb_image/stb_image.h")
 list(APPEND ENGINE_HEADERS "ThirdParty/ImGuizmo/ImGuizmo.h")
+list(APPEND ENGINE_HEADERS "ThirdParty/filewatch/FileWatch.hpp")
 
 add_subdirectory("ThirdParty/glfw")
 add_subdirectory("ThirdParty/glad")
@@ -83,6 +84,7 @@ target_include_directories(Engine
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/glad/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/stb_image>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/ImGuizmo>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/filewatch>
         $<BUILD_INTERFACE:${SHADERC_INCLUDE_DIR}>
 )
 

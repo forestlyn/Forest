@@ -13,8 +13,6 @@ namespace Sandbox
         public int IntValue;
         public double DoubleValue;
         public bool IsActive;
-        public Vector3 Vector3Value;
-        public Vector2 Vector2Value;
         public Entity playerEntity;
         public Player playerEntity2;
 

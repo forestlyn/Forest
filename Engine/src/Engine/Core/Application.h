@@ -50,9 +50,20 @@ namespace Engine::Core
 		int GetWindowHeight() const { return m_Window->GetHeight(); }
 		void *GetNativeWindow() const { return m_Window->GetNativeWindow(); }
 
-		Engine::MyImGui::ImGuiLayer &GetImGuiLayer() { return *m_ImGuiLayer; }
+		void SubmitToMainThread(const std::function<void()> func);
+
+		Engine::MyImGui::ImGuiLayer &GetImGuiLayer()
+		{
+			return *m_ImGuiLayer;
+		}
 
 		const ApplicationSpecification &GetSpecification() const { return m_Specification; }
+
+	private:
+		bool OnEvent(Event::Event &e);
+		bool OnWindowClose(Event::WindowCloseEvent &e);
+		bool OnWindowResize(Event::WindowResizeEvent &e);
+		void ExecuteMainThreadQueue();
 
 	private:
 		bool m_Running = true;
@@ -63,12 +74,11 @@ namespace Engine::Core
 		Scope<Window> m_Window;
 		Engine::MyImGui::ImGuiLayer *m_ImGuiLayer;
 
-		bool OnEvent(Event::Event &e);
-		bool OnWindowClose(Event::WindowCloseEvent &e);
-		bool OnWindowResize(Event::WindowResizeEvent &e);
-
 		LayerStack m_LayerStack;
 		static Application *s_Instance;
+
+		std::vector<std::function<void()>> m_MainThreadQueue;
+		std::mutex m_MainThreadQueueMutex;
 
 #if defined(FOREST_ENABLE_PROFILING)
 		Engine::Profile::ProfileLayer *m_ProfileLayer;

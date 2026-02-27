@@ -22,3 +22,6 @@
 [submodule "Engine/ThirdParty/mono"]
 	path = Engine/ThirdParty/mono
 	url = git@github.com:forestlyn/mono.git
+[submodule "Engine/ThirdParty/filewatch"]
+	path = Engine/ThirdParty/filewatch
+	url = https://github.com/ThomasMonkman/filewatch.git

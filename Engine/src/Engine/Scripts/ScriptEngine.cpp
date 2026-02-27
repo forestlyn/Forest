@@ -10,9 +10,9 @@
 #include <mono/metadata/attrdefs.h>
 #include <fstream>
 #include <filesystem>
+#include <FileWatch.hpp>
 namespace Engine
 {
-
     struct ScriptEngineData
     {
         MonoDomain *RootDomain = nullptr;
@@ -26,6 +26,9 @@ namespace Engine
         MonoImage *AppAssemblyImage = nullptr;
         std::filesystem::path AppAssemblyPath;
 
+        Scope<filewatch::FileWatch<std::string>> AppAssemblyFileWatcher;
+        bool IsReloadingAssembly = false;
+
         std::unordered_map<std::string, Ref<ScriptClass>> EntityClasses;
         std::unordered_map<UUID, Ref<ScriptInstance>> EntityInstances;
         std::unordered_map<UUID, ScriptFieldMap> EntityFieldMaps;
@@ -37,6 +40,20 @@ namespace Engine
     static ScriptEngineData *m_ScriptEngineData = nullptr;
 
 #pragma region ScriptEngine Implementation
+
+    void OnAppAssemblyFileSystemEvent(const std::string &path, const filewatch::Event event)
+    {
+        if (!m_ScriptEngineData->IsReloadingAssembly && event == filewatch::Event::modified)
+        {
+            m_ScriptEngineData->IsReloadingAssembly = true;
+
+            Core::Application::Get().SubmitToMainThread([]()
+                                                        {
+				m_ScriptEngineData->AppAssemblyFileWatcher.reset();
+				ScriptEngine::ReloadAssembly(); });
+        }
+    }
+
     void ScriptEngine::Init()
     {
         m_ScriptEngineData = new ScriptEngineData();
@@ -74,6 +91,7 @@ namespace Engine
 
     void ScriptEngine::ReloadAssembly()
     {
+        ENGINE_INFO("ReloadAssembly");
         mono_domain_set(mono_get_root_domain(), false);
 
         mono_domain_unload(m_ScriptEngineData->AppDomain);
@@ -276,6 +294,10 @@ namespace Engine
         m_ScriptEngineData->EntityClasses.clear();
         LoadAssemblyClasses(m_ScriptEngineData->CoreAssembly);
         LoadAssemblyClasses(m_ScriptEngineData->AppAssembly);
+
+        m_ScriptEngineData->AppAssemblyFileWatcher = CreateScope<filewatch::FileWatch<std::string>>(
+            m_ScriptEngineData->AppAssemblyPath.string(), OnAppAssemblyFileSystemEvent);
+        m_ScriptEngineData->IsReloadingAssembly = false;
     }
 #pragma endregion
 
