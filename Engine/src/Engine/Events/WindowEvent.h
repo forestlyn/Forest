@@ -33,4 +33,29 @@ namespace Engine::Event
     private:
         int m_Width, m_Height;
     };
+
+    class WindowFocusEvent : public Event
+    {
+    public:
+        WindowFocusEvent() {}
+        std::string ToString() const override
+        {
+            return std::string(GetName()) + ": Focused";
+        }
+        EVENT_CLASS_TYPE(WindowFocus)
+        EVENT_CLASS_CATEGORY(EventCategoryApplication)
+    };
+
+    class WindowLostFocusEvent : public Event
+    {
+    public:
+        WindowLostFocusEvent() {}
+        std::string ToString() const override
+        {
+            return std::string(GetName()) + ": Lost Focus";
+        }
+
+        EVENT_CLASS_TYPE(WindowLostFocus)
+        EVENT_CLASS_CATEGORY(EventCategoryApplication)
+    };
 }

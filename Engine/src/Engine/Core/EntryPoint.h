@@ -18,6 +18,7 @@ int main(int argc, char **argv)
 	{
 		ENGINE_PROFILING_BEGIN("Application::", "start.json");
 		app = Engine::Core::CreateApplication(args);
+		app->Init();
 		ENGINE_PROFILING_END();
 	}
 	{

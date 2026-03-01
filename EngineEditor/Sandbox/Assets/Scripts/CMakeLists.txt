@@ -1,6 +1,6 @@
 project(Sandbox CSharp)
 
-file(GLOB_RECURSE SOURCE_FILES "src/*.cs")
+file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS "src/*.cs")
 
 add_library(Sandbox SHARED ${SOURCE_FILES})
 

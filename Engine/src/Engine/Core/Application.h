@@ -29,6 +29,7 @@ namespace Engine::Core
 		bool VSync = true;
 		std::string WorkingDirectory = "";
 		std::string MonoAssemblyPath = "";
+		std::string AppScriptPath = "";
 		ApplicationCommandLineArgs CommandLineArgs;
 	};
 	class Application
@@ -37,6 +38,7 @@ namespace Engine::Core
 		Application(const ApplicationSpecification &spec = ApplicationSpecification());
 		virtual ~Application();
 
+		virtual void Init();
 		void Run();
 		void Shutdown();
 
@@ -50,7 +52,11 @@ namespace Engine::Core
 		int GetWindowHeight() const { return m_Window->GetHeight(); }
 		void *GetNativeWindow() const { return m_Window->GetNativeWindow(); }
 
-		void SubmitToMainThread(const std::function<void()> func);
+		///// @brief Submits a function to be executed on the main thread.
+		//// If isFront is false, the function will be executed immediately.
+		//// If isFront is true, the function will be executed when the app is not in minimized or backend state.
+		///// @param func The function to execute on the main thread.
+		void SubmitToMainThread(const std::function<void()> func, bool isFront = false);
 
 		Engine::MyImGui::ImGuiLayer &GetImGuiLayer()
 		{
@@ -63,11 +69,15 @@ namespace Engine::Core
 		bool OnEvent(Event::Event &e);
 		bool OnWindowClose(Event::WindowCloseEvent &e);
 		bool OnWindowResize(Event::WindowResizeEvent &e);
-		void ExecuteMainThreadQueue();
+		bool OnFocusWindow(Event::WindowFocusEvent &e);
+		bool OnLostFocusWindow(Event::WindowLostFocusEvent &e);
+		void ExecuteMainThreadQueueFront();
+		void ExecuteMainThreadQueueBack();
 
 	private:
 		bool m_Running = true;
 		bool m_Minimized = false;
+		bool m_Focused = true;
 		ApplicationSpecification m_Specification;
 
 		float m_LastFrameTime = 0.0f;
@@ -77,7 +87,8 @@ namespace Engine::Core
 		LayerStack m_LayerStack;
 		static Application *s_Instance;
 
-		std::vector<std::function<void()>> m_MainThreadQueue;
+		std::vector<std::function<void()>> m_MainThreadQueueFront;
+		std::vector<std::function<void()>> m_MainThreadQueueBack;
 		std::mutex m_MainThreadQueueMutex;
 
 #if defined(FOREST_ENABLE_PROFILING)

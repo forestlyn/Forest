@@ -57,6 +57,10 @@ namespace Engine::Core
 		ScriptEngine::Shutdown();
 	}
 
+	void Application::Init()
+	{
+	}
+
 	void Application::Run()
 	{
 		ENGINE_PROFILING_FUNC();
@@ -68,10 +72,11 @@ namespace Engine::Core
 				float deltaTime = time - m_LastFrameTime;
 				m_LastFrameTime = time;
 
-				ExecuteMainThreadQueue();
+				ExecuteMainThreadQueueBack();
 
-				if (!m_Minimized)
+				if (!m_Minimized && m_Focused)
 				{
+					ExecuteMainThreadQueueFront();
 					ENGINE_PROFILING_SCOPE("LayerStack OnUpdate");
 					for (auto layer : m_LayerStack)
 						layer->OnUpdate(deltaTime);
@@ -115,6 +120,8 @@ namespace Engine::Core
 		Event::EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<Event::WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
 		dispatcher.Dispatch<Event::WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
+		dispatcher.Dispatch<Event::WindowFocusEvent>(BIND_EVENT_FN(Application::OnFocusWindow));
+		dispatcher.Dispatch<Event::WindowLostFocusEvent>(BIND_EVENT_FN(Application::OnLostFocusWindow));
 
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
 		{
@@ -149,14 +156,36 @@ namespace Engine::Core
 		return false;
 	}
 
-	void Application::ExecuteMainThreadQueue()
+	bool Application::OnFocusWindow(Event::WindowFocusEvent &e)
+	{
+		m_Focused = true;
+		return false;
+	}
+
+	bool Application::OnLostFocusWindow(Event::WindowLostFocusEvent &e)
+	{
+		m_Focused = false;
+		return false;
+	}
+
+	void Application::ExecuteMainThreadQueueFront()
 	{
 		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
-		for (auto func : m_MainThreadQueue)
+		for (auto func : m_MainThreadQueueFront)
 		{
 			func();
 		}
-		m_MainThreadQueue.clear();
+		m_MainThreadQueueFront.clear();
+	}
+
+	void Application::ExecuteMainThreadQueueBack()
+	{
+		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
+		for (auto func : m_MainThreadQueueBack)
+		{
+			func();
+		}
+		m_MainThreadQueueBack.clear();
 	}
 
 	void Application::PushLayer(Layer *layer)
@@ -172,9 +201,12 @@ namespace Engine::Core
 		m_LayerStack.PushOverlay(overlay);
 		overlay->OnAttach();
 	}
-	void Application::SubmitToMainThread(const std::function<void()> func)
+	void Application::SubmitToMainThread(const std::function<void()> func, bool isFront)
 	{
 		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
-		m_MainThreadQueue.emplace_back(func);
+		if (isFront)
+			m_MainThreadQueueFront.emplace_back(func);
+		else
+			m_MainThreadQueueBack.emplace_back(func);
 	}
 }

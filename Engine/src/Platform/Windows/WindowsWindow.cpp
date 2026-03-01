@@ -136,6 +136,19 @@ namespace Platform::Windows
             WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
             Engine::Event::MouseMovedEvent event((float)xpos, (float)ypos);
             data.EventCallback(event); });
+
+        glfwSetWindowFocusCallback(m_Window, [](GLFWwindow *window, int focused)
+                                   {
+            WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
+            if (focused == GLFW_TRUE)            {
+                Engine::Event::WindowFocusEvent event;
+                data.EventCallback(event);
+            }
+            else
+            {
+                Engine::Event::WindowLostFocusEvent event;
+                data.EventCallback(event);
+            } });
     }
 
     void WindowsWindow::Shutdown()

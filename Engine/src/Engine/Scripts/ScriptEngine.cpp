@@ -243,7 +243,7 @@ namespace Engine
                 fullClassName = std::string(nameSpace) + "." + std::string(name);
 
             MonoClass *monoClass = mono_class_from_name(image, nameSpace, name);
-            ENGINE_INFO("fullClassName:{}", fullClassName);
+            // ENGINE_INFO("fullClassName:{}", fullClassName);
             if (!monoClass)
             {
                 continue;

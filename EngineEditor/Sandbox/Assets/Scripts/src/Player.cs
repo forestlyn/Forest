@@ -9,10 +9,10 @@ namespace Sandbox
 
         public float speed = 0.1f;
         public int IntValue2 = 42;
-
         public int IntValue;
         public double DoubleValue;
         public bool IsActive;
+
         public Entity playerEntity;
         public Player playerEntity2;
 
