@@ -46,11 +46,16 @@ namespace EngineEditor
         void PlayScene();
         void SimulateScene();
         void StopScene();
+        void PauseScene();
+        void ResumeScene();
+        void StepScene();
 
     private:
         Engine::Ref<Engine::Renderer::FrameBuffer> m_FrameBuffer;
 
         Engine::Ref<Engine::Renderer::Texture2D> m_PlayIcon;
+        Engine::Ref<Engine::Renderer::Texture2D> m_PauseIcon;
+        Engine::Ref<Engine::Renderer::Texture2D> m_StepIcon;
         Engine::Ref<Engine::Renderer::Texture2D> m_StopIcon;
 
         bool m_FocusScene = false, m_HoverScene = false;

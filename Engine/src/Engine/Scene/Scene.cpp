@@ -10,18 +10,20 @@ namespace Engine
 {
     void Scene::OnUpdateRuntime(Core::Timestep timestep)
     {
-        ENGINE_PROFILING_FUNC();
-        // update scripts
+        if (!m_IsPaused || m_StepFrames-- >= 0)
         {
-            auto view = m_Registry.view<ScriptComponent>();
-            for (auto e : view)
+            ENGINE_PROFILING_FUNC();
+            // update scripts
             {
-                Entity entity = {e, this};
-                ScriptEngine::OnUpdateEntity(entity, timestep);
-            }
+                auto view = m_Registry.view<ScriptComponent>();
+                for (auto e : view)
+                {
+                    Entity entity = {e, this};
+                    ScriptEngine::OnUpdateEntity(entity, timestep);
+                }
 
-            m_Registry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent &nsc)
-                                                          {
+                m_Registry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent &nsc)
+                                                              {
                 if (!nsc.Instance)
                 {
                     nsc.Instance = nsc.Instantiate();
@@ -29,41 +31,41 @@ namespace Engine
                     nsc.Instance->OnCreate();
                 }
                 nsc.Instance->OnUpdate(timestep); });
-        }
-
-        // Remove entities marked for deletion
-        {
-            auto view = m_Registry.view<TagComponent>();
-            std::vector<entt::entity> entitiesToRemove;
-            for (auto entity : view)
-            {
-                if (view.get<TagComponent>(entity).IsRemove())
-                {
-                    entitiesToRemove.push_back(entity);
-                }
             }
 
-            for (auto entity : entitiesToRemove)
+            // Remove entities marked for deletion
             {
-                Entity e{entity, this};
-                ENGINE_INFO("Really Removing entity {}", e.GetComponent<TagComponent>().Tag);
-                if (e.HasComponent<NativeScriptComponent>())
+                auto view = m_Registry.view<TagComponent>();
+                std::vector<entt::entity> entitiesToRemove;
+                for (auto entity : view)
                 {
-                    auto &nsc = e.GetComponent<NativeScriptComponent>();
-                    if (nsc.Instance)
+                    if (view.get<TagComponent>(entity).IsRemove())
                     {
-                        nsc.Instance->OnDestroy();
-                        nsc.Destroy(&nsc);
+                        entitiesToRemove.push_back(entity);
                     }
                 }
-                m_Registry.destroy(entity);
-                m_EntityMap.erase(e.GetUUID());
+
+                for (auto entity : entitiesToRemove)
+                {
+                    Entity e{entity, this};
+                    ENGINE_INFO("Really Removing entity {}", e.GetComponent<TagComponent>().Tag);
+                    if (e.HasComponent<NativeScriptComponent>())
+                    {
+                        auto &nsc = e.GetComponent<NativeScriptComponent>();
+                        if (nsc.Instance)
+                        {
+                            nsc.Instance->OnDestroy();
+                            nsc.Destroy(&nsc);
+                        }
+                    }
+                    m_Registry.destroy(entity);
+                    m_EntityMap.erase(e.GetUUID());
+                }
             }
+
+            // Physics2D update
+            StepPhysicsWorld(timestep);
         }
-
-        // Physics2D update
-        StepPhysicsWorld(timestep);
-
         // Render 2D
         {
 
@@ -116,10 +118,12 @@ namespace Engine
 
     void Scene::OnUpdateSimulate(Core::Timestep timestep, Renderer::EditorCamera &editorCamera)
     {
-        ENGINE_PROFILING_FUNC();
-        // Update Editor Camera
-        StepPhysicsWorld(timestep);
-
+        if (!m_IsPaused || m_StepFrames-- >= 0)
+        {
+            ENGINE_PROFILING_FUNC();
+            // Update Editor Camera
+            StepPhysicsWorld(timestep);
+        }
         glm::mat4 editorCameraViewProjection = editorCamera.GetViewProjectionMatrix();
         RenderScene2D(editorCameraViewProjection);
     }
@@ -242,6 +246,7 @@ namespace Engine
         }
         m_Running = true;
     }
+
     void Scene::OnRuntimeStop()
     {
         m_Running = false;
@@ -277,6 +282,11 @@ namespace Engine
     static void CopyComponent(ComponentGroup<T...> group, entt::registry &dst, entt::registry &src, std::unordered_map<uint64_t, entt::entity> entityMap)
     {
         CopyComponent<T...>(dst, src, entityMap);
+    }
+
+    void Scene::Step(int frames)
+    {
+        m_StepFrames = frames;
     }
 
     Ref<Scene> Scene::Copy(Ref<Scene> other)

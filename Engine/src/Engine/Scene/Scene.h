@@ -46,6 +46,16 @@ namespace Engine
         {
             return m_Running;
         };
+        bool IsPaused() const
+        {
+            return m_IsPaused;
+        }
+        void SetPaused(bool paused)
+        {
+            m_IsPaused = paused;
+        }
+
+        void Step(int frames = 1);
 
         static Ref<Scene> Copy(Ref<Scene> other);
 
@@ -67,6 +77,8 @@ namespace Engine
         b2WorldId worldId;
 
         bool m_Running = false;
+        bool m_IsPaused = false;
+        int m_StepFrames = 0;
 
         float physicsTimeStepAccumulator = 0.0f;
 

@@ -41,7 +41,9 @@ namespace EngineEditor
         }
 
         m_PlayIcon = Engine::Renderer::Texture2D::Create("assets/textures/icon/play_icon.png");
+        m_PauseIcon = Engine::Renderer::Texture2D::Create("assets/textures/icon/pause_icon.png");
         m_StopIcon = Engine::Renderer::Texture2D::Create("assets/textures/icon/stop_icon.png");
+        m_StepIcon = Engine::Renderer::Texture2D::Create("assets/textures/icon/step_icon.png");
     }
 
     EngineEditor::~EngineEditor()
@@ -374,41 +376,59 @@ namespace EngineEditor
 
         ImGui::SetCursorPosX(center - offset * 2);
 
-        if (m_SceneState == SceneState::Edit)
+        if (m_SceneState == SceneState::Play)
         {
-            if (ImGui::ImageButton("##PlayScene", ImTextureRef((void *)(uint64_t)m_PlayIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.3f, 0.305f, 0.31f, 1.0f});
+            if (ImGui::ImageButton("##PlayScene", ImTextureRef((void *)(uint64_t)m_StopIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
+            {
+                StopScene();
+            }
+            ImGui::PopStyleColor();
+        }
+        else
+        {
+            if (ImGui::ImageButton("##StopScene", ImTextureRef((void *)(uint64_t)m_PlayIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
             {
                 PlayScene();
             }
-            ImGui::SameLine();
+        }
+        ImGui::SameLine();
+        if (m_SceneState == SceneState::Simulate)
+        {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.3f, 0.305f, 0.31f, 1.0f});
+            if (ImGui::ImageButton("##SimulateScene", ImTextureRef((void *)(uint64_t)m_StopIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
+            {
+                StopScene();
+            }
+            ImGui::PopStyleColor();
+        }
+        else
+        {
             if (ImGui::ImageButton("##SimulateScene", ImTextureRef((void *)(uint64_t)m_PlayIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
             {
                 SimulateScene();
             }
         }
-        else if (m_SceneState == SceneState::Play)
+        ImGui::SameLine();
+
+        bool isPaused = m_ActiveScene->IsPaused();
+        if (isPaused)
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.3f, 0.305f, 0.31f, 1.0f});
+        if (ImGui::ImageButton("##PauseScene", ImTextureRef((void *)(uint64_t)m_PauseIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
         {
-            if (ImGui::ImageButton("##StopScene", ImTextureRef((void *)(uint64_t)m_StopIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
-            {
-                StopScene();
-            }
-            ImGui::SameLine();
-            if (ImGui::ImageButton("##SimulateScene", ImTextureRef((void *)(uint64_t)m_PlayIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
-            {
-                SimulateScene();
-            }
+            if (isPaused)
+                ResumeScene();
+            else
+                PauseScene();
         }
-        else if (m_SceneState == SceneState::Simulate)
+        if (isPaused)
+            ImGui::PopStyleColor();
+        ImGui::SameLine();
+
+        if (ImGui::ImageButton("##StepScene", ImTextureRef((void *)(uint64_t)m_StepIcon->GetRendererID()),
+                               ImVec2(buttonSize, buttonSize)))
         {
-            if (ImGui::ImageButton("##PlayScene", ImTextureRef((void *)(uint64_t)m_PlayIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
-            {
-                PlayScene();
-            }
-            ImGui::SameLine();
-            if (ImGui::ImageButton("##StopScene", ImTextureRef((void *)(uint64_t)m_StopIcon->GetRendererID()), ImVec2(buttonSize, buttonSize)))
-            {
-                StopScene();
-            }
+            StepScene();
         }
         ImGui::End();
     }
@@ -594,6 +614,27 @@ namespace EngineEditor
             m_ActiveScene = m_EditorScene;
             m_SceneHierarchyPanel.SetContext(m_ActiveScene);
         }
+    }
+
+    void EngineEditor::PauseScene()
+    {
+        if (m_SceneState == SceneState::Edit)
+            return;
+        m_ActiveScene->SetPaused(true);
+    }
+
+    void EngineEditor::ResumeScene()
+    {
+        if (m_SceneState == SceneState::Edit)
+            return;
+        m_ActiveScene->SetPaused(false);
+    }
+
+    void EngineEditor::StepScene()
+    {
+        if (m_SceneState == SceneState::Edit)
+            return;
+        m_ActiveScene->Step();
     }
 
     void EngineEditor::OpenDockSpace()
