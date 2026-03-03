@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Attach to C++ Mono",
+            "type": "mono",
+            "request": "attach", // 这里的 attach 是灵魂！代表不要试图去启动exe，而是去连接端口
+            "address": "127.0.0.1",
+            "port": 2890 // 填入你C++中设置的端口号
+        }
+    ]
+}

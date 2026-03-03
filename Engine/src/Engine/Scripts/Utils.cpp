@@ -3,6 +3,7 @@
 #include "Engine/Core/Log.h"
 #include <fstream>
 #include "ScriptEngine.h"
+#include <mono/metadata/mono-debug.h>
 #include <mono/jit/jit.h>
 namespace Engine
 {
@@ -267,31 +268,35 @@ namespace Engine
         return "<Invalid>";
     }
 
-    MonoAssembly *LoadCSharpAssembly(const std::filesystem::path &assemblyPath)
+    MonoAssembly *LoadCSharpAssembly(const std::filesystem::path &assemblyPath, bool enableDebugging)
     {
         uint32_t fileSize = 0;
         char *fileData = ReadBytes(assemblyPath, &fileSize);
 
-        // NOTE: We can't use this image for anything other than loading the assembly
-        // because this image doesn't have a reference to the assembly
         MonoImageOpenStatus status;
-        MonoImage *image = mono_image_open_from_data_full(fileData, fileSize, 1, &status, 0);
+        MonoImage *image = mono_image_open_from_data_with_name(fileData, fileSize, true, &status, false, assemblyPath.string().c_str());
 
-        if (status != MONO_IMAGE_OK)
+        if (enableDebugging)
         {
-            const char *errorMessage = mono_image_strerror(status);
-            ENGINE_ERROR("Failed: {}", errorMessage);
-            return nullptr;
+            std::filesystem::path pdbPath = assemblyPath;
+            pdbPath.replace_extension(".pdb");
+
+            if (std::filesystem::exists(pdbPath))
+            {
+                uint32_t pdbFileSize = 0;
+                char *pdbFileData = ReadBytes(pdbPath, &pdbFileSize);
+
+                mono_debug_open_image_from_memory(image, (const mono_byte *)pdbFileData, pdbFileSize);
+
+                ENGINE_INFO("Loaded PDB successfully: {}", pdbPath.string());
+
+                delete[] pdbFileData;
+            }
         }
 
-        const std::string strpath = assemblyPath.string();
-        const char *path = strpath.c_str();
-        MonoAssembly *assembly = mono_assembly_load_from_full(image, path, &status, 0);
+        MonoAssembly *assembly = mono_assembly_load_from_full(image, assemblyPath.string().c_str(), &status, 0);
+
         mono_image_close(image);
-
-        // Don't forget to free the file data
-        delete[] fileData;
-
         return assembly;
     }
 

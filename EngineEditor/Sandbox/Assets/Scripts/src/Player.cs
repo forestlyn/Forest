@@ -10,7 +10,7 @@ namespace Sandbox
         public float speed = 0.1f;
         public int IntValue2 = 42;
         public int IntValue;
-        public double DoubleValue;
+        // public double DoubleValue;
         public bool IsActive;
 
         public Entity playerEntity;
@@ -37,6 +37,7 @@ namespace Sandbox
             {
                 IncreaseScore(10);
                 Log.NativeLog($"Player {Name} scored! New score: {Score}");
+                throw new System.Exception("Test exception for debugging");
             }
 
             Vector3 velocity = Vector3.Zero;

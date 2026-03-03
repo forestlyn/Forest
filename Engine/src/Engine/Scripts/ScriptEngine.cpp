@@ -8,9 +8,17 @@
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/object.h>
 #include <mono/metadata/attrdefs.h>
+#include <mono/metadata/debug-helpers.h>
+#include <mono/metadata/mono-debug.h>
+#include "mono/metadata/threads.h"
 #include <fstream>
 #include <filesystem>
 #include <FileWatch.hpp>
+
+#ifdef _WIN32
+#include <winsock2.h>
+#pragma comment(lib, "ws2_32.lib")
+#endif
 namespace Engine
 {
     struct ScriptEngineData
@@ -36,6 +44,8 @@ namespace Engine
         ScriptClass *EntityClass = nullptr;
         // Runtime
         Scene *SceneContext = nullptr;
+
+        bool EnableDebugging = true;
     };
     static ScriptEngineData *m_ScriptEngineData = nullptr;
 
@@ -188,12 +198,39 @@ namespace Engine
 
     void ScriptEngine::InitMono()
     {
+#ifdef _WIN32
+        // 如果启用了调试，必须初始化 Winsock，否则 Mono 调试器无法创建监听端口
+        if (m_ScriptEngineData->EnableDebugging)
+        {
+            WSADATA wsaData;
+            WSAStartup(MAKEWORD(2, 2), &wsaData);
+        }
+#endif
+
         Core::Application &app = Core::Application::Get();
         mono_set_assemblies_path(app.GetSpecification().MonoAssemblyPath.c_str());
+        mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+
+        if (m_ScriptEngineData->EnableDebugging)
+        {
+            const char *debug_options[] = {
+                "--debugger-agent=transport=dt_socket,address=127.0.0.1:2890,server=y,suspend=y,loglevel=3,logfile=MonoDebugger.log",
+                "--soft-breakpoints"};
+            mono_jit_parse_options(sizeof(debug_options) / sizeof(char *),
+                                   const_cast<char **>(debug_options));
+        }
 
         MonoDomain *rootDomain = mono_jit_init("EngineJITRuntime");
         ENGINE_ASSERT(rootDomain);
         m_ScriptEngineData->RootDomain = rootDomain;
+
+        if (m_ScriptEngineData->EnableDebugging)
+        {
+            ENGINE_INFO("Waiting for debugger to attach...");
+            mono_debug_domain_create(rootDomain);
+        }
+
+        mono_thread_set_main(mono_thread_current());
     }
 
     void ScriptEngine::ShutdownMono()
@@ -213,12 +250,11 @@ namespace Engine
         mono_domain_set(appDomain, true);
         m_ScriptEngineData->AppDomain = appDomain;
 
-        m_ScriptEngineData->CoreAssembly = LoadCSharpAssembly(m_ScriptEngineData->CoreAssemblyPath);
+        m_ScriptEngineData->CoreAssembly = LoadCSharpAssembly(m_ScriptEngineData->CoreAssemblyPath, m_ScriptEngineData->EnableDebugging);
         m_ScriptEngineData->CoreAssemblyImage = mono_assembly_get_image(m_ScriptEngineData->CoreAssembly);
         ENGINE_ASSERT(m_ScriptEngineData->CoreAssemblyImage);
-        PrintAssemblyTypes(m_ScriptEngineData->CoreAssembly);
 
-        m_ScriptEngineData->AppAssembly = LoadCSharpAssembly(m_ScriptEngineData->AppAssemblyPath);
+        m_ScriptEngineData->AppAssembly = LoadCSharpAssembly(m_ScriptEngineData->AppAssemblyPath, m_ScriptEngineData->EnableDebugging);
         m_ScriptEngineData->AppAssemblyImage = mono_assembly_get_image(m_ScriptEngineData->AppAssembly);
         ENGINE_ASSERT(m_ScriptEngineData->AppAssemblyImage);
     }

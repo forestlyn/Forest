@@ -1,6 +1,7 @@
 /build
-/.vscode
+# /.vscode
 /.vs
 rmbuild.bat
 /Scripts/__pycache__
 /Engine/ThirdParty/VulkanSDK
+EngineEditor/resources/MonoDebugger.log

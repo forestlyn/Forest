@@ -19,7 +19,7 @@ namespace Engine
     };
 
     char *ReadBytes(const std::filesystem::path &filepath, uint32_t *outSize);
-    MonoAssembly *LoadCSharpAssembly(const std::filesystem::path &assemblyPath);
+    MonoAssembly *LoadCSharpAssembly(const std::filesystem::path &assemblyPath, bool enableDebugging);
     void PrintAssemblyTypes(MonoAssembly *assembly);
 
     MonoClass *GetClassFromAssembly(MonoAssembly *assembly, const std::string &namespaceName, const std::string &className);

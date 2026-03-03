@@ -20,6 +20,8 @@ namespace Engine::Core
 
 		m_Specification = spec;
 
+		ENGINE_INFO("current path:{}", std::filesystem::current_path().string());
+
 		// Set working directory
 		if (!m_Specification.WorkingDirectory.empty())
 			std::filesystem::current_path(m_Specification.WorkingDirectory);
