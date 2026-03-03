@@ -1,6 +1,7 @@
 #include "Engine/pcheader.h"
 #include "Utils.h"
 #include "Engine/Core/Log.h"
+#include "Engine/Core/FileSystem.h"
 #include <fstream>
 #include "ScriptEngine.h"
 #include <mono/metadata/mono-debug.h>
@@ -24,34 +25,6 @@ namespace Engine
         {"Engine.Vector3", ScriptFieldType::Vector3},
         {"Engine.Vector4", ScriptFieldType::Vector4},
         {"Engine.Entity", ScriptFieldType::Entity}};
-
-    char *ReadBytes(const std::filesystem::path &filepath, uint32_t *outSize)
-    {
-        std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
-
-        if (!stream)
-        {
-            // Failed to open the file
-            return nullptr;
-        }
-
-        std::streampos end = stream.tellg();
-        stream.seekg(0, std::ios::beg);
-        uint32_t size = end - stream.tellg();
-
-        if (size == 0)
-        {
-            // File is empty
-            return nullptr;
-        }
-
-        char *buffer = new char[size];
-        stream.read((char *)buffer, size);
-        stream.close();
-
-        *outSize = size;
-        return buffer;
-    }
 
     bool IsSubtypeOfEntity(MonoType *monoType, MonoClass *entityClass)
     {
@@ -270,11 +243,10 @@ namespace Engine
 
     MonoAssembly *LoadCSharpAssembly(const std::filesystem::path &assemblyPath, bool enableDebugging)
     {
-        uint32_t fileSize = 0;
-        char *fileData = ReadBytes(assemblyPath, &fileSize);
+        Core::ScopedBuffer fileBuffer = Core::FileSystem::ReadFileAsBuffer(assemblyPath);
 
         MonoImageOpenStatus status;
-        MonoImage *image = mono_image_open_from_data_with_name(fileData, fileSize, true, &status, false, assemblyPath.string().c_str());
+        MonoImage *image = mono_image_open_from_data_with_name(fileBuffer.As<char>(), fileBuffer.Size(), true, &status, false, assemblyPath.string().c_str());
 
         if (enableDebugging)
         {
@@ -284,13 +256,11 @@ namespace Engine
             if (std::filesystem::exists(pdbPath))
             {
                 uint32_t pdbFileSize = 0;
-                char *pdbFileData = ReadBytes(pdbPath, &pdbFileSize);
+                Core::ScopedBuffer pdbFileBuffer = Core::FileSystem::ReadFileAsBuffer(pdbPath);
 
-                mono_debug_open_image_from_memory(image, (const mono_byte *)pdbFileData, pdbFileSize);
+                mono_debug_open_image_from_memory(image, (const mono_byte *)pdbFileBuffer.As<char>(), pdbFileBuffer.Size());
 
                 ENGINE_INFO("Loaded PDB successfully: {}", pdbPath.string());
-
-                delete[] pdbFileData;
             }
         }
 

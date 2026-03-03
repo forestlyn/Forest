@@ -45,7 +45,7 @@ namespace Engine
         // Runtime
         Scene *SceneContext = nullptr;
 
-        bool EnableDebugging = true;
+        bool EnableDebugging = false;
     };
     static ScriptEngineData *m_ScriptEngineData = nullptr;
 

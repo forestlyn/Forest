@@ -18,7 +18,6 @@ namespace Engine
         Public = (1 << 3)
     };
 
-    char *ReadBytes(const std::filesystem::path &filepath, uint32_t *outSize);
     MonoAssembly *LoadCSharpAssembly(const std::filesystem::path &assemblyPath, bool enableDebugging);
     void PrintAssemblyTypes(MonoAssembly *assembly);
 
