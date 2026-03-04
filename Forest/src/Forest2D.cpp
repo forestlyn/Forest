@@ -11,8 +11,8 @@
 Forest2D::Forest2D(const std::string &name)
     : Layer(name)
 {
-    m_CheckerBoardTexture = Engine::Renderer::Texture2D::Create("assets/textures/Checkerboard.png");
-    m_SpriteSheetTexture = Engine::Renderer::Texture2D::Create("assets/game/textures/RPGpack_sheet_2X.png");
+    m_CheckerBoardTexture = Engine::Renderer::Texture2D::Create("resources/assets/textures/Checkerboard.png");
+    m_SpriteSheetTexture = Engine::Renderer::Texture2D::Create("resources/assets/game/textures/RPGpack_sheet_2X.png");
     m_TreeSubTexture = Engine::Renderer::SubTexture2D::CreateFromCoords(m_SpriteSheetTexture, {128.0f, 128.0f}, {1, 1}, {1, 2});
     m_Upstairs = Engine::Renderer::SubTexture2D::CreateFromCoords(m_SpriteSheetTexture, {128.0f, 128.0f}, {7, 6});
 

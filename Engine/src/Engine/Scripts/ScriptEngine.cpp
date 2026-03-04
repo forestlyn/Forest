@@ -68,8 +68,8 @@ namespace Engine
     {
         m_ScriptEngineData = new ScriptEngineData();
 
-        m_ScriptEngineData->CoreAssemblyPath = "scripts/bin/Engine-ScriptCore.dll";
-        m_ScriptEngineData->AppAssemblyPath = "scripts/bin/Sandbox.dll";
+        m_ScriptEngineData->CoreAssemblyPath = "resources/scripts/bin/Engine-ScriptCore.dll";
+        m_ScriptEngineData->AppAssemblyPath = "resources/scripts/bin/Sandbox.dll";
 
         InitMono();
         CreateDomainAndLoadAssembly();

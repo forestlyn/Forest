@@ -109,9 +109,9 @@ Engine::Core::CreateApplication(Engine::Core::ApplicationCommandLineArgs args)
 	spec.Height = 1080;
 	spec.Fullscreen = false;
 	spec.VSync = true;
-	spec.WorkingDirectory = "../../../EngineEditor/resources/";
-	spec.MonoAssemblyPath = "../../Engine/ThirdParty/mono/4.5";
-	spec.AppScriptPath = "../../EngineEditor/Sandbox/Assets/Scripts/src";
+	spec.WorkingDirectory = "../../../EngineEditor/";
+	spec.MonoAssemblyPath = "../Engine/ThirdParty/mono/4.5";
+	spec.AppScriptPath = "../EngineEditor/Sandbox/Assets/Scripts/src";
 	spec.CommandLineArgs = args;
 	return new EngineEditor::EngineEditorApp(spec);
 }

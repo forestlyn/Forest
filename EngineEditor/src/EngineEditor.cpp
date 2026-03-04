@@ -11,6 +11,7 @@
 #include "Engine/Serialization/SceneSerialize.h"
 #include "Engine/Utils/FilePlatformUtils.h"
 #include "Engine/Scripts/ScriptEngine.h"
+#include "Engine/Project/Project.h"
 namespace EngineEditor
 {
 
@@ -19,6 +20,7 @@ namespace EngineEditor
     {
         // Initialize FrameBuffer
         Engine::Renderer::FrameBufferSpecification fbSpec;
+
         fbSpec.Attachments = {Engine::Renderer::TextureFormat::RGBA8,
                               Engine::Renderer::TextureFormat::DEPTH24STENCIL8,
                               Engine::Renderer::TextureFormat::RED_INTEGER_32};
@@ -26,24 +28,23 @@ namespace EngineEditor
         fbSpec.Height = 720;
         m_FrameBuffer = Engine::Renderer::FrameBuffer::Create(fbSpec);
 
-        m_SceneHierarchyPanel = SceneHierarchyPanel();
-        m_ContentBrowserPanel = ContentBrowserPanel();
+        m_SceneHierarchyPanel = Engine::CreateScope<SceneHierarchyPanel>();
 
         auto &args = Engine::Core::Application::Get().GetSpecification().CommandLineArgs;
         if (args.Count > 1)
         {
-            std::filesystem::path scenePath = args[1];
-            LoadScene(scenePath);
+            std::filesystem::path projectPath = args[1];
+            LoadProject(projectPath);
         }
         else
         {
-            NewScene();
+            NewProject();
         }
 
-        m_PlayIcon = Engine::Renderer::Texture2D::Create("assets/textures/icon/play_icon.png");
-        m_PauseIcon = Engine::Renderer::Texture2D::Create("assets/textures/icon/pause_icon.png");
-        m_StopIcon = Engine::Renderer::Texture2D::Create("assets/textures/icon/stop_icon.png");
-        m_StepIcon = Engine::Renderer::Texture2D::Create("assets/textures/icon/step_icon.png");
+        m_PlayIcon = Engine::Renderer::Texture2D::Create("resources/assets/textures/icon/play_icon.png");
+        m_PauseIcon = Engine::Renderer::Texture2D::Create("resources/assets/textures/icon/pause_icon.png");
+        m_StopIcon = Engine::Renderer::Texture2D::Create("resources/assets/textures/icon/stop_icon.png");
+        m_StepIcon = Engine::Renderer::Texture2D::Create("resources/assets/textures/icon/step_icon.png");
     }
 
     EngineEditor::~EngineEditor()
@@ -152,6 +153,22 @@ namespace EngineEditor
                 {
                     Engine::ScriptEngine::ReloadAssembly();
                 }
+                if (ImGui::MenuItem("New Project"))
+                {
+                    NewProject();
+                }
+                if (ImGui::MenuItem("Load Project"))
+                {
+                    std::string projectPath = Engine::FileDialog::OpenFileDialog("Forest2D Project (*.forestproj)\0*.forestproj\0");
+                    if (!projectPath.empty())
+                    {
+                        LoadProject(projectPath);
+                    }
+                }
+                if (ImGui::MenuItem("Save Project"))
+                {
+                    SaveProject();
+                }
                 ImGui::EndMenu();
             }
 
@@ -239,8 +256,8 @@ namespace EngineEditor
 
         UIToolbar();
 
-        m_SceneHierarchyPanel.OnImGuiRender();
-        m_ContentBrowserPanel.OnImGuiRender();
+        m_SceneHierarchyPanel->OnImGuiRender();
+        m_ContentBrowserPanel->OnImGuiRender();
     }
 
     bool EngineEditor::OnEvent(Engine::Event::Event &event)
@@ -292,7 +309,7 @@ namespace EngineEditor
             if (isCtrlPressed)
             {
                 ENGINE_INFO("Duplicate Entity Shortcut Pressed");
-                DuplicateEntity(m_SceneHierarchyPanel.GetSelectedEntity());
+                DuplicateEntity(m_SceneHierarchyPanel->GetSelectedEntity());
                 return true;
             }
         case FOREST_KEY_R:
@@ -342,7 +359,7 @@ namespace EngineEditor
         case FOREST_MOUSE_BUTTON_LEFT:
             if (CanPickEntity())
             {
-                m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
+                m_SceneHierarchyPanel->SetSelectedEntity(m_HoveredEntity);
                 return true;
             }
             break;
@@ -445,7 +462,7 @@ namespace EngineEditor
 
     void EngineEditor::RenderGizmos()
     {
-        Engine::Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+        Engine::Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity();
         if (selectedEntity && ImGuizmo_operation != -1)
         {
             ImGuizmo::SetDrawlist();
@@ -549,7 +566,7 @@ namespace EngineEditor
             }
         }
 
-        if (Engine::Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
+        if (Engine::Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity())
         {
             if (selectedEntity.HasComponent<Engine::TransformComponent>())
             {
@@ -575,7 +592,7 @@ namespace EngineEditor
         m_SceneState = SceneState::Play;
         m_ActiveScene = Engine::Scene::Copy(m_EditorScene);
         m_RuntimeScene = m_ActiveScene;
-        m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+        m_SceneHierarchyPanel->SetContext(m_ActiveScene);
         m_ActiveScene->OnRuntimeStart();
     }
 
@@ -593,7 +610,7 @@ namespace EngineEditor
         m_SceneState = SceneState::Simulate;
         m_ActiveScene = Engine::Scene::Copy(m_EditorScene);
         m_RuntimeScene = m_ActiveScene;
-        m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+        m_SceneHierarchyPanel->SetContext(m_ActiveScene);
         m_ActiveScene->OnSimulationStart();
     }
 
@@ -612,7 +629,7 @@ namespace EngineEditor
             }
 
             m_ActiveScene = m_EditorScene;
-            m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+            m_SceneHierarchyPanel->SetContext(m_ActiveScene);
         }
     }
 
@@ -697,6 +714,35 @@ namespace EngineEditor
         ImGui::End();
     }
 
+    void EngineEditor::NewProject()
+    {
+        Engine::Project::Create();
+        NewScene();
+        m_ContentBrowserPanel = Engine::CreateScope<ContentBrowserPanel>();
+    }
+
+    void EngineEditor::LoadProject(std::filesystem::path path)
+    {
+        if (Engine::Project::Load(path))
+        {
+            std::filesystem::path scenePath = Engine::Project::GetActiveProjectStartScene();
+            if (!scenePath.empty())
+            {
+                LoadScene(scenePath);
+            }
+            m_ContentBrowserPanel = Engine::CreateScope<ContentBrowserPanel>();
+        }
+    }
+
+    void EngineEditor::SaveProject()
+    {
+        std::string projectPath = Engine::FileDialog::SaveFileDialog("Forest2D Project (*.forestproj)\0*.forestproj\0");
+        if (!projectPath.empty())
+        {
+            Engine::Project::SaveActiveProject(projectPath);
+        }
+    }
+
     void EngineEditor::NewScene()
     {
         if (m_SceneState == SceneState::Play)
@@ -707,7 +753,7 @@ namespace EngineEditor
         m_EditorScene = Engine::CreateRef<Engine::Scene>();
         m_ActiveScene = m_EditorScene;
         m_EditorScenePath.clear();
-        m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+        m_SceneHierarchyPanel->SetContext(m_ActiveScene);
         m_ActiveScene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
     }
 
@@ -740,7 +786,7 @@ namespace EngineEditor
                 ENGINE_ERROR("Failed to load scene from path: {}", path.string());
                 return;
             }
-            m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+            m_SceneHierarchyPanel->SetContext(m_ActiveScene);
             m_ActiveScene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
         }
     }

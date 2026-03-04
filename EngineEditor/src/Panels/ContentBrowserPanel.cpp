@@ -1,19 +1,21 @@
 #include "ContentBrowserPanel.h"
 #include "imgui.h"
+#include "Engine/Project/Project.h"
+#include "Engine/pcheader.h"
 namespace EngineEditor
 {
-    const static std::string AssetsDirectory = "assets";
-    ContentBrowserPanel::ContentBrowserPanel()
+    ContentBrowserPanel::ContentBrowserPanel() : m_CurrentDirectory(Engine::Project::GetActiveProjectAssetDirectory()),
+                                                 m_BaseAssetsDirectory(Engine::Project::GetActiveProjectAssetDirectory())
     {
-        m_CurrentDirectory = AssetsDirectory;
-        m_DirectoryIcon = Engine::Renderer::Texture2D::Create("assets/textures/icon/folder_2377907.png");
-        m_FileIcon = Engine::Renderer::Texture2D::Create("assets/textures/icon/document_3677274.png");
-        m_BackIcon = Engine::Renderer::Texture2D::Create("assets/textures/icon/BackIcon.png");
+        ENGINE_INFO("ContentBrowserPanel initialized with current directory: {}", m_CurrentDirectory.string());
+        m_DirectoryIcon = Engine::Renderer::Texture2D::Create("resources/assets/textures/icon/folder_2377907.png");
+        m_FileIcon = Engine::Renderer::Texture2D::Create("resources/assets/textures/icon/document_3677274.png");
+        m_BackIcon = Engine::Renderer::Texture2D::Create("resources/assets/textures/icon/BackIcon.png");
     }
     void ContentBrowserPanel::OnImGuiRender()
     {
         ImGui::Begin("Content Browser");
-        if (m_CurrentDirectory != AssetsDirectory)
+        if (m_CurrentDirectory != m_BaseAssetsDirectory)
         {
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
             if (ImGui::ImageButton("##back", ImTextureRef((void *)(uintptr_t)m_BackIcon->GetRendererID()), ImVec2(25, 25)))
@@ -25,6 +27,14 @@ namespace EngineEditor
         ImGui::SameLine();
         ImGui::Text("Content Browser Panel: %s", m_CurrentDirectory.c_str());
         ImGui::Separator();
+
+        if (!std::filesystem::exists(m_CurrentDirectory))
+        {
+            ImGui::Text("Directory does not exist! %s", m_CurrentDirectory.c_str());
+            ImGui::End();
+            return;
+        }
+
         static float padding = 16.0f;
         static float thumbnailWidth = 64.0f;
         static float thumbnailHeight = 64.0f;

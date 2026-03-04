@@ -25,9 +25,9 @@ namespace Engine::Renderer
         ENGINE_PROFILING_FUNC();
 
         // initialize shaders
-        m_SceneData.QuadTextureShader = Shader::Create("assets/shaders/Renderer2D_QuadShader.glsl");
-        m_SceneData.CircleShader = Shader::Create("assets/shaders/Renderer2D_CircleShader.glsl");
-        m_SceneData.LineShader = Shader::Create("assets/shaders/Renderer2D_LineShader.glsl");
+        m_SceneData.QuadTextureShader = Shader::Create("resources/assets/shaders/Renderer2D_QuadShader.glsl");
+        m_SceneData.CircleShader = Shader::Create("resources/assets/shaders/Renderer2D_CircleShader.glsl");
+        m_SceneData.LineShader = Shader::Create("resources/assets/shaders/Renderer2D_LineShader.glsl");
 
         // initialize vertex array
         //-- Init Quad --

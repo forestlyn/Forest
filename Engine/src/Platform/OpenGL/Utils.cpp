@@ -183,7 +183,7 @@ namespace Platform::OpenGL::Utils
 
     std::string GetCacheDirectory()
     {
-        return "assets/cache/shaders/opengl/";
+        return "resources/assets/cache/shaders/opengl/";
     }
     void CreateCacheDirIfNotExists(std::string cacheDir)
     {

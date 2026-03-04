@@ -1,6 +1,7 @@
 #include "ComponentSerialize.h"
 #include "Engine/Core/Core.h"
 #include "Engine/Scripts/ScriptEngine.h"
+#include "Engine/Project/Project.h"
 namespace Engine::Serialization
 {
     void SerializeTagComponent(YAML::Emitter &out, TagComponent &entity)
@@ -233,8 +234,9 @@ namespace Engine::Serialization
             std::string texturePath = componentNode["TexturePath"].as<std::string>();
             if (texturePath != "None")
             {
-                component.Texture = Engine::Renderer::Texture2D::Create(texturePath);
-                ENGINE_INFO("Loaded texture from path: {}", texturePath);
+                std::filesystem::path fullTexturePath = Engine::Project::GetActiveProjectAssetPath(texturePath);
+                component.Texture = Engine::Renderer::Texture2D::Create(fullTexturePath.string());
+                ENGINE_INFO("Loaded texture from path: {}", fullTexturePath.string());
             }
             else
             {

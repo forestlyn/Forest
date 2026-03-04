@@ -1,0 +1,4 @@
+Name: New Project
+AssetDirectory: Assets
+StartScene: Scenes/Physics2D.scene
+ScriptDLLDirectory: ""

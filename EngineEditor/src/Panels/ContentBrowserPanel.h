@@ -14,6 +14,7 @@ namespace EngineEditor
 
     private:
         std::filesystem::path m_CurrentDirectory;
+        std::filesystem::path m_BaseAssetsDirectory;
         Engine::Ref<Engine::Renderer::Texture2D> m_DirectoryIcon;
         Engine::Ref<Engine::Renderer::Texture2D> m_FileIcon;
         Engine::Ref<Engine::Renderer::Texture2D> m_BackIcon;

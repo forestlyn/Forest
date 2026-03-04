@@ -24,6 +24,10 @@ namespace EngineEditor
     private:
         void OpenDockSpace();
 
+        void LoadProject(std::filesystem::path path);
+        void NewProject();
+        void SaveProject();
+
         void NewScene();
         void SaveSceneAs();
         void SaveScene(std::filesystem::path path);
@@ -72,8 +76,8 @@ namespace EngineEditor
 
         int ImGuizmo_operation = -1;
 
-        SceneHierarchyPanel m_SceneHierarchyPanel;
-        ContentBrowserPanel m_ContentBrowserPanel;
+        Engine::Scope<SceneHierarchyPanel> m_SceneHierarchyPanel;
+        Engine::Scope<ContentBrowserPanel> m_ContentBrowserPanel;
 
         enum class SceneState
         {
