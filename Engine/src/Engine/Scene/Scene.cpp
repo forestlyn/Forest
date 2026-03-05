@@ -174,6 +174,8 @@ namespace Engine
 
     void Scene::SetViewportSize(uint32_t width, uint32_t height)
     {
+        if (m_ViewportWidth == 0 || m_ViewportHeight == 0)
+            return;
         m_ViewportWidth = width;
         m_ViewportHeight = height;
         RecalculateCameraProjections();

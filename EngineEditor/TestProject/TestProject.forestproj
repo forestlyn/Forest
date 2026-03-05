@@ -1,0 +1,4 @@
+Name: TestProject
+AssetDirectory: Assets
+StartScene: Scenes/Sample.scene
+ScriptDLLDirectory: ""

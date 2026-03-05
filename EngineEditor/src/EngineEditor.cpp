@@ -12,6 +12,7 @@
 #include "Engine/Utils/FilePlatformUtils.h"
 #include "Engine/Scripts/ScriptEngine.h"
 #include "Engine/Project/Project.h"
+#include "Utils.h"
 namespace EngineEditor
 {
 
@@ -133,31 +134,11 @@ namespace EngineEditor
         {
             if (ImGui::BeginMenu("File"))
             {
-                if (ImGui::MenuItem("New Scene Ctrl+N"))
-                {
-                    NewScene();
-                }
-                if (ImGui::MenuItem("Load Scene Ctrl+Shift+O"))
-                {
-                    LoadScene();
-                }
-                if (ImGui::MenuItem("Save Scene Ctrl+S"))
-                {
-                    SaveScene(m_EditorScenePath);
-                }
-                if (ImGui::MenuItem("Save Scene Ctrl+Shift+S"))
-                {
-                    SaveSceneAs();
-                }
-                if (ImGui::MenuItem("Reload Assembly Ctrl+R"))
-                {
-                    Engine::ScriptEngine::ReloadAssembly();
-                }
-                if (ImGui::MenuItem("New Project"))
+                if (ImGui::MenuItem("New Project Ctrl+N"))
                 {
                     NewProject();
                 }
-                if (ImGui::MenuItem("Load Project"))
+                if (ImGui::MenuItem("Load Project Ctrl+Shift+O"))
                 {
                     std::string projectPath = Engine::FileDialog::OpenFileDialog("Forest2D Project (*.forestproj)\0*.forestproj\0");
                     if (!projectPath.empty())
@@ -165,9 +146,20 @@ namespace EngineEditor
                         LoadProject(projectPath);
                     }
                 }
-                if (ImGui::MenuItem("Save Project"))
+                if (ImGui::MenuItem("Save Project Ctrl+S"))
                 {
-                    SaveProject();
+                    if (!m_EditorProjectPath.empty())
+                        SaveProject(m_EditorProjectPath);
+                    else
+                        SaveProjectAs();
+                }
+                if (ImGui::MenuItem("Save Project As Ctrl+Shift+S"))
+                {
+                    SaveProjectAs();
+                }
+                if (ImGui::MenuItem("Reload Assembly Ctrl+R"))
+                {
+                    Engine::ScriptEngine::ReloadAssembly();
                 }
                 ImGui::EndMenu();
             }
@@ -285,24 +277,31 @@ namespace EngineEditor
         case FOREST_KEY_N:
             if (isCtrlPressed)
             {
-                NewScene();
+                NewProject();
                 return true;
             }
         case FOREST_KEY_O:
             if (isCtrlPressed && isShiftPressed)
             {
-                LoadScene();
+                LoadProject();
                 return true;
             }
         case FOREST_KEY_S:
             if (isCtrlPressed && isShiftPressed)
             {
-                SaveSceneAs();
+                SaveProjectAs();
                 return true;
             }
             else if (isCtrlPressed)
             {
-                SaveScene(m_EditorScenePath);
+                if (!m_EditorProjectPath.empty())
+                {
+                    SaveProject(m_EditorProjectPath);
+                }
+                else
+                {
+                    SaveProjectAs();
+                }
                 return true;
             }
         case FOREST_KEY_D:
@@ -716,8 +715,21 @@ namespace EngineEditor
 
     void EngineEditor::NewProject()
     {
-        Engine::Project::Create();
-        NewScene();
+        m_EditorProjectPath.clear();
+
+        std::string workDir = std::filesystem::current_path().string();
+        ENGINE_INFO("workDir:{}", workDir);
+        std::string projectPathStr = Engine::FileDialog::OpenFolderDialog(workDir);
+        std::filesystem::path projectPath = projectPathStr;
+        std::string projectName = Utils::ExtraNameFromPath(projectPath);
+        ENGINE_INFO("create project {} at {}", projectName, projectPath.string());
+        Engine::Project::Create(projectName, projectPath);
+
+        std::filesystem::path scenePath = Engine::Project::GetActiveProjectStartScene();
+        LoadScene(scenePath);
+
+        m_EditorProjectPath = projectPath;
+
         m_ContentBrowserPanel = Engine::CreateScope<ContentBrowserPanel>();
     }
 
@@ -734,7 +746,24 @@ namespace EngineEditor
         }
     }
 
-    void EngineEditor::SaveProject()
+    void EngineEditor::LoadProject()
+    {
+        std::string projectPath = Engine::FileDialog::OpenFileDialog("Forest2D Project (*.forestproj)\0*.forestproj\0");
+        if (!projectPath.empty())
+        {
+            LoadProject(projectPath);
+        }
+    }
+
+    void EngineEditor::SaveProject(std::filesystem::path path)
+    {
+        if (!path.empty())
+        {
+            Engine::Project::SaveActiveProject(path);
+        }
+    }
+
+    void EngineEditor::SaveProjectAs()
     {
         std::string projectPath = Engine::FileDialog::SaveFileDialog("Forest2D Project (*.forestproj)\0*.forestproj\0");
         if (!projectPath.empty())

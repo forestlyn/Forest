@@ -1,0 +1,4 @@
+Name: EngineEditor
+AssetDirectory: Assets
+StartScene: Scenes/Sample.scene
+ScriptDLLDirectory: ""

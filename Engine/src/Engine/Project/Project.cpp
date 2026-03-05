@@ -1,13 +1,29 @@
 #include "Project.h"
 #include <fstream>
 #include "Engine/Serialization/ProjectSerialize.h"
+#include "ProjectUtils.h"
 namespace Engine
 {
     Ref<Project> Project::s_ActiveProject = nullptr;
-    Ref<Project> Project::Create()
+    Ref<Project> Project::Create(std::string projectname, const std::filesystem::path &filepath)
     {
         Ref<Project> project = CreateRef<Project>();
+        project->m_Settings.Name = projectname;
         s_ActiveProject = project;
+
+        if (!ProjectUtils::CreateProject(s_ActiveProject->m_Settings.Name, filepath))
+        {
+            ENGINE_ERROR("CreateProject Failed!");
+        }
+
+        // Save project
+        std::string projectNameWithExt = projectname + ".forestproj";
+        std::filesystem::path projectSavePath = filepath / projectNameWithExt;
+        ENGINE_INFO("project path:{}", projectSavePath.string());
+        SaveActiveProject(projectSavePath);
+
+        s_ActiveProject->m_ProjectDirectory = filepath;
+
         return project;
     }
 
@@ -27,7 +43,6 @@ namespace Engine
     }
     bool Project::SaveActiveProject(const std::filesystem::path &filepath)
     {
-
         Serialization::ProjectSerialize serializer(s_ActiveProject);
         if (!serializer.Serialize(filepath))
         {
