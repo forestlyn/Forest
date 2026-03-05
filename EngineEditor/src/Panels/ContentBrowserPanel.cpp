@@ -74,6 +74,28 @@ namespace EngineEditor
             ImGui::NextColumn();
             ImGui::PopID();
         }
+
+        RightClickUI();
+
         ImGui::End();
+    }
+    void ContentBrowserPanel::RightClickUI()
+    {
+
+        if (ImGui::BeginPopupContextWindow("ContentContextMenu", ImGuiPopupFlags_MouseButtonRight))
+        {
+            if (ImGui::MenuItem("Create Scene"))
+            {
+                CreateScene();
+            }
+            ImGui::EndPopup();
+        }
+    }
+    const std::string templateScenePath = "resources/assets/scenes/New Scene.scene";
+    void ContentBrowserPanel::CreateScene()
+    {
+        ENGINE_INFO("CreateScene");
+        std::filesystem::path newScenePath = m_CurrentDirectory;
+        std::filesystem::copy(templateScenePath, newScenePath);
     }
 }

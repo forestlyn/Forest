@@ -13,6 +13,10 @@ namespace EngineEditor
         void OnImGuiRender();
 
     private:
+        void RightClickUI();
+        void CreateScene();
+
+    private:
         std::filesystem::path m_CurrentDirectory;
         std::filesystem::path m_BaseAssetsDirectory;
         Engine::Ref<Engine::Renderer::Texture2D> m_DirectoryIcon;
