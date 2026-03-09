@@ -1,0 +1,4 @@
+Name: Sandbox
+AssetDirectory: Assets
+StartScene: Scenes/Sample.scene
+ScriptDLLDirectory: ""
