@@ -10,6 +10,7 @@
 #include <mono/metadata/attrdefs.h>
 #include <mono/metadata/debug-helpers.h>
 #include <mono/metadata/mono-debug.h>
+#include <mono/metadata/mono-gc.h>
 #include "mono/metadata/threads.h"
 #include <fstream>
 #include <filesystem>
@@ -89,6 +90,10 @@ namespace Engine
 
     void ScriptEngine::Shutdown()
     {
+        // Release script instances while the Mono domain is still valid.
+        m_ScriptEngineData->EntityInstances.clear();
+        m_ScriptEngineData->EntityFieldMaps.clear();
+
         ShutdownMono();
         delete m_ScriptEngineData;
     }
@@ -106,6 +111,8 @@ namespace Engine
     void ScriptEngine::ReloadAssembly()
     {
         ENGINE_INFO("ReloadAssembly");
+        // Free managed handles before unloading the current app domain.
+        m_ScriptEngineData->EntityInstances.clear();
         mono_domain_set(mono_get_root_domain(), false);
 
         mono_domain_unload(m_ScriptEngineData->AppDomain);
@@ -385,7 +392,9 @@ namespace Engine
     ScriptInstance::ScriptInstance(Ref<ScriptClass> scriptClass, Entity entity)
     {
         m_ScriptClass = scriptClass;
-        m_Instance = m_ScriptClass->Instantiate();
+        MonoObject *instance = m_ScriptClass->Instantiate();
+        ENGINE_ASSERT(instance, "Failed to instantiate managed script object!");
+        m_GCHandle = mono_gchandle_new(instance, false);
 
         // Set the entity ID field
         m_Constructor = m_ScriptEngineData->EntityClass->GetMethod(".ctor", 1);
@@ -395,20 +404,47 @@ namespace Engine
         {
             UUID entityID = entity.GetUUID();
             void *params = &entityID;
-            m_ScriptClass->InvokeMethod(m_Instance, m_Constructor, 1, &params);
+            m_ScriptClass->InvokeMethod(instance, m_Constructor, 1, &params);
         }
     }
+
+    ScriptInstance::~ScriptInstance()
+    {
+        if (m_GCHandle != 0)
+        {
+            mono_gchandle_free(m_GCHandle);
+            m_GCHandle = 0;
+        }
+    }
+
+    MonoObject *ScriptInstance::GetManagedObject() const
+    {
+        if (m_GCHandle == 0)
+            return nullptr;
+        return mono_gchandle_get_target(m_GCHandle);
+    }
+
     void ScriptInstance::InvokeOnCreate()
     {
-        m_ScriptClass->InvokeMethod(m_Instance, m_OnCreateMethod);
+        MonoObject *instance = GetManagedObject();
+        if (!instance)
+            return;
+        m_ScriptClass->InvokeMethod(instance, m_OnCreateMethod);
     }
     void ScriptInstance::InvokeOnUpdate(float deltaTime)
     {
+        MonoObject *instance = GetManagedObject();
+        if (!instance)
+            return;
         void *params = &deltaTime;
-        m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateMethod, 1, &params);
+        m_ScriptClass->InvokeMethod(instance, m_OnUpdateMethod, 1, &params);
     }
     bool ScriptInstance::GetFieldValueInternal(const std::string &fieldName, void *value)
     {
+        MonoObject *instance = GetManagedObject();
+        if (!instance)
+            return false;
+
         auto &fields = m_ScriptClass->GetFields();
         auto it = fields.find(fieldName);
         if (it == fields.end())
@@ -416,24 +452,28 @@ namespace Engine
 
         if (it->second.IsEntity())
         {
-            uint64_t entityID = GetEntityIDFromEntityField(m_Instance, it->second.MonoField);
+            uint64_t entityID = GetEntityIDFromEntityField(instance, it->second.MonoField);
             memcpy(value, &entityID, sizeof(uint64_t));
             return true;
         }
         const ScriptField &scriptField = it->second;
-        mono_field_get_value(m_Instance, scriptField.MonoField, value);
+        mono_field_get_value(instance, scriptField.MonoField, value);
         return true;
     }
 
     bool ScriptInstance::SetFieldValueInternal(const std::string &fieldName, const void *value)
     {
+        MonoObject *instance = GetManagedObject();
+        if (!instance)
+            return false;
+
         auto &fields = m_ScriptClass->GetFields();
         auto it = fields.find(fieldName);
         if (it == fields.end())
             return false;
 
         const ScriptField &scriptField = it->second;
-        mono_field_set_value(m_Instance, scriptField.MonoField, (void *)value);
+        mono_field_set_value(instance, scriptField.MonoField, (void *)value);
         return true;
     }
 

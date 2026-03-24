@@ -166,7 +166,7 @@ namespace Engine
     {
     public:
         ScriptInstance(Ref<ScriptClass> scriptClass, Entity entity);
-        ~ScriptInstance() = default;
+        ~ScriptInstance();
 
         void InvokeOnCreate();
         void InvokeOnUpdate(float deltaTime);
@@ -190,7 +190,7 @@ namespace Engine
             SetFieldValueInternal(fieldName, &value);
         }
 
-        MonoObject *GetManagedObject() const { return m_Instance; }
+        MonoObject *GetManagedObject() const;
 
     private:
         bool GetFieldValueInternal(const std::string &fieldName, void *value);
@@ -198,7 +198,7 @@ namespace Engine
 
     private:
         Ref<ScriptClass> m_ScriptClass;
-        MonoObject *m_Instance = nullptr;
+        uint32_t m_GCHandle = 0;
 
         MonoMethod *m_Constructor = nullptr;
         MonoMethod *m_OnCreateMethod = nullptr;
