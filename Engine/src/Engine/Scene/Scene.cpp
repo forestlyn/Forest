@@ -34,34 +34,7 @@ namespace Engine
             }
 
             // Remove entities marked for deletion
-            {
-                auto view = m_Registry.view<TagComponent>();
-                std::vector<entt::entity> entitiesToRemove;
-                for (auto entity : view)
-                {
-                    if (view.get<TagComponent>(entity).IsRemove())
-                    {
-                        entitiesToRemove.push_back(entity);
-                    }
-                }
-
-                for (auto entity : entitiesToRemove)
-                {
-                    Entity e{entity, this};
-                    ENGINE_INFO("Really Removing entity {}", e.GetComponent<TagComponent>().Tag);
-                    if (e.HasComponent<NativeScriptComponent>())
-                    {
-                        auto &nsc = e.GetComponent<NativeScriptComponent>();
-                        if (nsc.Instance)
-                        {
-                            nsc.Instance->OnDestroy();
-                            nsc.Destroy(&nsc);
-                        }
-                    }
-                    m_Registry.destroy(entity);
-                    m_EntityMap.erase(e.GetUUID());
-                }
-            }
+            DestroyEntities();
 
             // Physics2D update
             StepPhysicsWorld(timestep);
@@ -110,6 +83,10 @@ namespace Engine
     void Scene::OnUpdateEditor(Engine::Core::Timestep timestep, Renderer::EditorCamera &editorCamera)
     {
         ENGINE_PROFILING_FUNC();
+
+        // Remove entities marked for deletion
+        DestroyEntities();
+
         // Update Editor Camera
 
         glm::mat4 editorCameraViewProjection = editorCamera.GetViewProjectionMatrix();
@@ -174,7 +151,7 @@ namespace Engine
 
     void Scene::SetViewportSize(uint32_t width, uint32_t height)
     {
-        if (m_ViewportWidth == 0 || m_ViewportHeight == 0)
+        if (width == 0 || height == 0)
             return;
         m_ViewportWidth = width;
         m_ViewportHeight = height;
@@ -343,6 +320,7 @@ namespace Engine
 
     void Scene::RecalculateCameraProjections()
     {
+        // ENGINE_INFO("Recalculating camera projections with new viewport size: {}x{}", m_ViewportWidth, m_ViewportHeight);
         auto view = m_Registry.view<CameraComponent>();
         float aspectRatio = (float)m_ViewportWidth / (float)m_ViewportHeight;
         for (auto entity : view)
@@ -437,6 +415,37 @@ namespace Engine
             }
         }
     }
+    void Scene::DestroyEntities()
+    {
+        auto view = m_Registry.view<TagComponent>();
+        std::vector<entt::entity> entitiesToRemove;
+        for (auto entity : view)
+        {
+            if (view.get<TagComponent>(entity).IsRemove())
+            {
+                ENGINE_INFO("Entity {} marked for deletion", view.get<TagComponent>(entity).Tag);
+                entitiesToRemove.push_back(entity);
+            }
+        }
+
+        for (auto entity : entitiesToRemove)
+        {
+            Entity e{entity, this};
+            ENGINE_INFO("Really Removing entity {}", e.GetComponent<TagComponent>().Tag);
+            if (e.HasComponent<NativeScriptComponent>())
+            {
+                auto &nsc = e.GetComponent<NativeScriptComponent>();
+                if (nsc.Instance)
+                {
+                    nsc.Instance->OnDestroy();
+                    nsc.Destroy(&nsc);
+                }
+            }
+            m_EntityMap.erase(e.GetUUID());
+            m_Registry.destroy(entity);
+        }
+    }
+
     void Scene::RenderScene2D(glm::mat4 viewProjectionMatrix)
     {
         ENGINE_PROFILING_FUNC();

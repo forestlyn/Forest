@@ -217,6 +217,7 @@ namespace EngineEditor
             auto regionAvailSize = ImGui::GetContentRegionAvail();
             if (m_SceneViewportSize.x != (int)regionAvailSize.x || m_SceneViewportSize.y != (int)regionAvailSize.y)
             {
+                // ENGINE_INFO("Scene viewport resized: {}x{}", (int)regionAvailSize.x, (int)regionAvailSize.y);
                 m_SceneViewportSize.x = (int)regionAvailSize.x;
                 m_SceneViewportSize.y = (int)regionAvailSize.y;
                 m_FrameBuffer->Resize(m_SceneViewportSize.x, m_SceneViewportSize.y);

@@ -78,6 +78,7 @@ namespace EngineEditor
             if (ImGui::MenuItem("Delete Entity"))
             {
                 entity.GetComponent<Engine::TagComponent>().SetRemove(true);
+                ENGINE_INFO("Marked entity {} for deletion", tag);
                 if (m_SelectionEntity == entity)
                 {
                     SetSelectedEntity({});

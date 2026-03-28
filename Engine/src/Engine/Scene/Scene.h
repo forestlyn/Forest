@@ -66,8 +66,10 @@ namespace Engine
 
         void SetupPhysicsWorld();
         void DestroyPhysicsWorld();
-
         void StepPhysicsWorld(Core::Timestep timestep);
+
+        void DestroyEntities();
+
         void RenderScene2D(glm::mat4 viewProjectionMatrix);
 
     private:
