@@ -203,6 +203,14 @@ namespace Engine::Core
 		m_LayerStack.PushOverlay(overlay);
 		overlay->OnAttach();
 	}
+	void Application::SubmitRendererCommand(std::function<void()> &&renderCmd)
+	{
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+
+#else
+		ENGINE_ERROR("USE SubmitRendererCommand WITHOUT ENGINE_ENABLE_RENDERTHREAD");
+#endif
+	}
 	void Application::SubmitToMainThread(const std::function<void()> func, bool isFront)
 	{
 		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);

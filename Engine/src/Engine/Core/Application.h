@@ -6,6 +6,7 @@
 #include "Engine/pcheader.h"
 #include "Engine/Events/WindowEvent.h"
 #include "Engine/Profile/ProfileLayer.h"
+// #include "Engine/Core/RenderCommandQueue.h"
 namespace Engine::Core
 {
 	struct ApplicationCommandLineArgs
@@ -51,6 +52,8 @@ namespace Engine::Core
 		int GetWindowWidth() const { return m_Window->GetWidth(); }
 		int GetWindowHeight() const { return m_Window->GetHeight(); }
 		void *GetNativeWindow() const { return m_Window->GetNativeWindow(); }
+
+		void SubmitRendererCommand(std::function<void()> &&renderCmd);
 
 		///// @brief Submits a function to be executed on the main thread.
 		//// If isFront is false, the function will be executed immediately.
