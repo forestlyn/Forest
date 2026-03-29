@@ -107,6 +107,11 @@ namespace Engine::Core
 					ENGINE_PROFILING_SCOPE("Window OnUpdate");
 					m_Window->OnUpdate();
 				}
+
+				{
+					ENGINE_PROFILING_SCOPE("Renderer NextFrame");
+					Renderer::Renderer::NextFrame();
+				}
 			}
 		}
 	}
@@ -206,9 +211,9 @@ namespace Engine::Core
 	void Application::SubmitRendererCommand(std::function<void()> &&renderCmd)
 	{
 #ifdef ENGINE_ENABLE_RENDERTHREAD
-
+		renderCmd();
 #else
-		ENGINE_ERROR("USE SubmitRendererCommand WITHOUT ENGINE_ENABLE_RENDERTHREAD");
+		renderCmd();
 #endif
 	}
 	void Application::SubmitToMainThread(const std::function<void()> func, bool isFront)

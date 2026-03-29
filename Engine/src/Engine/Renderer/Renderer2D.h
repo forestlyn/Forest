@@ -8,7 +8,9 @@
 #include "Engine/Scene/Components/SpriteComponent.h"
 #include "Engine/Scene/Components/CircleComponent.h"
 #include "Engine/Renderer/UniformBuffer.h"
-
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+#include "Engine/Memory/RenderMemoryPool.h"
+#endif
 namespace Engine::Renderer
 {
 
@@ -30,6 +32,8 @@ namespace Engine::Renderer
 
         static void BeginScene(glm::mat4 viewProjectionMatrix);
         static void EndScene();
+
+        static void NextFrame();
 
         static void FlushQuad();
         static void FlushCircle();
@@ -186,6 +190,10 @@ namespace Engine::Renderer
 
             CameraData CameraBuffer;
             Ref<UniformBuffer> CameraUniformBuffer;
+
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+            Memory::RenderMemoryPool *m_RendererMemoryPool = nullptr;
+#endif
         };
 
         static Scene2DData m_SceneData;

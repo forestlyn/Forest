@@ -24,49 +24,88 @@ namespace Engine::Renderer
     {
         ENGINE_PROFILING_FUNC();
 
-        // initialize shaders
-        m_SceneData.QuadTextureShader = Shader::Create("resources/assets/shaders/Renderer2D_QuadShader.glsl");
-        m_SceneData.CircleShader = Shader::Create("resources/assets/shaders/Renderer2D_CircleShader.glsl");
-        m_SceneData.LineShader = Shader::Create("resources/assets/shaders/Renderer2D_LineShader.glsl");
+        // ==========================================
+        // 1. 逻辑线程 (CPU 端)：分配内存池和固定内存
+        // ==========================================
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+        ENGINE_WARN("ENGINE_ENABLE_RENDERTHREAD");
+        const size_t Memory_Size = 1024 * 1024 * 32;
+        m_SceneData.m_RendererMemoryPool = new Memory::RenderMemoryPool(Memory_Size);
 
-        // initialize vertex array
-        //-- Init Quad --
+        m_SceneData.QuadVertexBufferBase = (QuadVertex *)m_SceneData.m_RendererMemoryPool->Allocate(sizeof(QuadVertex) * m_SceneData.MaxVertices);
+        m_SceneData.CircleVertexBufferBase = (CircleVertex *)m_SceneData.m_RendererMemoryPool->Allocate(sizeof(CircleVertex) * m_SceneData.MaxVertices);
+        m_SceneData.LineVertexBufferBase = (LineVertex *)m_SceneData.m_RendererMemoryPool->Allocate(sizeof(LineVertex) * m_SceneData.MaxVertices);
+#else
+        m_SceneData.QuadVertexBufferBase = new QuadVertex[m_SceneData.MaxVertices];
+        m_SceneData.CircleVertexBufferBase = new CircleVertex[m_SceneData.MaxVertices];
+        m_SceneData.LineVertexBufferBase = new LineVertex[m_SceneData.MaxVertices];
+#endif
+
+        ENGINE_ASSERT(m_SceneData.QuadVertexBufferBase);
+        ENGINE_ASSERT(m_SceneData.CircleVertexBufferBase);
+        ENGINE_ASSERT(m_SceneData.LineVertexBufferBase);
+
+        // 重置操作指针
+        m_SceneData.QuadVertexBufferPtr = m_SceneData.QuadVertexBufferBase;
+        m_SceneData.CircleVertexBufferPtr = m_SceneData.CircleVertexBufferBase;
+        m_SceneData.LineVertexBufferPtr = m_SceneData.LineVertexBufferBase;
+
+        // 预先在主线程计算好索引数据 (纯数学计算，无 GPU 调用)
+        uint32_t *quadIndices = new uint32_t[m_SceneData.MaxIndices];
+        uint32_t offset = 0;
+        for (size_t i = 0; i < m_SceneData.MaxIndices; i += 6)
         {
+            quadIndices[i + 0] = offset + 0;
+            quadIndices[i + 1] = offset + 1;
+            quadIndices[i + 2] = offset + 2;
+            quadIndices[i + 3] = offset + 2;
+            quadIndices[i + 4] = offset + 3;
+            quadIndices[i + 5] = offset + 0;
+            offset += 4;
+        }
 
+        uint32_t *circleIndices = new uint32_t[m_SceneData.MaxIndices];
+        offset = 0;
+        for (size_t i = 0; i < m_SceneData.MaxIndices; i += 6)
+        {
+            // 圆形索引和四边形逻辑相同
+            circleIndices[i + 0] = offset + 0;
+            circleIndices[i + 1] = offset + 1;
+            circleIndices[i + 2] = offset + 2;
+            circleIndices[i + 3] = offset + 2;
+            circleIndices[i + 4] = offset + 3;
+            circleIndices[i + 5] = offset + 0;
+            offset += 4;
+        }
+
+        // ==========================================
+        // 2. 提交到渲染线程 (GPU 端)：创建资源
+        // 捕获刚刚生成的数组指针，用完后在渲染线程里 delete
+        // ==========================================
+        Engine::Core::Application::Get().SubmitRendererCommand([quadIndices, circleIndices]()
+                                                               {
+            // ------------- Shaders -------------
+            m_SceneData.QuadTextureShader = Shader::Create("resources/assets/shaders/Renderer2D_QuadShader.glsl");
+            m_SceneData.CircleShader = Shader::Create("resources/assets/shaders/Renderer2D_CircleShader.glsl");
+            m_SceneData.LineShader = Shader::Create("resources/assets/shaders/Renderer2D_LineShader.glsl");
+
+            // ------------- Quad 初始化 -------------
             m_SceneData.QuadVertexArray = VertexArray::Create();
-
-            m_SceneData.QuadVertexBufferBase = new QuadVertex[m_SceneData.MaxVertices];
-            m_SceneData.QuadVertexBufferPtr = m_SceneData.QuadVertexBufferBase;
-
             m_SceneData.QuadVertexBuffer = VertexBuffer::Create(sizeof(QuadVertex) * m_SceneData.MaxVertices);
             m_SceneData.QuadVertexBuffer->SetLayout({{ShaderDataType::Float3, "a_Position"},
-                                                     {ShaderDataType::Float4, "a_Color"},
-                                                     {ShaderDataType::Float2, "a_TexCoord"},
-                                                     {ShaderDataType::Float, "a_TexIndex"},
-                                                     {ShaderDataType::Float, "a_TilingFactor"},
-                                                     {ShaderDataType::Int, "a_EntityID"}});
+                                                 {ShaderDataType::Float4, "a_Color"},
+                                                 {ShaderDataType::Float2, "a_TexCoord"},
+                                                 {ShaderDataType::Float, "a_TexIndex"},
+                                                 {ShaderDataType::Float, "a_TilingFactor"},
+                                                 {ShaderDataType::Int, "a_EntityID"}});
             m_SceneData.QuadVertexArray->AddVertexBuffer(m_SceneData.QuadVertexBuffer);
 
-            uint32_t *quadIndices = new uint32_t[m_SceneData.MaxIndices];
-            uint32_t offset = 0;
-            for (size_t i = 0; i < m_SceneData.MaxIndices; i += 6)
-            {
-                quadIndices[i + 0] = offset + 0;
-                quadIndices[i + 1] = offset + 1;
-                quadIndices[i + 2] = offset + 2;
-
-                quadIndices[i + 3] = offset + 2;
-                quadIndices[i + 4] = offset + 3;
-                quadIndices[i + 5] = offset + 0;
-
-                offset += 4;
-            }
-
+            // 创建 GPU 索引缓冲区
             Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, m_SceneData.MaxIndices);
             m_SceneData.QuadVertexArray->SetIndexBuffer(quadIB);
-            delete[] quadIndices;
+            delete[] quadIndices; // 取消分配 CPU 端临时内存 (必须在 Render 线程用完后释放)
 
-            // create a 1x1 white texture
+            // 创建默认白色贴图
             auto WhiteTexture = Texture2D::Create(1, 1);
             uint32_t whitePixel = 0xffffffff;
             WhiteTexture->SetData(&whitePixel, sizeof(uint32_t));
@@ -78,59 +117,34 @@ namespace Engine::Renderer
 
             m_SceneData.QuadTextureShader->Bind();
             m_SceneData.QuadTextureShader->SetIntArray("u_Textures", textureSlots, m_SceneData.MaxTextureSlots);
-        }
 
-        //-- Init Circle --
-        {
+            // ------------- Circle 初始化 -------------
             m_SceneData.CircleVertexArray = VertexArray::Create();
-
-            m_SceneData.CircleVertexBufferBase = new CircleVertex[m_SceneData.MaxVertices];
-            m_SceneData.CircleVertexBufferPtr = m_SceneData.CircleVertexBufferBase;
-
             m_SceneData.CircleVertexBuffer = VertexBuffer::Create(sizeof(CircleVertex) * m_SceneData.MaxVertices);
             m_SceneData.CircleVertexBuffer->SetLayout({{ShaderDataType::Float3, "a_WorldPosition"},
-                                                       {ShaderDataType::Float2, "a_LocalPosition"},
-                                                       {ShaderDataType::Float4, "a_Color"},
-                                                       {ShaderDataType::Float, "a_Thickness"},
-                                                       {ShaderDataType::Float, "a_Fade"},
-                                                       {ShaderDataType::Int, "a_EntityID"}});
+                                                   {ShaderDataType::Float2, "a_LocalPosition"},
+                                                   {ShaderDataType::Float4, "a_Color"},
+                                                   {ShaderDataType::Float, "a_Thickness"},
+                                                   {ShaderDataType::Float, "a_Fade"},
+                                                   {ShaderDataType::Int, "a_EntityID"}});
             m_SceneData.CircleVertexArray->AddVertexBuffer(m_SceneData.CircleVertexBuffer);
-
-            uint32_t *circleIndices = new uint32_t[m_SceneData.MaxIndices];
-            uint32_t offset = 0;
-            for (size_t i = 0; i < m_SceneData.MaxIndices; i += 6)
-            {
-                circleIndices[i + 0] = offset + 0;
-                circleIndices[i + 1] = offset + 1;
-                circleIndices[i + 2] = offset + 2;
-
-                circleIndices[i + 3] = offset + 2;
-                circleIndices[i + 4] = offset + 3;
-                circleIndices[i + 5] = offset + 0;
-
-                offset += 4;
-            }
 
             Ref<IndexBuffer> circleIB = IndexBuffer::Create(circleIndices, m_SceneData.MaxIndices);
             m_SceneData.CircleVertexArray->SetIndexBuffer(circleIB);
-            delete[] circleIndices;
-        }
+            delete[] circleIndices; // 取消分配
 
-        //-- Init Line --
-        {
+            // ------------- Line 初始化 -------------
             m_SceneData.LineVertexArray = VertexArray::Create();
-
-            m_SceneData.LineVertexBufferBase = new LineVertex[m_SceneData.MaxVertices];
-            m_SceneData.LineVertexBufferPtr = m_SceneData.LineVertexBufferBase;
-
             m_SceneData.LineVertexBuffer = VertexBuffer::Create(sizeof(LineVertex) * m_SceneData.MaxVertices);
             m_SceneData.LineVertexBuffer->SetLayout({{ShaderDataType::Float3, "a_Position"},
-                                                     {ShaderDataType::Float4, "a_Color"},
-                                                     {ShaderDataType::Int, "a_EntityID"}});
+                                                 {ShaderDataType::Float4, "a_Color"},
+                                                 {ShaderDataType::Int, "a_EntityID"}});
             m_SceneData.LineVertexArray->AddVertexBuffer(m_SceneData.LineVertexBuffer);
-            SetLineWidth(m_SceneData.LineWidth);
-        }
-        m_SceneData.CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraData), 0);
+            
+            RenderCommand::SetLineWidth(m_SceneData.LineWidth);
+
+            // ------------- Camera -------------
+            m_SceneData.CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraData), 0); });
     }
 
     void Renderer2D::Shutdown()
@@ -143,7 +157,10 @@ namespace Engine::Renderer
         ENGINE_PROFILING_FUNC();
 
         m_SceneData.CameraBuffer.ViewProjection = viewProjectionMatrix;
-        m_SceneData.CameraUniformBuffer->SetData(&m_SceneData.CameraBuffer, sizeof(CameraData));
+
+        CameraData cameraData = m_SceneData.CameraBuffer;
+        Engine::Core::Application::Get().SubmitRendererCommand([cameraData]()
+                                                               { m_SceneData.CameraUniformBuffer->SetData(&cameraData, sizeof(CameraData)); });
 
         ResetQuad();
         ResetCircle();
@@ -155,54 +172,100 @@ namespace Engine::Renderer
         ENGINE_PROFILING_FUNC();
 
         // Quad
+        uint32_t quadDataSize = (uint32_t)((uint8_t *)m_SceneData.QuadVertexBufferPtr - (uint8_t *)m_SceneData.QuadVertexBufferBase);
+        if (quadDataSize > 0)
         {
-            uint32_t dataSize = (uint32_t)((uint8_t *)m_SceneData.QuadVertexBufferPtr - (uint8_t *)m_SceneData.QuadVertexBufferBase);
-            m_SceneData.QuadVertexBuffer->SetData(m_SceneData.QuadVertexBufferBase, dataSize);
+            void *vertexData = m_SceneData.QuadVertexBufferBase;
+            Engine::Core::Application::Get().SubmitRendererCommand([vertexData, quadDataSize]()
+                                                                   { m_SceneData.QuadVertexBuffer->SetData(vertexData, quadDataSize); });
             FlushQuad();
         }
 
         // Circle
+        uint32_t circleDataSize = (uint32_t)((uint8_t *)m_SceneData.CircleVertexBufferPtr - (uint8_t *)m_SceneData.CircleVertexBufferBase);
+        if (circleDataSize > 0)
         {
-            uint32_t dataSize = (uint32_t)((uint8_t *)m_SceneData.CircleVertexBufferPtr - (uint8_t *)m_SceneData.CircleVertexBufferBase);
-            m_SceneData.CircleVertexBuffer->SetData(m_SceneData.CircleVertexBufferBase, dataSize);
+            void *vertexData = m_SceneData.CircleVertexBufferBase;
+            Engine::Core::Application::Get().SubmitRendererCommand([vertexData, circleDataSize]()
+                                                                   { m_SceneData.CircleVertexBuffer->SetData(vertexData, circleDataSize); });
             FlushCircle();
         }
 
         // Line
+        uint32_t lineDataSize = (uint32_t)((uint8_t *)m_SceneData.LineVertexBufferPtr - (uint8_t *)m_SceneData.LineVertexBufferBase);
+        if (lineDataSize > 0)
         {
-            uint32_t dataSize = (uint32_t)((uint8_t *)m_SceneData.LineVertexBufferPtr - (uint8_t *)m_SceneData.LineVertexBufferBase);
-            m_SceneData.LineVertexBuffer->SetData(m_SceneData.LineVertexBufferBase, dataSize);
+            void *vertexData = m_SceneData.LineVertexBufferBase;
+            Engine::Core::Application::Get().SubmitRendererCommand([vertexData, lineDataSize]()
+                                                                   { m_SceneData.LineVertexBuffer->SetData(vertexData, lineDataSize); });
             FlushLine();
         }
+    }
+
+    void Renderer2D::NextFrame()
+    {
+        m_SceneData.m_RendererMemoryPool->Swap();
     }
 
     /// @brief flush the draw calls
     void Renderer2D::FlushQuad()
     {
         ENGINE_PROFILING_FUNC();
-        for (int i = 0; i < m_SceneData.TextureSlotIndex; i++)
-        {
-            m_SceneData.TextureSlots[i]->Bind(i);
-        }
+
+        if (m_SceneData.QuadIndexCount == 0)
+            return;
+
         m_Stats.DrawCalls++;
-        m_SceneData.QuadTextureShader->Bind();
-        RenderCommand::DrawIndexed(m_SceneData.QuadVertexArray, m_SceneData.QuadIndexCount);
+
+        uint32_t textureSlotIndex = m_SceneData.TextureSlotIndex;
+        std::vector<Ref<Texture2D>> textureSlots;
+        textureSlots.reserve(textureSlotIndex);
+        for (uint32_t i = 0; i < textureSlotIndex; i++)
+        {
+            textureSlots.push_back(m_SceneData.TextureSlots[i]);
+        }
+        uint32_t indexCount = m_SceneData.QuadIndexCount;
+
+        Engine::Core::Application::Get().SubmitRendererCommand([textureSlots, textureSlotIndex, indexCount]()
+                                                               {
+            for (uint32_t i = 0; i < textureSlotIndex; i++)
+            {
+                textureSlots[i]->Bind(i);
+            }
+            m_SceneData.QuadTextureShader->Bind();
+            RenderCommand::DrawIndexed(m_SceneData.QuadVertexArray, indexCount); });
     }
 
     void Renderer2D::FlushCircle()
     {
         ENGINE_PROFILING_FUNC();
+
+        if (m_SceneData.CircleIndexCount == 0)
+            return;
+
         m_Stats.DrawCalls++;
-        m_SceneData.CircleShader->Bind();
-        RenderCommand::DrawIndexed(m_SceneData.CircleVertexArray, m_SceneData.CircleIndexCount);
+
+        uint32_t indexCount = m_SceneData.CircleIndexCount;
+        Engine::Core::Application::Get().SubmitRendererCommand([indexCount]()
+                                                               {
+            m_SceneData.CircleShader->Bind();
+            RenderCommand::DrawIndexed(m_SceneData.CircleVertexArray, indexCount); });
     }
 
     void Renderer2D::FlushLine()
     {
         ENGINE_PROFILING_FUNC();
+
+        if (m_SceneData.LineVertexCount == 0)
+            return;
+
         m_Stats.DrawCalls++;
-        m_SceneData.LineShader->Bind();
-        RenderCommand::DrawLine(m_SceneData.LineVertexArray, m_SceneData.LineVertexCount);
+
+        uint32_t vertexCount = m_SceneData.LineVertexCount;
+        Engine::Core::Application::Get().SubmitRendererCommand([vertexCount]()
+                                                               {
+            m_SceneData.LineShader->Bind();
+            RenderCommand::DrawLine(m_SceneData.LineVertexArray, vertexCount); });
     }
 
 #pragma region DrawQuadImplementations
@@ -384,7 +447,8 @@ namespace Engine::Renderer
     void Renderer2D::SetLineWidth(float width)
     {
         m_SceneData.LineWidth = width;
-        RenderCommand::SetLineWidth(width);
+        Engine::Core::Application::Get().SubmitRendererCommand([width]()
+                                                               { RenderCommand::SetLineWidth(width); });
     }
 
     float Renderer2D::GetLineWidth()
@@ -489,35 +553,61 @@ namespace Engine::Renderer
     void Renderer2D::UploadQuadData()
     {
         uint32_t dataSize = (uint32_t)((uint8_t *)m_SceneData.QuadVertexBufferPtr - (uint8_t *)m_SceneData.QuadVertexBufferBase);
-        m_SceneData.QuadVertexBuffer->SetData(m_SceneData.QuadVertexBufferBase, dataSize);
+        void *vertexData = m_SceneData.QuadVertexBufferBase;
+        Engine::Core::Application::Get().SubmitRendererCommand([vertexData, dataSize]()
+                                                               { m_SceneData.QuadVertexBuffer->SetData(vertexData, dataSize); });
     }
     /// @brief upload the circle vertex data to gpu
     void Renderer2D::UploadCircleData()
     {
         uint32_t dataSize = (uint32_t)((uint8_t *)m_SceneData.CircleVertexBufferPtr - (uint8_t *)m_SceneData.CircleVertexBufferBase);
-        m_SceneData.CircleVertexBuffer->SetData(m_SceneData.CircleVertexBufferBase, dataSize);
+        void *vertexData = m_SceneData.CircleVertexBufferBase;
+        Engine::Core::Application::Get().SubmitRendererCommand([vertexData, dataSize]()
+                                                               { m_SceneData.CircleVertexBuffer->SetData(vertexData, dataSize); });
     }
     /// @brief upload the line vertex data to gpu
     void Renderer2D::UploadLineData()
     {
         uint32_t dataSize = (uint32_t)((uint8_t *)m_SceneData.LineVertexBufferPtr - (uint8_t *)m_SceneData.LineVertexBufferBase);
-        m_SceneData.LineVertexBuffer->SetData(m_SceneData.LineVertexBufferBase, dataSize);
+        void *vertexData = m_SceneData.LineVertexBufferBase;
+        Engine::Core::Application::Get().SubmitRendererCommand([vertexData, dataSize]()
+                                                               { m_SceneData.LineVertexBuffer->SetData(vertexData, dataSize); });
     }
 
     void Renderer2D::ResetQuad()
     {
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+        m_SceneData.QuadVertexBufferBase = (QuadVertex *)m_SceneData.m_RendererMemoryPool->Allocate(sizeof(QuadVertex) * m_SceneData.MaxVertices);
         m_SceneData.QuadVertexBufferPtr = m_SceneData.QuadVertexBufferBase;
+#else
+        m_SceneData.QuadVertexBufferPtr = m_SceneData.QuadVertexBufferBase;
+#endif
+        ENGINE_ASSERT(m_SceneData.QuadVertexBufferPtr);
+
         m_SceneData.QuadIndexCount = 0;
         m_SceneData.TextureSlotIndex = 1;
     }
     void Renderer2D::ResetCircle()
     {
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+        m_SceneData.CircleVertexBufferBase = (CircleVertex *)m_SceneData.m_RendererMemoryPool->Allocate(sizeof(CircleVertex) * m_SceneData.MaxVertices);
         m_SceneData.CircleVertexBufferPtr = m_SceneData.CircleVertexBufferBase;
+#else
+        m_SceneData.CircleVertexBufferPtr = m_SceneData.CircleVertexBufferBase;
+#endif
+        ENGINE_ASSERT(m_SceneData.CircleVertexBufferPtr);
         m_SceneData.CircleIndexCount = 0;
     }
+
     void Renderer2D::ResetLine()
     {
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+        m_SceneData.LineVertexBufferBase = (LineVertex *)m_SceneData.m_RendererMemoryPool->Allocate(sizeof(LineVertex) * m_SceneData.MaxVertices);
         m_SceneData.LineVertexBufferPtr = m_SceneData.LineVertexBufferBase;
+#else
+        m_SceneData.LineVertexBufferPtr = m_SceneData.LineVertexBufferBase;
+#endif
+        ENGINE_ASSERT(m_SceneData.LineVertexBufferPtr);
         m_SceneData.LineVertexCount = 0;
     }
 
