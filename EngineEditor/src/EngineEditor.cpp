@@ -65,6 +65,7 @@ namespace EngineEditor
     void EngineEditor::OnUpdate(Engine::Core::Timestep timestep)
     {
         {
+            ts = timestep.GetSeconds();
             ENGINE_PROFILING_FUNC();
             if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
                 m_EditorCamera.OnUpdate(timestep);
@@ -200,6 +201,8 @@ namespace EngineEditor
         int maxQuads = Engine::Renderer::Renderer2D::GetMaxQuads();
         ImGui::Text("Max Quads: %d", maxQuads);
         ImGui::InputInt("Max Quads", &maxQuads);
+
+        ImGui::Text("FPS Count: %f", 1.0 / ts);
 
         ImGui::End();
 

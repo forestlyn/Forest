@@ -33,8 +33,6 @@ namespace Engine::Renderer
         static void BeginScene(glm::mat4 viewProjectionMatrix);
         static void EndScene();
 
-        static void NextFrame();
-
         static void FlushQuad();
         static void FlushCircle();
         static void FlushLine();
@@ -116,6 +114,10 @@ namespace Engine::Renderer
 
         static void DrawQuadInternal(const glm::mat4 &transform, const glm::vec4 &color, const float textureIndex, const float tilingFactor, int entityID = -1, const glm::vec2 *texCoords = QuadTexCoords);
         static void DrawCircleInternal(const glm::mat4 &transform, const glm::vec4 &color, float thickness, float fade, int entityID = -1);
+
+        static void *Allocate(size_t size);
+
+    private:
         struct QuadVertex
         {
             glm::vec3 Position;
@@ -190,10 +192,6 @@ namespace Engine::Renderer
 
             CameraData CameraBuffer;
             Ref<UniformBuffer> CameraUniformBuffer;
-
-#ifdef ENGINE_ENABLE_RENDERTHREAD
-            Memory::RenderMemoryPool *m_RendererMemoryPool = nullptr;
-#endif
         };
 
         static Scene2DData m_SceneData;

@@ -93,5 +93,7 @@ namespace EngineEditor
         SceneState m_SceneState = SceneState::Edit;
 
         bool ShowPhysicsColliders = true;
+
+        float ts;
     };
 }

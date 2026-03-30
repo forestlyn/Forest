@@ -42,10 +42,4 @@ namespace Engine::Renderer
         vertexArray->Bind();
         RenderCommand::DrawIndexed(vertexArray);
     }
-
-    void Renderer::NextFrame()
-    {
-        Renderer2D::NextFrame();
-    }
-
 } // namespace Engine::Renderer

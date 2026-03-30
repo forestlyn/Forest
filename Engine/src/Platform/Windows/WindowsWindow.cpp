@@ -2,6 +2,7 @@
 #include "Platform/OpenGL/OpenGLContext.h"
 #include "glfw/glfw3.h"
 #include "Engine/Profile/Instrumentor.h"
+#include "Engine/Core/Application.h"
 #ifdef FOREST_PLATFORM_WINDOWS
 namespace Engine::Core
 {
@@ -51,7 +52,14 @@ namespace Platform::Windows
             m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
         }
         m_Context = new OpenGL::OpenGLContext(m_Window);
-        m_Context->Init();
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+        Engine::Core::Application::Get().SubmitRendererCommand([context = m_Context]()
+                                                               { context->Init(); });
+#else
+        {
+            m_Context->Init();
+        }
+#endif
         glfwSetWindowUserPointer(m_Window, &m_Data);
         SetVSync(true);
 
@@ -155,24 +163,48 @@ namespace Platform::Windows
     {
         ENGINE_PROFILING_FUNC();
         glfwDestroyWindow(m_Window);
-        m_Context->Cleanup();
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+        Engine::Core::Application::Get().SubmitRendererCommand([context = m_Context]()
+                                                               { context->Cleanup(); });
+#else
+        {
+            m_Context->Cleanup();
+        }
+#endif
+    }
+
+    void WindowsWindow::OnUpdateEvent()
+    {
+        glfwPollEvents();
     }
 
     void WindowsWindow::OnUpdate()
     {
         ENGINE_PROFILING_FUNC();
-        glfwPollEvents();
-        m_Context->SwapBuffers();
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+        Engine::Core::Application::Get().SubmitRendererCommand([context = m_Context]()
+                                                               { context->SwapBuffers(); });
+#else
+        {
+            m_Context->SwapBuffers();
+        }
+#endif
     }
 
     void WindowsWindow::SetEventCallback(const EventCallbackFn &callback)
     {
         m_Data.EventCallback = callback;
     }
-
     void WindowsWindow::SetVSync(bool enabled)
     {
-        m_Context->SetVSync(enabled);
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+        Engine::Core::Application::Get().SubmitRendererCommand([context = m_Context, enabled]()
+                                                               { context->SetVSync(enabled); });
+#else
+        {
+            m_Context->SetVSync(enabled);
+        }
+#endif
         m_Data.VSync = enabled;
     }
 

@@ -8,35 +8,11 @@ namespace Platform::OpenGL
         : m_Width(width), m_Height(height)
     {
         ENGINE_PROFILING_FUNC();
-
-        glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-        glTextureStorage2D(m_RendererID, 1, GL_RGBA8, m_Width, m_Height);
-
-        glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        internalFormat = GL_RGBA8;
     }
 
-    OpenGLTexture2D::OpenGLTexture2D(const std::string &path)
-        : m_Path(path)
+    OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, int channels, void *data) : m_Width(width), m_Height(height)
     {
-        ENGINE_PROFILING_FUNC();
-
-        // Load texture from file (implementation not shown)
-        // Set m_Width, m_Height, and m_RendererID accordingly
-        stbi_set_flip_vertically_on_load(1);
-        int width, height, channels;
-        unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-        if (!data)
-        {
-            ENGINE_ERROR("Failed to load texture image at path: {0}", path);
-        }
-        ENGINE_ASSERT(data, "Failed to load texture image!");
-        m_Width = width;
-        m_Height = height;
-
-        GLenum internalFormat = 0, dataFormat = 0;
         if (channels == 4)
         {
             internalFormat = GL_RGBA8;
@@ -47,9 +23,12 @@ namespace Platform::OpenGL
             internalFormat = GL_RGB8;
             dataFormat = GL_RGB;
         }
+        data = data;
+    }
 
+    void OpenGLTexture2D::Init()
+    {
         glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-        ENGINE_INFO("Loaded texture: {0} (Width: {1}, Height: {2}, Channels: {3})", path, m_Width, m_Height, channels);
         glTextureStorage2D(m_RendererID, 1, internalFormat, m_Width, m_Height);
 
         glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -57,9 +36,8 @@ namespace Platform::OpenGL
         glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
-
-        stbi_image_free(data);
+        if (data)
+            glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
     }
 
     OpenGLTexture2D::~OpenGLTexture2D()

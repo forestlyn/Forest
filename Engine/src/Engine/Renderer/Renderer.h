@@ -17,8 +17,6 @@ namespace Engine::Renderer
 
         static void Submit(Ref<Shader> &shader, Ref<VertexArray> &vertexArray, glm::mat4 transform = glm::mat4(1.0f));
 
-        static void NextFrame();
-
         static inline RendererAPI::API GetAPI()
         {
             return RendererAPI::GetAPI();

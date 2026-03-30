@@ -18,6 +18,9 @@ namespace Engine::Core
 	{
 		ENGINE_PROFILING_SCOPE("START");
 
+		ENGINE_ASSERT(!s_Instance, "Application already exists!");
+		s_Instance = this;
+
 		m_Specification = spec;
 
 		ENGINE_INFO("current path:{}", std::filesystem::current_path().string());
@@ -31,14 +34,15 @@ namespace Engine::Core
 		windowSpec.Title = m_Specification.Name;
 		windowSpec.Width = m_Specification.Width;
 		windowSpec.Height = m_Specification.Height;
+
+		InitRendererMemoryPool();
+		StartRenderThread();
+
 		m_Window = Scope<Window>(Window::Create(windowSpec));
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 		m_Window->SetVSync(m_Specification.VSync);
 		m_Window->SetFullScreen(m_Specification.Fullscreen);
 		Renderer::Renderer::Init();
-
-		ENGINE_ASSERT(!s_Instance, "Application already exists!");
-		s_Instance = this;
 
 		// imgui init needs to be after window creation and s_Instance assignment
 		m_ImGuiLayer = new MyImGui::ImGuiLayer();
@@ -56,6 +60,14 @@ namespace Engine::Core
 	{
 		ENGINE_PROFILING_FUNC();
 		Renderer::Renderer::Shutdown();
+		DispatchRendererCommands();
+
+		if (m_Window)
+			m_Window.reset();
+		DispatchRendererCommands();
+
+		StopRenderThread();
+		ReleaseRendererMemoryPool();
 		ScriptEngine::Shutdown();
 	}
 
@@ -73,6 +85,10 @@ namespace Engine::Core
 				Timestep time = glfwGetTime(); // Get time in seconds
 				float deltaTime = time - m_LastFrameTime;
 				m_LastFrameTime = time;
+
+				DispatchRendererCommands();
+
+				m_Window->OnUpdateEvent();
 
 				ExecuteMainThreadQueueBack();
 
@@ -110,8 +126,12 @@ namespace Engine::Core
 
 				{
 					ENGINE_PROFILING_SCOPE("Renderer NextFrame");
-					Renderer::Renderer::NextFrame();
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+					m_RendererMemoryPool->Swap();
+#endif
 				}
+
+				DispatchRendererCommands();
 			}
 		}
 	}
@@ -119,6 +139,7 @@ namespace Engine::Core
 	void Application::Shutdown()
 	{
 		m_Running = false;
+		DispatchRendererCommands();
 	}
 
 	bool Application::OnEvent(Event::Event &e)
@@ -208,9 +229,26 @@ namespace Engine::Core
 		m_LayerStack.PushOverlay(overlay);
 		overlay->OnAttach();
 	}
+	void *Application::RendererAllocator(size_t size)
+	{
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+		return m_RendererMemoryPool->Allocate(size);
+#else
+		ENGINE_ASSERT(false, "use RendererAllocator Wrong");
+		return nullptr;
+#endif
+	}
 	void Application::SubmitRendererCommand(std::function<void()> &&renderCmd)
 	{
 #ifdef ENGINE_ENABLE_RENDERTHREAD
+		// if (!m_RenderThreadStarted)
+		// {
+		// 	renderCmd();
+		// 	return;
+		// }
+
+		// std::scoped_lock<std::mutex> lock(m_RenderThreadQueueMutex);
+		// m_RenderSubmitQueue.emplace_back(std::move(renderCmd));
 		renderCmd();
 #else
 		renderCmd();
@@ -223,5 +261,98 @@ namespace Engine::Core
 			m_MainThreadQueueFront.emplace_back(func);
 		else
 			m_MainThreadQueueBack.emplace_back(func);
+	}
+
+	void Application::InitRendererMemoryPool()
+	{
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+		const size_t Memory_Size = 1024 * 1024 * 256;
+		m_RendererMemoryPool = new Memory::RenderMemoryPool(Memory_Size);
+
+#endif
+	}
+
+	void Application::ReleaseRendererMemoryPool()
+	{
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+		delete m_RendererMemoryPool;
+
+#endif
+	}
+
+	void Application::StartRenderThread()
+	{
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+		if (m_RenderThreadRunning)
+			return;
+
+		m_RenderThreadRunning = true;
+		m_RenderThread = std::thread(&Application::RenderThreadLoop, this);
+		m_RenderThreadStarted = true;
+#endif
+	}
+
+	void Application::StopRenderThread()
+	{
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+		if (!m_RenderThreadStarted)
+			return;
+
+		DispatchRendererCommands();
+		{
+			std::scoped_lock<std::mutex> lock(m_RenderThreadQueueMutex);
+			m_RenderThreadRunning = false;
+		}
+		m_RenderThreadCV.notify_one();
+
+		if (m_RenderThread.joinable())
+			m_RenderThread.join();
+
+		m_RenderThreadStarted = false;
+#endif
+	}
+
+	void Application::DispatchRendererCommands()
+	{
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+		if (!m_RenderThreadStarted)
+			return;
+
+		{
+			std::scoped_lock<std::mutex> lock(m_RenderThreadQueueMutex);
+			if (m_RenderSubmitQueue.empty())
+				return;
+			if (!m_RenderExecuteQueue.empty())
+				return;
+
+			m_RenderExecuteQueue.swap(m_RenderSubmitQueue);
+		}
+
+		m_RenderThreadCV.notify_one();
+#endif
+	}
+
+	void Application::RenderThreadLoop()
+	{
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+		while (true)
+		{
+			std::vector<std::function<void()>> work;
+
+			{
+				std::unique_lock<std::mutex> lock(m_RenderThreadQueueMutex);
+				m_RenderThreadCV.wait(lock, [this]()
+									  { return !m_RenderThreadRunning || !m_RenderExecuteQueue.empty(); });
+
+				if (!m_RenderThreadRunning && m_RenderExecuteQueue.empty())
+					break;
+
+				work.swap(m_RenderExecuteQueue);
+			}
+
+			for (auto &cmd : work)
+				cmd();
+		}
+#endif
 	}
 }

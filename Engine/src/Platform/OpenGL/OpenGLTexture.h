@@ -7,8 +7,10 @@ namespace Platform::OpenGL
     {
     public:
         OpenGLTexture2D(uint32_t width, uint32_t height);
-        OpenGLTexture2D(const std::string &path);
+        OpenGLTexture2D(uint32_t width, uint32_t height, int channels, void *data);
         virtual ~OpenGLTexture2D();
+
+        virtual void Init() override;
 
         virtual uint32_t GetWidth() const override { return m_Width; }
         virtual uint32_t GetHeight() const override { return m_Height; }
@@ -29,5 +31,8 @@ namespace Platform::OpenGL
         std::string m_Path;
         uint32_t m_Width, m_Height;
         uint32_t m_RendererID;
+
+        int internalFormat, dataFormat;
+        void *data = nullptr;
     };
 } // namespace Platform::OpenGL

@@ -6,7 +6,12 @@
 #include "Engine/pcheader.h"
 #include "Engine/Events/WindowEvent.h"
 #include "Engine/Profile/ProfileLayer.h"
-// #include "Engine/Core/RenderCommandQueue.h"
+#include <atomic>
+#include <condition_variable>
+#include <thread>
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+#include "Engine/Memory/RenderMemoryPool.h"
+#endif
 namespace Engine::Core
 {
 	struct ApplicationCommandLineArgs
@@ -53,6 +58,8 @@ namespace Engine::Core
 		int GetWindowHeight() const { return m_Window->GetHeight(); }
 		void *GetNativeWindow() const { return m_Window->GetNativeWindow(); }
 
+		// Render
+		void *RendererAllocator(size_t size);
 		void SubmitRendererCommand(std::function<void()> &&renderCmd);
 
 		///// @brief Submits a function to be executed on the main thread.
@@ -77,6 +84,13 @@ namespace Engine::Core
 		void ExecuteMainThreadQueueFront();
 		void ExecuteMainThreadQueueBack();
 
+		void InitRendererMemoryPool();
+		void ReleaseRendererMemoryPool();
+		void StartRenderThread();
+		void StopRenderThread();
+		void DispatchRendererCommands();
+		void RenderThreadLoop();
+
 	private:
 		bool m_Running = true;
 		bool m_Minimized = false;
@@ -93,6 +107,18 @@ namespace Engine::Core
 		std::vector<std::function<void()>> m_MainThreadQueueFront;
 		std::vector<std::function<void()>> m_MainThreadQueueBack;
 		std::mutex m_MainThreadQueueMutex;
+
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+		std::thread m_RenderThread;
+		std::atomic<bool> m_RenderThreadRunning = false;
+		std::atomic<bool> m_RenderThreadStarted = false;
+		std::condition_variable m_RenderThreadCV;
+		std::mutex m_RenderThreadQueueMutex;
+		std::vector<std::function<void()>> m_RenderSubmitQueue;
+		std::vector<std::function<void()>> m_RenderExecuteQueue;
+
+		Memory::RenderMemoryPool *m_RendererMemoryPool = nullptr;
+#endif
 
 #if defined(FOREST_ENABLE_PROFILING)
 		Engine::Profile::ProfileLayer *m_ProfileLayer;

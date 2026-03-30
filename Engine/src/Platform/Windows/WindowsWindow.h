@@ -12,6 +12,7 @@ namespace Platform::Windows
         WindowsWindow(const Engine::Core::WindowProps &props);
         virtual ~WindowsWindow();
 
+        void OnUpdateEvent() override;
         void OnUpdate() override;
 
         inline uint32_t GetWidth() const override { return m_Data.Width; }
