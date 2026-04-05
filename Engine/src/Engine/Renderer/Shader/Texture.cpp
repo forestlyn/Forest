@@ -42,11 +42,11 @@ namespace Engine::Renderer
             return nullptr;
         case RendererAPI::API::OpenGL:
         {
+            ENGINE_INFO("Load Texture:{0}", path);
             int width, height, channels;
             void *textureData = LoadImg(path, width, height, channels);
             ENGINE_ASSERT(textureData);
             Ref<Platform::OpenGL::OpenGLTexture2D> textureRef = Ref<Platform::OpenGL::OpenGLTexture2D>(new Platform::OpenGL::OpenGLTexture2D(width, height, channels, textureData));
-
 #ifdef ENGINE_ENABLE_RENDERTHREAD
             Core::Application::Get().SubmitRendererCommand([textureRef]()
                                                            { textureRef->Init(); });

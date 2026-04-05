@@ -73,12 +73,16 @@ namespace EngineEditor
             {
                 ENGINE_PROFILING_SCOPE("EngineEditor::PreRenderer");
 
-                m_FrameBuffer->Bind();
+                ENQUEUE_RENDER_COMMAND(this)
+                this->m_FrameBuffer->Bind();
+                ENQUEUE_RENDER_COMMAND_END()
 
                 Engine::Renderer::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
                 Engine::Renderer::RenderCommand::Clear();
 
-                m_FrameBuffer->ClearAttachment(1, -1); // Clear entityID attachment
+                ENQUEUE_RENDER_COMMAND(this)
+                this->m_FrameBuffer->ClearAttachment(1, -1);
+                ENQUEUE_RENDER_COMMAND_END()
             }
 
             {
@@ -123,7 +127,9 @@ namespace EngineEditor
                     m_HoveredEntity = {};
                 }
 
-                m_FrameBuffer->Unbind();
+                ENQUEUE_RENDER_COMMAND(this)
+                this->m_FrameBuffer->Unbind();
+                ENQUEUE_RENDER_COMMAND_END()
             }
         }
     }

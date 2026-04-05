@@ -126,3 +126,17 @@ namespace Engine::Core
 	};
 	Application *CreateApplication(ApplicationCommandLineArgs args);
 }
+
+// Render Thread Submission Macros
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+	#define ENQUEUE_RENDER_COMMAND(...) \
+		Engine::Core::Application::Get().SubmitRendererCommand([__VA_ARGS__]() {
+	#define ENQUEUE_RENDER_COMMAND_END() \
+		});
+#else
+	#define ENQUEUE_RENDER_COMMAND(...) \
+		{
+	#define ENQUEUE_RENDER_COMMAND_END() \
+		}
+#endif
+

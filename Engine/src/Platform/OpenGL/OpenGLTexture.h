@@ -33,6 +33,6 @@ namespace Platform::OpenGL
         uint32_t m_RendererID;
 
         int internalFormat, dataFormat;
-        void *data = nullptr;
+        void *m_Data = nullptr;
     };
 } // namespace Platform::OpenGL

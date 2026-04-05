@@ -1,5 +1,6 @@
 #include "OpenGLFrameBuffer.h"
 #include "Engine/Profile/Instrumentor.h"
+#include "Engine/Core/Application.h"
 #include <glad/glad.h>
 #include "Utils.h"
 namespace Platform::OpenGL
@@ -16,6 +17,10 @@ namespace Platform::OpenGL
             else
                 m_DepthAttachmentSpecification = spec;
         }
+    }
+
+    void OpenGLFrameBuffer::Init()
+    {
         Invalidate();
     }
 
@@ -51,7 +56,9 @@ namespace Platform::OpenGL
         m_Spec.Width = width;
         m_Spec.Height = height;
 
-        Invalidate();
+        ENQUEUE_RENDER_COMMAND(this)
+        this->Invalidate();
+        ENQUEUE_RENDER_COMMAND_END()
     }
 
     const int OpenGLFrameBuffer::GetPixelData(int index, int x, int y) const

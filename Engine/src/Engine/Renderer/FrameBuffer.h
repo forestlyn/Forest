@@ -48,6 +48,8 @@ namespace Engine::Renderer
     public:
         virtual ~FrameBuffer() = default;
 
+        virtual void Init() = 0;
+
         virtual void Bind() const = 0;
         virtual void Unbind() const = 0;
 

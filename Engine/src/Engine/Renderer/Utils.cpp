@@ -5,12 +5,14 @@ namespace Engine::Renderer
 {
     void *LoadImg(const std::string &path, int &width, int &height, int &channels)
     {
+        ENGINE_INFO("load {0} ing", path);
         stbi_set_flip_vertically_on_load(1);
         unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 
         if (!data)
         {
             // 加载失败时直接返回，防止发生未初始化的内存拷贝与崩溃
+            ENGINE_INFO("load {0} failed", path);
             return nullptr;
         }
 

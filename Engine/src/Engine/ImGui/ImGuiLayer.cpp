@@ -46,13 +46,23 @@ namespace Engine::MyImGui
         ENGINE_ASSERT(window, "GLFWwindow is null in ImGuiLayer::OnAttach()");
 
         ImGui_ImplGlfw_InitForOpenGL(window, true);
-        ImGui_ImplOpenGL3_Init("#version 410 core");
+
+        ENQUEUE_RENDER_COMMAND()
+        if (!ImGui_ImplOpenGL3_Init("#version 410 core"))
+        {
+            ENGINE_ERROR("Failed to initialize OpenGL3 backend for ImGui");
+        }
+        ENQUEUE_RENDER_COMMAND_END()
     }
 
     void ImGuiLayer::OnDetach()
     {
         ENGINE_PROFILING_FUNC();
+
+        ENQUEUE_RENDER_COMMAND()
         ImGui_ImplOpenGL3_Shutdown();
+        ENQUEUE_RENDER_COMMAND_END()
+
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
     }
@@ -70,7 +80,11 @@ namespace Engine::MyImGui
     void ImGuiLayer::Begin()
     {
         ENGINE_PROFILING_FUNC();
+
+        ENQUEUE_RENDER_COMMAND()
         ImGui_ImplOpenGL3_NewFrame();
+        ENQUEUE_RENDER_COMMAND_END()
+
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         ImGuizmo::BeginFrame();
@@ -85,7 +99,9 @@ namespace Engine::MyImGui
                                 (float)Engine::Core::Application::Get().GetWindowHeight());
 
         ImGui::Render();
+        ENQUEUE_RENDER_COMMAND()
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        ENQUEUE_RENDER_COMMAND_END()
 
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {

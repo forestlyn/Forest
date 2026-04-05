@@ -29,6 +29,7 @@ namespace Engine::Core
 		if (!m_Specification.WorkingDirectory.empty())
 			std::filesystem::current_path(m_Specification.WorkingDirectory);
 
+		ENGINE_INFO("Set working directory to: {}", std::filesystem::current_path().string());
 		// Create Window
 		WindowProps windowSpec;
 		windowSpec.Title = m_Specification.Name;
@@ -43,6 +44,18 @@ namespace Engine::Core
 		m_Window->SetVSync(m_Specification.VSync);
 		m_Window->SetFullScreen(m_Specification.Fullscreen);
 		Renderer::Renderer::Init();
+
+		ENGINE_INFO("Window created successfully!");
+		std::atomic_bool renderBootstrapReady = false;
+		SubmitRendererCommand([&renderBootstrapReady]()
+							  { renderBootstrapReady.store(true, std::memory_order_release); });
+
+		while (!renderBootstrapReady.load(std::memory_order_acquire))
+		{
+			DispatchRendererCommands();
+			std::this_thread::yield();
+		}
+		ENGINE_INFO("Renderer initialized successfully! {0}", renderBootstrapReady.load(std::memory_order_acquire));
 
 		// imgui init needs to be after window creation and s_Instance assignment
 		m_ImGuiLayer = new MyImGui::ImGuiLayer();
@@ -131,7 +144,19 @@ namespace Engine::Core
 #endif
 				}
 
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+				std::atomic_bool frameFenceReady = false;
+				SubmitRendererCommand([&frameFenceReady]()
+									  { frameFenceReady.store(true, std::memory_order_release); });
+
+				while (!frameFenceReady.load(std::memory_order_acquire))
+				{
+					DispatchRendererCommands();
+					std::this_thread::yield();
+				}
+#else
 				DispatchRendererCommands();
+#endif
 			}
 		}
 	}
@@ -241,15 +266,15 @@ namespace Engine::Core
 	void Application::SubmitRendererCommand(std::function<void()> &&renderCmd)
 	{
 #ifdef ENGINE_ENABLE_RENDERTHREAD
-		// if (!m_RenderThreadStarted)
-		// {
-		// 	renderCmd();
-		// 	return;
-		// }
+		if (!m_RenderThreadStarted)
+		{
+			renderCmd();
+			return;
+		}
 
-		// std::scoped_lock<std::mutex> lock(m_RenderThreadQueueMutex);
-		// m_RenderSubmitQueue.emplace_back(std::move(renderCmd));
-		renderCmd();
+		std::scoped_lock<std::mutex> lock(m_RenderThreadQueueMutex);
+		m_RenderSubmitQueue.emplace_back(std::move(renderCmd));
+		// renderCmd();
 #else
 		renderCmd();
 #endif
@@ -284,7 +309,10 @@ namespace Engine::Core
 	{
 #ifdef ENGINE_ENABLE_RENDERTHREAD
 		if (m_RenderThreadRunning)
+		{
+			ENGINE_ERROR("Render thread already running!");
 			return;
+		}
 
 		m_RenderThreadRunning = true;
 		m_RenderThread = std::thread(&Application::RenderThreadLoop, this);

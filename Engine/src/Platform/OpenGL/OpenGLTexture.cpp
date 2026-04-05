@@ -11,7 +11,7 @@ namespace Platform::OpenGL
         internalFormat = GL_RGBA8;
     }
 
-    OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, int channels, void *data) : m_Width(width), m_Height(height)
+    OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, int channels, void *data) : m_Width(width), m_Height(height), m_Data(data)
     {
         if (channels == 4)
         {
@@ -23,7 +23,6 @@ namespace Platform::OpenGL
             internalFormat = GL_RGB8;
             dataFormat = GL_RGB;
         }
-        data = data;
     }
 
     void OpenGLTexture2D::Init()
@@ -36,8 +35,12 @@ namespace Platform::OpenGL
         glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        if (data)
-            glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
+        if (m_Data)
+            glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, m_Data);
+        else
+        {
+            ENGINE_INFO("m_Data is null");
+        }
     }
 
     OpenGLTexture2D::~OpenGLTexture2D()

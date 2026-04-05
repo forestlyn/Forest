@@ -16,6 +16,7 @@ namespace Engine::Core
 namespace Platform::Windows
 {
     static bool s_GLFWInitialized = false;
+    static uint32_t s_GLFWWindowCount = 0;
 
     WindowsWindow::WindowsWindow(const Engine::Core::WindowProps &props)
     {
@@ -50,6 +51,8 @@ namespace Platform::Windows
         {
             ENGINE_PROFILING_SCOPE("glfwCreateWindow");
             m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+            ENGINE_ASSERT(m_Window, "Failed to create GLFW window!");
+            s_GLFWWindowCount++;
         }
         m_Context = new OpenGL::OpenGLContext(m_Window);
 #ifdef ENGINE_ENABLE_RENDERTHREAD
@@ -162,7 +165,15 @@ namespace Platform::Windows
     void WindowsWindow::Shutdown()
     {
         ENGINE_PROFILING_FUNC();
-        glfwDestroyWindow(m_Window);
+        if (m_Window)
+        {
+            glfwDestroyWindow(m_Window);
+            m_Window = nullptr;
+
+            ENGINE_ASSERT(s_GLFWWindowCount > 0, "GLFW window count underflow!");
+            s_GLFWWindowCount--;
+        }
+
 #ifdef ENGINE_ENABLE_RENDERTHREAD
         Engine::Core::Application::Get().SubmitRendererCommand([context = m_Context]()
                                                                { context->Cleanup(); });
@@ -171,6 +182,15 @@ namespace Platform::Windows
             m_Context->Cleanup();
         }
 #endif
+
+        delete m_Context;
+        m_Context = nullptr;
+
+        if (s_GLFWInitialized && s_GLFWWindowCount == 0)
+        {
+            glfwTerminate();
+            s_GLFWInitialized = false;
+        }
     }
 
     void WindowsWindow::OnUpdateEvent()

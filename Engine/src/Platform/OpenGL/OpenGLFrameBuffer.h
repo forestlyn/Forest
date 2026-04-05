@@ -9,6 +9,8 @@ namespace Platform::OpenGL
         OpenGLFrameBuffer(const Engine::Renderer::FrameBufferSpecification &spec);
         virtual ~OpenGLFrameBuffer();
 
+        virtual void Init() override;
+
         virtual void Bind() const override;
         virtual void Unbind() const override;
 
