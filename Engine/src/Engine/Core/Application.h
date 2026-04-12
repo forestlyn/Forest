@@ -60,7 +60,7 @@ namespace Engine::Core
 
 		// Render
 		void *RendererAllocator(size_t size);
-		void SubmitRendererCommand(std::function<void()> &&renderCmd);
+		void SubmitRendererCommand(std::function<void()> &&renderCmd, const char *source = nullptr);
 
 		///// @brief Submits a function to be executed on the main thread.
 		//// If isFront is false, the function will be executed immediately.
@@ -109,13 +109,23 @@ namespace Engine::Core
 		std::mutex m_MainThreadQueueMutex;
 
 #ifdef ENGINE_ENABLE_RENDERTHREAD
+		struct RenderCommandItem
+		{
+			uint64_t FrameIndex = 0;
+			uint64_t CommandIndexInFrame = 0;
+			const char *Source = nullptr;
+			std::function<void()> Command;
+		};
+
 		std::thread m_RenderThread;
 		std::atomic<bool> m_RenderThreadRunning = false;
 		std::atomic<bool> m_RenderThreadStarted = false;
+		std::atomic<uint64_t> m_RenderFrameIndex = 0;
+		std::atomic<uint64_t> m_RenderCommandCounter = 0;
 		std::condition_variable m_RenderThreadCV;
 		std::mutex m_RenderThreadQueueMutex;
-		std::vector<std::function<void()>> m_RenderSubmitQueue;
-		std::vector<std::function<void()>> m_RenderExecuteQueue;
+		std::vector<RenderCommandItem> m_RenderSubmitQueue;
+		std::vector<RenderCommandItem> m_RenderExecuteQueue;
 
 		Memory::RenderMemoryPool *m_RendererMemoryPool = nullptr;
 #endif
@@ -128,11 +138,15 @@ namespace Engine::Core
 }
 
 // Render Thread Submission Macros
+#define ENGINE_STRINGIFY_INTERNAL(x) #x
+#define ENGINE_STRINGIFY(x) ENGINE_STRINGIFY_INTERNAL(x)
+#define ENGINE_RENDER_CMD_SOURCE __FILE__ ":" ENGINE_STRINGIFY(__LINE__)
+
 #ifdef ENGINE_ENABLE_RENDERTHREAD
 	#define ENQUEUE_RENDER_COMMAND(...) \
 		Engine::Core::Application::Get().SubmitRendererCommand([__VA_ARGS__]() {
 	#define ENQUEUE_RENDER_COMMAND_END() \
-		});
+		}, ENGINE_RENDER_CMD_SOURCE);
 #else
 	#define ENQUEUE_RENDER_COMMAND(...) \
 		{

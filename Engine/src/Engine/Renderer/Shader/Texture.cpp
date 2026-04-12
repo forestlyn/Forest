@@ -15,14 +15,9 @@ namespace Engine::Renderer
         case RendererAPI::API::OpenGL:
         {
             Ref<Platform::OpenGL::OpenGLTexture2D> textureRef = Ref<Platform::OpenGL::OpenGLTexture2D>(new Platform::OpenGL::OpenGLTexture2D(width, height));
-#ifdef ENGINE_ENABLE_RENDERTHREAD
-            Core::Application::Get().SubmitRendererCommand([textureRef]()
-                                                           { textureRef->Init(); });
-#else
-            {
-                textureRef->Init();
-            }
-#endif
+            ENQUEUE_RENDER_COMMAND(textureRef)
+            textureRef->Init();
+            ENQUEUE_RENDER_COMMAND_END()
             return textureRef;
         }
 
@@ -47,14 +42,9 @@ namespace Engine::Renderer
             void *textureData = LoadImg(path, width, height, channels);
             ENGINE_ASSERT(textureData);
             Ref<Platform::OpenGL::OpenGLTexture2D> textureRef = Ref<Platform::OpenGL::OpenGLTexture2D>(new Platform::OpenGL::OpenGLTexture2D(width, height, channels, textureData));
-#ifdef ENGINE_ENABLE_RENDERTHREAD
-            Core::Application::Get().SubmitRendererCommand([textureRef]()
-                                                           { textureRef->Init(); });
-#else
-            {
-                textureRef->Init();
-            }
-#endif
+            ENQUEUE_RENDER_COMMAND(textureRef)
+            textureRef->Init();
+            ENQUEUE_RENDER_COMMAND_END()
 
 #ifndef ENGINE_ENABLE_RENDERTHREAD
             // 单线程模式下，直接在外部释放

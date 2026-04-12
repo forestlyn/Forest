@@ -13,12 +13,9 @@ namespace Engine::Renderer
             return nullptr;
         case RendererAPI::API::OpenGL:
             auto frameBuffer = Ref<Platform::OpenGL::OpenGLFrameBuffer>(new Platform::OpenGL::OpenGLFrameBuffer(spec));
-#ifdef ENGINE_ENABLE_RENDERTHREAD
-            Core::Application::Get().SubmitRendererCommand([frameBuffer]()
-                                                           { frameBuffer->Init(); });
-#else
+            ENQUEUE_RENDER_COMMAND(frameBuffer)
             frameBuffer->Init();
-#endif
+            ENQUEUE_RENDER_COMMAND_END()
             return frameBuffer;
         }
         ENGINE_ASSERT(false, "Unknown RendererAPI!");

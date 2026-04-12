@@ -11,6 +11,10 @@
 
 namespace Engine::Core
 {
+	static constexpr bool s_EnableRenderCmdTrace = true;
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+	thread_local bool s_IsRenderThread = false;
+#endif
 
 	Application *Application::s_Instance = nullptr;
 
@@ -47,8 +51,9 @@ namespace Engine::Core
 
 		ENGINE_INFO("Window created successfully!");
 		std::atomic_bool renderBootstrapReady = false;
-		SubmitRendererCommand([&renderBootstrapReady]()
-							  { renderBootstrapReady.store(true, std::memory_order_release); });
+		ENQUEUE_RENDER_COMMAND(&renderBootstrapReady)
+		renderBootstrapReady.store(true, std::memory_order_release);
+		ENQUEUE_RENDER_COMMAND_END()
 
 		while (!renderBootstrapReady.load(std::memory_order_acquire))
 		{
@@ -72,6 +77,7 @@ namespace Engine::Core
 	Application::~Application()
 	{
 		ENGINE_PROFILING_FUNC();
+		ENGINE_INFO("Shutting down application...");
 		Renderer::Renderer::Shutdown();
 		DispatchRendererCommands();
 
@@ -95,6 +101,16 @@ namespace Engine::Core
 		{
 			{
 				ENGINE_PROFILING_SCOPE("Run Loop");
+
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+				uint64_t frameIndex = m_RenderFrameIndex.fetch_add(1, std::memory_order_relaxed) + 1;
+				m_RenderCommandCounter.store(0, std::memory_order_relaxed);
+				if (s_EnableRenderCmdTrace)
+				{
+					ENGINE_INFO("[RenderFrame] ===== Begin Frame {} =====", frameIndex);
+				}
+#endif
+
 				Timestep time = glfwGetTime(); // Get time in seconds
 				float deltaTime = time - m_LastFrameTime;
 				m_LastFrameTime = time;
@@ -146,8 +162,9 @@ namespace Engine::Core
 
 #ifdef ENGINE_ENABLE_RENDERTHREAD
 				std::atomic_bool frameFenceReady = false;
-				SubmitRendererCommand([&frameFenceReady]()
-									  { frameFenceReady.store(true, std::memory_order_release); });
+				ENQUEUE_RENDER_COMMAND(&frameFenceReady)
+				frameFenceReady.store(true, std::memory_order_release);
+				ENQUEUE_RENDER_COMMAND_END()
 
 				while (!frameFenceReady.load(std::memory_order_acquire))
 				{
@@ -263,18 +280,39 @@ namespace Engine::Core
 		return nullptr;
 #endif
 	}
-	void Application::SubmitRendererCommand(std::function<void()> &&renderCmd)
+	void Application::SubmitRendererCommand(std::function<void()> &&renderCmd, const char *source)
 	{
 #ifdef ENGINE_ENABLE_RENDERTHREAD
+		uint64_t frameIndex = m_RenderFrameIndex.load(std::memory_order_relaxed);
+		uint64_t cmdIdInFrame = m_RenderCommandCounter.fetch_add(1, std::memory_order_relaxed) + 1;
+
 		if (!m_RenderThreadStarted)
 		{
+			if (s_EnableRenderCmdTrace)
+			{
+				ENGINE_INFO("[RenderCmd][Submit+ExecuteInline] frame={} cmd={} source={}", frameIndex, cmdIdInFrame, source ? source : "<unknown>");
+			}
+			renderCmd();
+			return;
+		}
+
+		if (s_IsRenderThread)
+		{
+			if (s_EnableRenderCmdTrace)
+			{
+				ENGINE_INFO("[RenderCmd][Submit+ExecuteOnRenderThread] frame={} cmd={} source={}", frameIndex, cmdIdInFrame, source ? source : "<unknown>");
+			}
 			renderCmd();
 			return;
 		}
 
 		std::scoped_lock<std::mutex> lock(m_RenderThreadQueueMutex);
-		m_RenderSubmitQueue.emplace_back(std::move(renderCmd));
-		// renderCmd();
+		m_RenderSubmitQueue.emplace_back(RenderCommandItem{frameIndex, cmdIdInFrame, source, std::move(renderCmd)});
+
+		if (s_EnableRenderCmdTrace)
+		{
+			ENGINE_INFO("[RenderCmd][Submit] frame={} cmd={} source={} submitQueueSize={}", frameIndex, cmdIdInFrame, source ? source : "<unknown>", m_RenderSubmitQueue.size());
+		}
 #else
 		renderCmd();
 #endif
@@ -363,9 +401,10 @@ namespace Engine::Core
 	void Application::RenderThreadLoop()
 	{
 #ifdef ENGINE_ENABLE_RENDERTHREAD
+		s_IsRenderThread = true;
 		while (true)
 		{
-			std::vector<std::function<void()>> work;
+			std::vector<RenderCommandItem> work;
 
 			{
 				std::unique_lock<std::mutex> lock(m_RenderThreadQueueMutex);
@@ -379,8 +418,15 @@ namespace Engine::Core
 			}
 
 			for (auto &cmd : work)
-				cmd();
+			{
+				if (s_EnableRenderCmdTrace)
+				{
+					ENGINE_INFO("[RenderCmd][Execute] frame={} cmd={} source={}", cmd.FrameIndex, cmd.CommandIndexInFrame, cmd.Source ? cmd.Source : "<unknown>");
+				}
+				cmd.Command();
+			}
 		}
+		s_IsRenderThread = false;
 #endif
 	}
 }

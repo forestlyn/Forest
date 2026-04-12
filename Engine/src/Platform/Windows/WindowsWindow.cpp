@@ -50,19 +50,21 @@ namespace Platform::Windows
 
         {
             ENGINE_PROFILING_SCOPE("glfwCreateWindow");
+            // RenderDoc requires an explicit core profile context.
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
             m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
             ENGINE_ASSERT(m_Window, "Failed to create GLFW window!");
             s_GLFWWindowCount++;
         }
         m_Context = new OpenGL::OpenGLContext(m_Window);
-#ifdef ENGINE_ENABLE_RENDERTHREAD
-        Engine::Core::Application::Get().SubmitRendererCommand([context = m_Context]()
-                                                               { context->Init(); });
-#else
-        {
-            m_Context->Init();
-        }
-#endif
+
+        ENQUEUE_RENDER_COMMAND(context = m_Context)
+        context->Init();
+        ENQUEUE_RENDER_COMMAND_END()
+
         glfwSetWindowUserPointer(m_Window, &m_Data);
         SetVSync(true);
 
@@ -174,14 +176,9 @@ namespace Platform::Windows
             s_GLFWWindowCount--;
         }
 
-#ifdef ENGINE_ENABLE_RENDERTHREAD
-        Engine::Core::Application::Get().SubmitRendererCommand([context = m_Context]()
-                                                               { context->Cleanup(); });
-#else
-        {
-            m_Context->Cleanup();
-        }
-#endif
+        ENQUEUE_RENDER_COMMAND(context = m_Context)
+        context->Cleanup();
+        ENQUEUE_RENDER_COMMAND_END()
 
         delete m_Context;
         m_Context = nullptr;
@@ -201,14 +198,9 @@ namespace Platform::Windows
     void WindowsWindow::OnUpdate()
     {
         ENGINE_PROFILING_FUNC();
-#ifdef ENGINE_ENABLE_RENDERTHREAD
-        Engine::Core::Application::Get().SubmitRendererCommand([context = m_Context]()
-                                                               { context->SwapBuffers(); });
-#else
-        {
-            m_Context->SwapBuffers();
-        }
-#endif
+        ENQUEUE_RENDER_COMMAND(context = m_Context)
+        context->SwapBuffers();
+        ENQUEUE_RENDER_COMMAND_END()
     }
 
     void WindowsWindow::SetEventCallback(const EventCallbackFn &callback)
@@ -217,14 +209,10 @@ namespace Platform::Windows
     }
     void WindowsWindow::SetVSync(bool enabled)
     {
-#ifdef ENGINE_ENABLE_RENDERTHREAD
-        Engine::Core::Application::Get().SubmitRendererCommand([context = m_Context, enabled]()
-                                                               { context->SetVSync(enabled); });
-#else
-        {
-            m_Context->SetVSync(enabled);
-        }
-#endif
+        ENQUEUE_RENDER_COMMAND(context = m_Context, enabled)
+        context->SetVSync(enabled);
+        ENQUEUE_RENDER_COMMAND_END()
+
         m_Data.VSync = enabled;
     }
 

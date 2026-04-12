@@ -31,14 +31,14 @@ namespace Engine::Platform::OpenGL
         // ENGINE_INFO("Viewport set to x:{0}, y:{1}, width:{2}, height:{3}", x, y, width, height);
     }
 
-    void OpenGLRendererAPI::DrawIndexed(Ref<Renderer::VertexArray> &vertexArray, uint32_t indexCount)
+    void OpenGLRendererAPI::DrawIndexed(const Ref<Renderer::VertexArray> &vertexArray, uint32_t indexCount)
     {
         ENGINE_PROFILING_FUNC();
         vertexArray->Bind();
         uint32_t count = indexCount == -1 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
         glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
     }
-    void OpenGLRendererAPI::DrawLine(Ref<Renderer::VertexArray> &vertexArray, uint32_t vertexCount)
+    void OpenGLRendererAPI::DrawLine(const Ref<Renderer::VertexArray> &vertexArray, uint32_t vertexCount)
     {
         ENGINE_PROFILING_FUNC();
         vertexArray->Bind();
