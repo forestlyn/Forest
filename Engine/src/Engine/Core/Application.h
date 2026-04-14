@@ -125,6 +125,7 @@ namespace Engine::Core
 		std::atomic<uint64_t> m_RenderCommandCounter = 0;
 		std::condition_variable m_RenderThreadCV;
 		std::mutex m_RenderThreadQueueMutex;
+		bool m_RenderThreadExitRequested = false;
 		std::vector<RenderCommandItem> m_RenderSubmitQueue;
 		std::vector<RenderCommandItem> m_RenderExecuteQueue;
 
@@ -144,14 +145,13 @@ namespace Engine::Core
 #define ENGINE_RENDER_CMD_SOURCE __FILE__ ":" ENGINE_STRINGIFY(__LINE__)
 
 #ifdef ENGINE_ENABLE_RENDERTHREAD
-	#define ENQUEUE_RENDER_COMMAND(...) \
+#define ENQUEUE_RENDER_COMMAND(...) \
 		Engine::Core::Application::Get().SubmitRendererCommand([__VA_ARGS__]() {
-	#define ENQUEUE_RENDER_COMMAND_END() \
-		}, ENGINE_RENDER_CMD_SOURCE);
+#define ENQUEUE_RENDER_COMMAND_END() \
+	}, ENGINE_RENDER_CMD_SOURCE);
 #else
-	#define ENQUEUE_RENDER_COMMAND(...) \
-		{
-	#define ENQUEUE_RENDER_COMMAND_END() \
-		}
+#define ENQUEUE_RENDER_COMMAND(...) \
+	{
+#define ENQUEUE_RENDER_COMMAND_END() \
+	}
 #endif
-

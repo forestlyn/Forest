@@ -84,10 +84,13 @@ namespace Engine::Core
 		if (m_Window)
 			m_Window.reset();
 		DispatchRendererCommands();
-
+		FlushRendererCommands();
+		ENGINE_INFO("Window shutdown successfully!");
 		StopRenderThread();
 		ReleaseRendererMemoryPool();
+		ENGINE_INFO("Render thread stopped and memory pool released successfully!");
 		ScriptEngine::Shutdown();
+		ENGINE_INFO("Script engine shutdown successfully!");
 	}
 
 	void Application::Init()
@@ -326,9 +329,7 @@ namespace Engine::Core
 
 		std::atomic_bool flushReady = false;
 		SubmitRendererCommand([&flushReady]()
-							 {
-								 flushReady.store(true, std::memory_order_release);
-							 }, ENGINE_RENDER_CMD_SOURCE);
+							  { flushReady.store(true, std::memory_order_release); }, ENGINE_RENDER_CMD_SOURCE);
 
 		while (!flushReady.load(std::memory_order_acquire))
 		{
@@ -353,7 +354,6 @@ namespace Engine::Core
 #ifdef ENGINE_ENABLE_RENDERTHREAD
 		const size_t Memory_Size = 1024 * 1024 * 256;
 		m_RendererMemoryPool = new Memory::RenderMemoryPool(Memory_Size);
-
 #endif
 	}
 
@@ -361,7 +361,6 @@ namespace Engine::Core
 	{
 #ifdef ENGINE_ENABLE_RENDERTHREAD
 		delete m_RendererMemoryPool;
-
 #endif
 	}
 
@@ -372,6 +371,11 @@ namespace Engine::Core
 		{
 			ENGINE_ERROR("Render thread already running!");
 			return;
+		}
+
+		{
+			std::scoped_lock<std::mutex> lock(m_RenderThreadQueueMutex);
+			m_RenderThreadExitRequested = false;
 		}
 
 		m_RenderThreadRunning = true;
@@ -390,11 +394,15 @@ namespace Engine::Core
 		{
 			std::scoped_lock<std::mutex> lock(m_RenderThreadQueueMutex);
 			m_RenderThreadRunning = false;
+			m_RenderThreadExitRequested = true;
 		}
 		m_RenderThreadCV.notify_one();
+		ENGINE_INFO("[RenderThread][Stop] waiting for join...");
 
 		if (m_RenderThread.joinable())
 			m_RenderThread.join();
+
+		ENGINE_INFO("[RenderThread][Stop] join completed.");
 
 		m_RenderThreadStarted = false;
 #endif
@@ -431,10 +439,14 @@ namespace Engine::Core
 			{
 				std::unique_lock<std::mutex> lock(m_RenderThreadQueueMutex);
 				m_RenderThreadCV.wait(lock, [this]()
-									  { return !m_RenderThreadRunning || !m_RenderExecuteQueue.empty(); });
+									  { return m_RenderThreadExitRequested || !m_RenderExecuteQueue.empty(); });
 
-				if (!m_RenderThreadRunning && m_RenderExecuteQueue.empty())
+				// ENGINE_INFO("[RenderThread] woke up, submitQueueSize={}, executeQueueSize={}, exitRequested={}", m_RenderSubmitQueue.size(), m_RenderExecuteQueue.size(), m_RenderThreadExitRequested);
+				if (m_RenderThreadExitRequested && m_RenderExecuteQueue.empty())
+				{
+					ENGINE_INFO("[RenderThread] woke up, submitQueueSize={}, executeQueueSize={}, exitRequested={}", m_RenderSubmitQueue.size(), m_RenderExecuteQueue.size(), m_RenderThreadExitRequested);
 					break;
+				}
 
 				work.swap(m_RenderExecuteQueue);
 			}

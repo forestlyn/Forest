@@ -85,6 +85,8 @@ namespace Engine::MyImGui
         ImGui_ImplOpenGL3_NewFrame();
         ENQUEUE_RENDER_COMMAND_END()
 
+        Engine::Core::Application::Get().FlushRendererCommands();
+
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         ImGuizmo::BeginFrame();
