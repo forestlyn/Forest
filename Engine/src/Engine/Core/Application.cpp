@@ -83,9 +83,9 @@ namespace Engine::Core
 
 		if (m_Window)
 			m_Window.reset();
-		DispatchRendererCommands();
 		FlushRendererCommands();
 		ENGINE_INFO("Window shutdown successfully!");
+
 		StopRenderThread();
 		ReleaseRendererMemoryPool();
 		ENGINE_INFO("Render thread stopped and memory pool released successfully!");
@@ -390,7 +390,7 @@ namespace Engine::Core
 		if (!m_RenderThreadStarted)
 			return;
 
-		DispatchRendererCommands();
+		FlushRendererCommands();
 		{
 			std::scoped_lock<std::mutex> lock(m_RenderThreadQueueMutex);
 			m_RenderThreadRunning = false;

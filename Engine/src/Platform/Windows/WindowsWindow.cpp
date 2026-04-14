@@ -167,7 +167,6 @@ namespace Platform::Windows
     void WindowsWindow::Shutdown()
     {
         ENGINE_PROFILING_FUNC();
-
         if (m_Context)
         {
             auto *context = m_Context;
@@ -176,8 +175,14 @@ namespace Platform::Windows
             ENQUEUE_RENDER_COMMAND(context)
             context->Cleanup();
             delete context;
+
+            // 【极其关键的一步】：必须在渲染线程解绑 Context！
+            // 这样主线程后续销毁 Window 时才不会与渲染线程冲突
+            glfwMakeContextCurrent(nullptr);
+
             ENQUEUE_RENDER_COMMAND_END()
 
+            // 阻塞主线程，严格等待渲染线程完成清理和解绑
             Engine::Core::Application::Get().FlushRendererCommands();
         }
 
