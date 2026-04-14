@@ -90,6 +90,8 @@ namespace Engine
 
     void ScriptEngine::Shutdown()
     {
+        m_ScriptEngineData->AppAssemblyFileWatcher.reset();
+
         // Release script instances while the Mono domain is still valid.
         m_ScriptEngineData->EntityInstances.clear();
         m_ScriptEngineData->EntityFieldMaps.clear();
@@ -246,9 +248,19 @@ namespace Engine
 
     void ScriptEngine::ShutdownMono()
     {
-        mono_assemblies_cleanup();
-        mono_domain_unload(m_ScriptEngineData->AppDomain);
-        mono_domain_unload(m_ScriptEngineData->RootDomain);
+        MonoDomain *rootDomain = m_ScriptEngineData->RootDomain;
+        MonoDomain *appDomain = m_ScriptEngineData->AppDomain;
+
+        if (appDomain)
+        {
+            mono_domain_set(rootDomain ? rootDomain : mono_get_root_domain(), false);
+            mono_domain_unload(appDomain);
+            m_ScriptEngineData->AppDomain = nullptr;
+        }
+
+        if (rootDomain)
+            mono_jit_cleanup(rootDomain);
+
         m_ScriptEngineData->AppDomain = nullptr;
         m_ScriptEngineData->RootDomain = nullptr;
     }
