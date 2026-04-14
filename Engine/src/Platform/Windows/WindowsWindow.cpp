@@ -167,6 +167,20 @@ namespace Platform::Windows
     void WindowsWindow::Shutdown()
     {
         ENGINE_PROFILING_FUNC();
+
+        if (m_Context)
+        {
+            auto *context = m_Context;
+            m_Context = nullptr;
+
+            ENQUEUE_RENDER_COMMAND(context)
+            context->Cleanup();
+            delete context;
+            ENQUEUE_RENDER_COMMAND_END()
+
+            Engine::Core::Application::Get().FlushRendererCommands();
+        }
+
         if (m_Window)
         {
             glfwDestroyWindow(m_Window);
@@ -175,13 +189,6 @@ namespace Platform::Windows
             ENGINE_ASSERT(s_GLFWWindowCount > 0, "GLFW window count underflow!");
             s_GLFWWindowCount--;
         }
-
-        ENQUEUE_RENDER_COMMAND(context = m_Context)
-        context->Cleanup();
-        ENQUEUE_RENDER_COMMAND_END()
-
-        delete m_Context;
-        m_Context = nullptr;
 
         if (s_GLFWInitialized && s_GLFWWindowCount == 0)
         {

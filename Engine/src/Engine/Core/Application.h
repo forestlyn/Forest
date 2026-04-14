@@ -61,6 +61,7 @@ namespace Engine::Core
 		// Render
 		void *RendererAllocator(size_t size);
 		void SubmitRendererCommand(std::function<void()> &&renderCmd, const char *source = nullptr);
+		void FlushRendererCommands();
 
 		///// @brief Submits a function to be executed on the main thread.
 		//// If isFront is false, the function will be executed immediately.

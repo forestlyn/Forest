@@ -11,7 +11,7 @@
 
 namespace Engine::Core
 {
-	static constexpr bool s_EnableRenderCmdTrace = true;
+	static constexpr bool s_EnableRenderCmdTrace = false;
 #ifdef ENGINE_ENABLE_RENDERTHREAD
 	thread_local bool s_IsRenderThread = false;
 #endif
@@ -315,6 +315,28 @@ namespace Engine::Core
 		}
 #else
 		renderCmd();
+#endif
+	}
+
+	void Application::FlushRendererCommands()
+	{
+#ifdef ENGINE_ENABLE_RENDERTHREAD
+		if (!m_RenderThreadStarted)
+			return;
+
+		std::atomic_bool flushReady = false;
+		SubmitRendererCommand([&flushReady]()
+							 {
+								 flushReady.store(true, std::memory_order_release);
+							 }, ENGINE_RENDER_CMD_SOURCE);
+
+		while (!flushReady.load(std::memory_order_acquire))
+		{
+			DispatchRendererCommands();
+			std::this_thread::yield();
+		}
+#else
+		DispatchRendererCommands();
 #endif
 	}
 	void Application::SubmitToMainThread(const std::function<void()> func, bool isFront)
