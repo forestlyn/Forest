@@ -164,6 +164,23 @@ namespace EngineEditor
                 {
                     SaveProjectAs();
                 }
+
+                if (ImGui::MenuItem("Load Scene"))
+                {
+                    LoadScene();
+                }
+                if (ImGui::MenuItem("New Scene"))
+                {
+                    NewScene();
+                }
+                if (ImGui::MenuItem("Save Scene"))
+                {
+                    SaveScene(m_EditorScenePath);
+                }
+                if (ImGui::MenuItem("Save Scene As"))
+                {
+                    SaveSceneAs();
+                }
                 if (ImGui::MenuItem("Reload Assembly Ctrl+R"))
                 {
                     Engine::ScriptEngine::ReloadAssembly();

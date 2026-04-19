@@ -61,8 +61,8 @@ namespace Platform::Windows
         }
         m_Context = new OpenGL::OpenGLContext(m_Window);
 
-        ENQUEUE_RENDER_COMMAND(context = m_Context)
-        context->Init();
+        ENQUEUE_RENDER_COMMAND(m_Context = m_Context)
+        m_Context->Init();
         ENQUEUE_RENDER_COMMAND_END()
 
         glfwSetWindowUserPointer(m_Window, &m_Data);
@@ -210,8 +210,8 @@ namespace Platform::Windows
     void WindowsWindow::OnUpdate()
     {
         ENGINE_PROFILING_FUNC();
-        ENQUEUE_RENDER_COMMAND(context = m_Context)
-        context->SwapBuffers();
+        ENQUEUE_RENDER_COMMAND(m_Context = m_Context)
+        m_Context->SwapBuffers();
         ENQUEUE_RENDER_COMMAND_END()
     }
 
@@ -221,8 +221,8 @@ namespace Platform::Windows
     }
     void WindowsWindow::SetVSync(bool enabled)
     {
-        ENQUEUE_RENDER_COMMAND(context = m_Context, enabled)
-        context->SetVSync(enabled);
+        ENQUEUE_RENDER_COMMAND(m_Context = m_Context, enabled)
+        m_Context->SetVSync(enabled);
         ENQUEUE_RENDER_COMMAND_END()
 
         m_Data.VSync = enabled;
