@@ -12,4 +12,9 @@ namespace Engine
         CameraComponent(const CameraComponent &other) = default;
         CameraComponent(const Ref<SceneCamera> &camera) : Camera(camera) {}
     };
+
+    REFLECT_TYPE_BEGIN(CameraComponent)
+    REFLECT_FIELD(Primary)
+    REFLECT_FIELD(FixedAspectRatio)
+    REFLECT_TYPE_END(CameraComponent)
 } // namespace Engine

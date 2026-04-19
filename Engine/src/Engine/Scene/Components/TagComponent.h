@@ -12,4 +12,8 @@ namespace Engine
         TagComponent(const TagComponent &other) = default;
         TagComponent(const std::string &tag) : Tag(tag) {}
     };
+
+    REFLECT_TYPE_BEGIN(TagComponent)
+    REFLECT_FIELD(Tag)
+    REFLECT_TYPE_END(TagComponent)
 }

@@ -12,4 +12,10 @@ namespace Engine
         CircleComponent() = default;
         CircleComponent(const CircleComponent &other) = default;
     };
+
+    REFLECT_TYPE_BEGIN(CircleComponent)
+    REFLECT_FIELD(Color)
+    REFLECT_FIELD(Thickness)
+    REFLECT_FIELD(Fade)
+    REFLECT_TYPE_END(CircleComponent)
 }

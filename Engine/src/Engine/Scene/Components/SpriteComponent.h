@@ -13,4 +13,9 @@ namespace Engine
         SpriteComponent(const SpriteComponent &other) = default;
         SpriteComponent(const glm::vec4 &color) : Color(color) {}
     };
+
+    REFLECT_TYPE_BEGIN(SpriteComponent)
+    REFLECT_FIELD(Color)
+    REFLECT_FIELD(TilingFactor)
+    REFLECT_TYPE_END(SpriteComponent)
 }

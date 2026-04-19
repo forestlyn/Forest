@@ -15,6 +15,7 @@ namespace Engine
     {
     private:
         friend class EngineEditor::SceneHierarchyPanel;
+        friend struct ::MetaResolver<TransformComponent>;
 
         bool dirty = true;
 
@@ -69,5 +70,11 @@ namespace Engine
         }
         glm::vec3 GetScale() const { return Scale; }
     };
+
+    REFLECT_TYPE_BEGIN(TransformComponent)
+    REFLECT_FIELD(Position)
+    REFLECT_FIELD(Rotation)
+    REFLECT_FIELD(Scale)
+    REFLECT_TYPE_END(TransformComponent)
 
 }

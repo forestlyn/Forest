@@ -1,5 +1,6 @@
 #pragma once
 #include "Engine/Core/UUID.h"
+#include "Engine/Reflection/ReflectMacro.h"
 namespace Engine
 {
     struct IDComponent
@@ -13,4 +14,8 @@ namespace Engine
         }
         IDComponent(const IDComponent &other) = default;
     };
+
+    REFLECT_TYPE_BEGIN(IDComponent)
+    REFLECT_FIELD(ID)
+    REFLECT_TYPE_END(IDComponent)
 } // namespace Engine

@@ -23,4 +23,10 @@ namespace Engine
         Rigidbody2DComponent() = default;
         Rigidbody2DComponent(const Rigidbody2DComponent &other) = default;
     };
+
+    REFLECT_TYPE_BEGIN(Rigidbody2DComponent)
+    REFLECT_FIELD(Velocity)
+    REFLECT_FIELD(AngularVelocity)
+    REFLECT_FIELD(FixedRotation)
+    REFLECT_TYPE_END(Rigidbody2DComponent)
 } // namespace Engine
