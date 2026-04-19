@@ -1,7 +1,6 @@
 #pragma once
-#include "Engine/Renderer/Camera/OrthographicCamera.h"
-#include "Engine/Core/Timestep.h"
-namespace Engine::Renderer
+#include "Engine.h"
+namespace EngineEditor
 {
     class EditorCamera
     {
@@ -9,8 +8,8 @@ namespace Engine::Renderer
         EditorCamera(float fov, float aspectRatio, float nearClip, float farClip);
         ~EditorCamera();
 
-        void OnUpdate(Core::Timestep ts);
-        void OnEvent(Event::Event &e);
+        void OnUpdate(Engine::Core::Timestep ts);
+        void OnEvent(Engine::Event::Event &e);
 
         glm::mat4 GetViewMatrix() const { return m_ViewMatrix; }
         glm::mat4 GetProjectionMatrix() const { return m_ProjectionMatrix; }
@@ -40,7 +39,7 @@ namespace Engine::Renderer
         void UpdateProjection();
         void UpdateView();
 
-        bool OnMouseScroll(Event::MouseScrolledEvent &e);
+        bool OnMouseScroll(Engine::Event::MouseScrolledEvent &e);
 
         void MousePan(const glm::vec2 &delta);
         void MouseRotate(const glm::vec2 &delta);

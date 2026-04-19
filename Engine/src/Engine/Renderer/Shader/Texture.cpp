@@ -3,6 +3,7 @@
 #include "../Renderer.h"
 #include "Platform/OpenGL/OpenGLTexture.h"
 #include "../Utils.h"
+#include "Engine/Core/Application.h"
 namespace Engine::Renderer
 {
     Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)

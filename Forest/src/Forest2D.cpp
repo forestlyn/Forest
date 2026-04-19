@@ -31,7 +31,6 @@ Forest2D::Forest2D(const std::string &name)
     m_Scene = Engine::CreateScope<Engine::Scene>();
     m_CameraEntity = m_Scene->CreateEntity("Camera");
     auto &cameraComponent = m_CameraEntity.AddComponent<Engine::CameraComponent>();
-    cameraComponent.Camera = Engine::CreateRef<Engine::SceneCamera>();
     cameraComponent.Primary = true;
     m_CameraEntity.AddComponent<Engine::TransformComponent>();
 }

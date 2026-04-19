@@ -1,8 +1,6 @@
 #include "Scene.h"
 #include "Engine/Renderer/Renderer2D.h"
 #include "Engine/Scene/Entity.h"
-#include "Engine/Renderer/Camera/OrthographicCamera.h"
-#include "Engine/Renderer/Camera/PerspectiveCamera.h"
 #include "Engine/Profile/Instrumentor.h"
 #include "Engine/Scene/ScriptEntity.h"
 #include "Engine/Scripts/ScriptEngine.h"
@@ -73,14 +71,15 @@ namespace Engine
 
                 glm::mat4 transform = transformComponent.GetTransform();
                 glm::mat4 viewMatrix = glm::inverse(transform);
-                mainCameraViewProjection = cameraComponent.Camera->GetProjectionMatrix() * viewMatrix;
+                cameraComponent.RecalculateProjection();
+                mainCameraViewProjection = cameraComponent.ProjectionMatrix * viewMatrix;
             }
 
             RenderScene2D(mainCameraViewProjection);
         }
     }
 
-    void Scene::OnUpdateEditor(Engine::Core::Timestep timestep, Renderer::EditorCamera &editorCamera)
+    void Scene::OnUpdateEditor(Engine::Core::Timestep timestep, const glm::mat4 &viewProjectionMatrix)
     {
         ENGINE_PROFILING_FUNC();
 
@@ -88,12 +87,10 @@ namespace Engine
         DestroyEntities();
 
         // Update Editor Camera
-
-        glm::mat4 editorCameraViewProjection = editorCamera.GetViewProjectionMatrix();
-        RenderScene2D(editorCameraViewProjection);
+        RenderScene2D(viewProjectionMatrix);
     }
 
-    void Scene::OnUpdateSimulate(Core::Timestep timestep, Renderer::EditorCamera &editorCamera)
+    void Scene::OnUpdateSimulate(Core::Timestep timestep, const glm::mat4 &viewProjectionMatrix)
     {
         if (!m_IsPaused || m_StepFrames-- >= 0)
         {
@@ -101,8 +98,7 @@ namespace Engine
             // Update Editor Camera
             StepPhysicsWorld(timestep);
         }
-        glm::mat4 editorCameraViewProjection = editorCamera.GetViewProjectionMatrix();
-        RenderScene2D(editorCameraViewProjection);
+        RenderScene2D(viewProjectionMatrix);
     }
 
     Entity Scene::CreateEntity(const std::string &name)
@@ -176,7 +172,8 @@ namespace Engine
 
         glm::mat4 transform = transformComponent.GetTransform();
         glm::mat4 viewMatrix = glm::inverse(transform);
-        glm::mat4 viewProjection = cameraComponent.Camera->GetProjectionMatrix() * viewMatrix;
+        cameraComponent.RecalculateProjection();
+        glm::mat4 viewProjection = cameraComponent.ProjectionMatrix * viewMatrix;
 
         return viewProjection;
     }
@@ -194,7 +191,7 @@ namespace Engine
 
         glm::mat4 transform = transformComponent.GetTransform();
         glm::mat4 viewMatrix = glm::inverse(transform);
-        glm::mat4 viewProjection = cameraComponent.Camera->GetProjectionMatrix() * viewMatrix;
+        glm::mat4 viewProjection = cameraComponent.ProjectionMatrix * viewMatrix;
         glm::mat4 inverseViewProjection = glm::inverse(viewProjection);
 
         // Normalized Device Coordinates
@@ -328,7 +325,7 @@ namespace Engine
             auto &cameraComponent = view.get<CameraComponent>(entity);
             if (cameraComponent.FixedAspectRatio)
                 continue;
-            cameraComponent.Camera->SetAspectRatio(aspectRatio);
+            cameraComponent.AspectRatio = aspectRatio;
         }
     }
 

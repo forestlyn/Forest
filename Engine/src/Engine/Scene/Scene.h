@@ -3,7 +3,6 @@
 #include "Engine/Scene/Component.h"
 #include "Engine/Core/Timestep.h"
 #include <entt.hpp>
-#include "Engine/Renderer/Camera/EditorCamera.h"
 #include <box2d/box2d.h>
 #include "Engine/Core/UUID.h"
 namespace Engine
@@ -18,8 +17,8 @@ namespace Engine
             LOG_INFO("Scene destroyed.");
         }
         void OnUpdateRuntime(Core::Timestep timestep);
-        void OnUpdateEditor(Core::Timestep timestep, Renderer::EditorCamera &editorCamera);
-        void OnUpdateSimulate(Core::Timestep timestep, Renderer::EditorCamera &editorCamera);
+        void OnUpdateEditor(Core::Timestep timestep, const glm::mat4 &viewProjectionMatrix);
+        void OnUpdateSimulate(Core::Timestep timestep, const glm::mat4 &viewProjectionMatrix);
 
         // Create an entity with a specific name,will add TagComponent and TransformComponent by default
         Entity CreateEntity(const std::string &name = std::string());

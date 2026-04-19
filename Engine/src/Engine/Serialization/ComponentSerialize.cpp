@@ -28,23 +28,18 @@ namespace Engine::Serialization
         out << YAML::BeginMap;
         out << YAML::Key << "Primary" << YAML::Value << component.Primary;
         out << YAML::Key << "FixedAspectRatio" << YAML::Value << component.FixedAspectRatio;
-        // Serialize SceneCamera properties if needed
-        {
-            auto &camera = component.Camera;
-            out << YAML::Key << "Camera";
-            out << YAML::BeginMap;
-            out << YAML::Key << "ProjectionType" << YAML::Value << (int)camera->GetProjectionType();
-            out << YAML::Key << "AspectRatio" << YAML::Value << camera->GetAspectRatio();
-            // Orthographic properties
-            out << YAML::Key << "OrthographicSize" << YAML::Value << camera->GetOrthographicSize();
-            out << YAML::Key << "OrthographicNearClip" << YAML::Value << camera->GetOrthographicNearClip();
-            out << YAML::Key << "OrthographicFarClip" << YAML::Value << camera->GetOrthographicFarClip();
-            // Perspective properties
-            out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera->GetPerspectiveFOV();
-            out << YAML::Key << "PerspectiveNearClip" << YAML::Value << camera->GetPerspectiveNearClip();
-            out << YAML::Key << "PerspectiveFarClip" << YAML::Value << camera->GetPerspectiveFarClip();
-            out << YAML::EndMap;
-        }
+
+        out << YAML::Key << "ProjectionType" << YAML::Value << (int)component.ProjectionType;
+        out << YAML::Key << "AspectRatio" << YAML::Value << component.AspectRatio;
+        // Orthographic properties
+        out << YAML::Key << "OrthographicSize" << YAML::Value << component.OrthographicSize;
+        out << YAML::Key << "OrthographicNearClip" << YAML::Value << component.OrthographicNear;
+        out << YAML::Key << "OrthographicFarClip" << YAML::Value << component.OrthographicFar;
+        // Perspective properties
+        out << YAML::Key << "PerspectiveFOV" << YAML::Value << component.PerspectiveFOV;
+        out << YAML::Key << "PerspectiveNearClip" << YAML::Value << component.PerspectiveNear;
+        out << YAML::Key << "PerspectiveFarClip" << YAML::Value << component.PerspectiveFar;
+
         out << YAML::EndMap;
     }
 
@@ -177,43 +172,37 @@ namespace Engine::Serialization
         {
             component.FixedAspectRatio = componentNode["FixedAspectRatio"].as<bool>();
         }
-        if (componentNode["Camera"])
+        if (componentNode["ProjectionType"])
         {
-            auto cameraNode = componentNode["Camera"];
-            auto &camera = component.Camera;
-
-            if (cameraNode["ProjectionType"])
-            {
-                camera->SetProjectionType((SceneCamera::ProjectionType)cameraNode["ProjectionType"].as<int>());
-            }
-            if (cameraNode["AspectRatio"])
-            {
-                camera->SetAspectRatio(cameraNode["AspectRatio"].as<float>());
-            }
-            if (cameraNode["OrthographicSize"])
-            {
-                camera->SetOrthographicSize(cameraNode["OrthographicSize"].as<float>());
-            }
-            if (cameraNode["OrthographicNearClip"])
-            {
-                camera->SetOrthographicNearClip(cameraNode["OrthographicNearClip"].as<float>());
-            }
-            if (cameraNode["OrthographicFarClip"])
-            {
-                camera->SetOrthographicFarClip(cameraNode["OrthographicFarClip"].as<float>());
-            }
-            if (cameraNode["PerspectiveFOV"])
-            {
-                camera->SetPerspectiveFOV(cameraNode["PerspectiveFOV"].as<float>());
-            }
-            if (cameraNode["PerspectiveNearClip"])
-            {
-                camera->SetPerspectiveNearClip(cameraNode["PerspectiveNearClip"].as<float>());
-            }
-            if (cameraNode["PerspectiveFarClip"])
-            {
-                camera->SetPerspectiveFarClip(cameraNode["PerspectiveFarClip"].as<float>());
-            }
+            component.ProjectionType = (SceneCameraProjectionType)componentNode["ProjectionType"].as<int>();
+        }
+        if (componentNode["AspectRatio"])
+        {
+            component.AspectRatio = componentNode["AspectRatio"].as<float>();
+        }
+        if (componentNode["OrthographicSize"])
+        {
+            component.OrthographicSize = componentNode["OrthographicSize"].as<float>();
+        }
+        if (componentNode["OrthographicNearClip"])
+        {
+            component.OrthographicNear = componentNode["OrthographicNearClip"].as<float>();
+        }
+        if (componentNode["OrthographicFarClip"])
+        {
+            component.OrthographicFar = componentNode["OrthographicFarClip"].as<float>();
+        }
+        if (componentNode["PerspectiveFOV"])
+        {
+            component.PerspectiveFOV = componentNode["PerspectiveFOV"].as<float>();
+        }
+        if (componentNode["PerspectiveNearClip"])
+        {
+            component.PerspectiveNear = componentNode["PerspectiveNearClip"].as<float>();
+        }
+        if (componentNode["PerspectiveFarClip"])
+        {
+            component.PerspectiveFar = componentNode["PerspectiveFarClip"].as<float>();
         }
         return true;
     }

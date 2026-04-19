@@ -36,10 +36,6 @@
 #include "Engine/Renderer/Shader/Texture.h"
 #include "Engine/Renderer/Shader/ShaderLibrary.h"
 
-#include "Engine/Renderer/Camera/Camera.h"
-#include "Engine/Renderer/Camera/OrthographicCamera.h"
-#include "Engine/Renderer/Camera/PerspectiveCamera.h"
-
 //-------------------------
 
 //-------scene system------

@@ -162,13 +162,14 @@ namespace EngineEditor
 
         UIUtils::DrawComponent<Engine::CameraComponent>("Camera", entity, [](Engine::CameraComponent &cameraComp)
                                                         {
-                                                            auto &sceneCamera = cameraComp.Camera;
+                                                            bool projectionChanged = false;
 
-                                                            const char *projectionTypeStrings[] = {"Orthographic", "Perspective"};
-                                                            int currentProjectionType = (int)sceneCamera->GetProjectionType();
+                                                            const char *projectionTypeStrings[] = {"Perspective", "Orthographic"};
+                                                            int currentProjectionType = (int)cameraComp.ProjectionType;
                                                             if (ImGui::Combo("Projection Type", &currentProjectionType, projectionTypeStrings, IM_ARRAYSIZE(projectionTypeStrings)))
                                                             {
-                                                                sceneCamera->SetProjectionType((Engine::SceneCamera::ProjectionType)currentProjectionType);
+                                                                cameraComp.ProjectionType = (Engine::SceneCameraProjectionType)currentProjectionType;
+                                                                projectionChanged = true;
                                                             }
 
                                                             bool isPrimary = cameraComp.Primary;
@@ -182,47 +183,45 @@ namespace EngineEditor
                                                                 cameraComp.FixedAspectRatio = fixedAspectRatio;
                                                             }
 
-                                                            float aspectRatio = sceneCamera->GetAspectRatio();
-                                                            if (ImGui::DragFloat("Aspect Ratio", &aspectRatio, 0.01f, 0.1f, 10.0f))
+                                                            if (ImGui::DragFloat("Aspect Ratio", &cameraComp.AspectRatio, 0.01f, 0.1f, 10.0f))
                                                             {
-                                                                sceneCamera->SetAspectRatio(aspectRatio);
+                                                                projectionChanged = true;
                                                             }
 
-                                                            if (sceneCamera->GetProjectionType() == Engine::SceneCamera::ProjectionType::Orthographic)
+                                                            if (cameraComp.ProjectionType == Engine::SceneCameraProjectionType::Orthographic)
                                                             {
-                                                                float orthoSize = sceneCamera->GetOrthographicSize();
-                                                                if (ImGui::DragFloat("Orthographic Size", &orthoSize, 0.1f, 0.01f))
+                                                                if (ImGui::DragFloat("Orthographic Size", &cameraComp.OrthographicSize, 0.1f, 0.01f))
                                                                 {
-                                                                    sceneCamera->SetOrthographicSize(orthoSize);
+                                                                    projectionChanged = true;
                                                                 }
-                                                                float nearClip = sceneCamera->GetOrthographicNearClip();
-                                                                if (ImGui::DragFloat("Near Clip", &nearClip, 0.1f, 0.01f))
+                                                                if (ImGui::DragFloat("Near Clip", &cameraComp.OrthographicNear, 0.1f, 0.01f))
                                                                 {
-                                                                    sceneCamera->SetOrthographicNearClip(nearClip);
+                                                                    projectionChanged = true;
                                                                 }
-                                                                float farClip = sceneCamera->GetOrthographicFarClip();
-                                                                if (ImGui::DragFloat("Far Clip", &farClip, 0.1f))
+                                                                if (ImGui::DragFloat("Far Clip", &cameraComp.OrthographicFar, 0.1f))
                                                                 {
-                                                                    sceneCamera->SetOrthographicFarClip(farClip);
+                                                                    projectionChanged = true;
                                                                 }
                                                             }
-                                                            else if (sceneCamera->GetProjectionType() == Engine::SceneCamera::ProjectionType::Perspective)
+                                                            else if (cameraComp.ProjectionType == Engine::SceneCameraProjectionType::Perspective)
                                                             {
-                                                                float fov = sceneCamera->GetPerspectiveFOV();
-                                                                if (ImGui::DragFloat("Field of View", &fov))
+                                                                if (ImGui::DragFloat("Field of View", &cameraComp.PerspectiveFOV))
                                                                 {
-                                                                    sceneCamera->SetPerspectiveFOV(fov);
+                                                                    projectionChanged = true;
                                                                 }
-                                                                float nearClip = sceneCamera->GetPerspectiveNearClip();
-                                                                if (ImGui::DragFloat("Near Clip", &nearClip))
+                                                                if (ImGui::DragFloat("Near Clip", &cameraComp.PerspectiveNear))
                                                                 {
-                                                                    sceneCamera->SetPerspectiveNearClip(nearClip);
+                                                                    projectionChanged = true;
                                                                 }
-                                                                float farClip = sceneCamera->GetPerspectiveFarClip();
-                                                                if (ImGui::DragFloat("Far Clip", &farClip))
+                                                                if (ImGui::DragFloat("Far Clip", &cameraComp.PerspectiveFar))
                                                                 {
-                                                                    sceneCamera->SetPerspectiveFarClip(farClip);
+                                                                    projectionChanged = true;
                                                                 }
+                                                            }
+
+                                                            if (projectionChanged)
+                                                            {
+                                                                cameraComp.RecalculateProjection();
                                                             } });
 
         UIUtils::DrawComponent<Engine::CircleComponent>("Circle", entity, [](Engine::CircleComponent &circle)

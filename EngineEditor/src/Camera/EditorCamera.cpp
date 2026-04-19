@@ -1,14 +1,10 @@
 #include "EditorCamera.h"
-#include "Engine/Core/Input.h"
-#include "Engine/Events/MouseEvent.h"
-#include "Engine/Core/KeyCode.h"
-#include "Engine/Core/MouseCode.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/quaternion.hpp>
-namespace Engine::Renderer
+namespace EngineEditor
 {
     EditorCamera::EditorCamera(float fov, float aspectRatio, float nearClip, float farClip)
         : m_FOV(fov), m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip)
@@ -61,32 +57,32 @@ namespace Engine::Renderer
         return speed;
     }
 
-    void EditorCamera::OnUpdate(Core::Timestep ts)
+    void EditorCamera::OnUpdate(Engine::Core::Timestep ts)
     {
-        if (Core::Input::IsKeyPressed(FOREST_KEY_LEFT_ALT))
+        if (Engine::Core::Input::IsKeyPressed(FOREST_KEY_LEFT_ALT))
         {
-            const glm::vec2 &mouse{Core::Input::GetMouseX(), Core::Input::GetMouseY()};
+            const glm::vec2 &mouse{Engine::Core::Input::GetMouseX(), Engine::Core::Input::GetMouseY()};
             glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
             m_InitialMousePosition = mouse;
 
-            if (Core::Input::IsMouseButtonPressed(FOREST_MOUSE_BUTTON_MIDDLE))
+            if (Engine::Core::Input::IsMouseButtonPressed(FOREST_MOUSE_BUTTON_MIDDLE))
                 MousePan(delta);
-            else if (Core::Input::IsMouseButtonPressed(FOREST_MOUSE_BUTTON_LEFT))
+            else if (Engine::Core::Input::IsMouseButtonPressed(FOREST_MOUSE_BUTTON_LEFT))
                 MouseRotate(delta);
-            else if (Core::Input::IsMouseButtonPressed(FOREST_MOUSE_BUTTON_RIGHT))
+            else if (Engine::Core::Input::IsMouseButtonPressed(FOREST_MOUSE_BUTTON_RIGHT))
                 MouseZoom(delta.y);
         }
 
         UpdateView();
     }
 
-    void EditorCamera::OnEvent(Event::Event &e)
+    void EditorCamera::OnEvent(Engine::Event::Event &e)
     {
-        Event::EventDispatcher dispatcher(e);
-        dispatcher.Dispatch<Event::MouseScrolledEvent>(BIND_EVENT_FN(EditorCamera::OnMouseScroll));
+        Engine::Event::EventDispatcher dispatcher(e);
+        dispatcher.Dispatch<Engine::Event::MouseScrolledEvent>(BIND_EVENT_FN(EditorCamera::OnMouseScroll));
     }
 
-    bool EditorCamera::OnMouseScroll(Event::MouseScrolledEvent &e)
+    bool EditorCamera::OnMouseScroll(Engine::Event::MouseScrolledEvent &e)
     {
         float delta = e.GetYOffset() * 0.1f;
         MouseZoom(delta);

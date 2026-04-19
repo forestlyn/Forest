@@ -1,7 +1,6 @@
 #pragma once
 #include "Engine/pcheader.h"
 #include "Engine/Core/Timestep.h"
-#include "Engine/Renderer/Camera/OrthographicCamera.h"
 #include <glm/glm.hpp>
 
 struct ParticleProperties

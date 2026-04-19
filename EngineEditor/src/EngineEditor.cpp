@@ -17,7 +17,7 @@ namespace EngineEditor
 {
 
     EngineEditor::EngineEditor(const std::string &name)
-        : Layer(name), m_EditorCamera(Engine::Renderer::EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f))
+        : Layer(name), m_EditorCamera(EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f))
     {
         // Initialize FrameBuffer
         Engine::Renderer::FrameBufferSpecification fbSpec;
@@ -94,11 +94,11 @@ namespace EngineEditor
                 }
                 else if (m_SceneState == SceneState::Simulate) // Simulate update
                 {
-                    m_ActiveScene->OnUpdateSimulate(timestep, m_EditorCamera);
+                    m_ActiveScene->OnUpdateSimulate(timestep, m_EditorCamera.GetViewProjectionMatrix());
                 }
                 else if (m_SceneState == SceneState::Edit) // Editor update
                 {
-                    m_ActiveScene->OnUpdateEditor(timestep, m_EditorCamera);
+                    m_ActiveScene->OnUpdateEditor(timestep, m_EditorCamera.GetViewProjectionMatrix());
                 }
 
                 OnLateRender();

@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include "Engine/Renderer/FrameBuffer.h"
 #include "Panels/SceneHierarchyPanel.h"
-#include "Engine/Renderer/Camera/EditorCamera.h"
+#include "Camera/EditorCamera.h"
 #include "Panels/ContentBrowserPanel.h"
 #include "Engine/Renderer/Shader/Texture.h"
 namespace EngineEditor
@@ -68,7 +68,7 @@ namespace EngineEditor
         glm::ivec2 m_SceneViewportSize = {0, 0};
         Engine::Entity m_HoveredEntity;
 
-        Engine::Renderer::EditorCamera m_EditorCamera;
+        EditorCamera m_EditorCamera;
         Engine::Ref<Engine::Scene> m_ActiveScene;
         Engine::Ref<Engine::Scene> m_EditorScene;
         Engine::Ref<Engine::Scene> m_RuntimeScene;
