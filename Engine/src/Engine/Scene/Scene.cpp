@@ -388,6 +388,41 @@ namespace Engine
     {
         ENGINE_PROFILING_FUNC();
         const float physicsStep = 1.0f / 60.0f;
+        constexpr float kSyncEpsilon = 0.0001f;
+
+        // Sync external transform edits (editor/script) to physics before stepping.
+        {
+            auto view = m_Registry.view<Rigidbody2DComponent, TransformComponent>();
+            for (auto entity : view)
+            {
+                auto &rigidbody2D = view.get<Rigidbody2DComponent>(entity);
+                auto &transform = view.get<TransformComponent>(entity);
+
+                if (!transform.IsDirty())
+                    continue;
+
+                const glm::vec3 transformPosition = transform.GetPosition();
+                const float transformAngleRad = glm::radians(transform.GetRotation().z);
+
+                const b2Vec2 bodyPosition = b2Body_GetPosition(rigidbody2D.RuntimeBodyId);
+                const float bodyAngleRad = b2Rot_GetAngle(b2Body_GetRotation(rigidbody2D.RuntimeBodyId));
+
+                const bool positionChanged = glm::abs(transformPosition.x - bodyPosition.x) > kSyncEpsilon ||
+                                             glm::abs(transformPosition.y - bodyPosition.y) > kSyncEpsilon;
+                const bool rotationChanged = glm::abs(transformAngleRad - bodyAngleRad) > kSyncEpsilon;
+
+                if (positionChanged || rotationChanged)
+                {
+                    b2Body_SetTransform(rigidbody2D.RuntimeBodyId,
+                                        b2Vec2(transformPosition.x, transformPosition.y),
+                                        b2MakeRot(transformAngleRad));
+                }
+
+                // Rebuild matrix and clear dirty state after the sync decision above.
+                (void)transform.GetTransform();
+            }
+        }
+
         physicsTimeStepAccumulator += timestep.GetSeconds();
         if (physicsTimeStepAccumulator >= physicsStep)
         {
