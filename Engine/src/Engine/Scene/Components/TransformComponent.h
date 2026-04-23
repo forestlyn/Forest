@@ -69,6 +69,8 @@ namespace Engine
             dirty = true;
         }
         glm::vec3 GetScale() const { return Scale; }
+
+        bool IsDirty() const { return dirty; }
     };
 
     REFLECT_TYPE_BEGIN(TransformComponent)
