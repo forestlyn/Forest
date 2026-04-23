@@ -56,15 +56,14 @@ Entities:
     CameraComponent:
       Primary: true
       FixedAspectRatio: false
-      Camera:
-        ProjectionType: 1
-        AspectRatio: 1.98151
-        OrthographicSize: 10
-        OrthographicNearClip: -1
-        OrthographicFarClip: 1
-        PerspectiveFOV: 45
-        PerspectiveNearClip: 0.1
-        PerspectiveFarClip: 1000
+      ProjectionType: 0
+      AspectRatio: 1.5367762
+      OrthographicSize: 10
+      OrthographicNearClip: -11.6
+      OrthographicFarClip: 16.1
+      PerspectiveFOV: 45
+      PerspectiveNearClip: 0.1
+      PerspectiveFarClip: 1000
   - EntityID: 1108859090500040080
     TagComponent:
       Tag: Second Camera
@@ -75,15 +74,14 @@ Entities:
     CameraComponent:
       Primary: false
       FixedAspectRatio: false
-      Camera:
-        ProjectionType: 0
-        AspectRatio: 1.98151
-        OrthographicSize: 10
-        OrthographicNearClip: -1
-        OrthographicFarClip: 1
-        PerspectiveFOV: 0.7853982
-        PerspectiveNearClip: 0.1
-        PerspectiveFarClip: 1000
+      ProjectionType: 1
+      AspectRatio: 1.5367762
+      OrthographicSize: 10
+      OrthographicNearClip: -1
+      OrthographicFarClip: 1
+      PerspectiveFOV: 45
+      PerspectiveNearClip: 0.1
+      PerspectiveFarClip: 1000
   - EntityID: 10581122825863251169
     TagComponent:
       Tag: Platform

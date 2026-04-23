@@ -24,7 +24,7 @@ namespace Engine::MyImGui
         io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;   // Enable Multi-Viewport
+        // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // Enable Multi-Viewport
 
         io.Fonts->AddFontFromFileTTF("resources/assets/fonts/googlesans/static/GoogleSans-Bold.ttf", 22.0f);
         io.FontDefault = io.Fonts->AddFontFromFileTTF("resources/assets/fonts/googlesans/static/GoogleSans-Regular.ttf", 22.0f);
