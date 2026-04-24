@@ -156,13 +156,6 @@ namespace Engine::Core
 					m_Window->OnUpdate();
 				}
 
-				{
-					ENGINE_PROFILING_SCOPE("Renderer NextFrame");
-#ifdef ENGINE_ENABLE_RENDERTHREAD
-					m_RendererMemoryPool->Swap();
-#endif
-				}
-
 #ifdef ENGINE_ENABLE_RENDERTHREAD
 				std::atomic_bool frameFenceReady = false;
 				ENQUEUE_RENDER_COMMAND(&frameFenceReady)
@@ -173,6 +166,11 @@ namespace Engine::Core
 				{
 					DispatchRendererCommands();
 					std::this_thread::yield();
+				}
+
+				{
+					ENGINE_PROFILING_SCOPE("Renderer NextFrame");
+					m_RendererMemoryPool->Swap();
 				}
 #else
 				DispatchRendererCommands();
@@ -299,6 +297,7 @@ namespace Engine::Core
 			return;
 		}
 
+		// 已经在渲染线程了，直接执行
 		if (s_IsRenderThread)
 		{
 			if (s_EnableRenderCmdTrace)
