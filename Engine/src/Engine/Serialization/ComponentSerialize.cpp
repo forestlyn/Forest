@@ -18,6 +18,20 @@
     } while (0)
 namespace Engine::Serialization
 {
+#pragma region Utils
+
+    inline const char *EnumToString(const MetaType &type, int64_t value)
+    {
+        if (!type.enumValues)
+            return nullptr;
+
+        for (const auto &item : *type.enumValues)
+        {
+            if (item.Value == value)
+                return item.Name;
+        }
+        return nullptr;
+    }
 
     inline void SerializeValue(YAML::Emitter &out, const void *obj, const MetaType &type)
     {
@@ -51,6 +65,18 @@ namespace Engine::Serialization
             out << *static_cast<const std::string *>(obj);
             break;
 
+        case MetaKind::Enum:
+        {
+            int64_t value = type.EnumToInt(obj);
+            const char *name = EnumToString(type, value);
+            if (name)
+                out << name;
+            else
+                out << value; // 找不到时降级写整数
+
+            break;
+        }
+
         case MetaKind::Struct:
         {
             out << YAML::BeginMap;
@@ -70,7 +96,8 @@ namespace Engine::Serialization
         }
 
         default:
-            throw std::runtime_error("Unsupported MetaKind in SerializeValue");
+            ENGINE_ERROR("Unsupported MetaKind in SerializeValue: {}", (int)type.kind);
+            break;
         }
     }
 
@@ -109,6 +136,38 @@ namespace Engine::Serialization
             *static_cast<std::string *>(obj) = node.as<std::string>();
             break;
 
+        case MetaKind::Enum:
+        {
+            if (!type.enumValues || !type.EnumFromInt)
+                return;
+            int64_t value;
+            if (node.IsScalar())
+            {
+                // 先尝试按名字解析
+                std::string name = node.as<std::string>();
+                value = -1;
+                for (const auto &item : *type.enumValues)
+                {
+                    if (item.Name == name)
+                    {
+                        value = item.Value;
+                        break;
+                    }
+                }
+                if (value == -1)
+                {
+                    // 降级尝试按整数解析
+                    value = node.as<int64_t>();
+                }
+            }
+            else
+            {
+                value = node.as<int64_t>();
+            }
+            type.EnumFromInt(obj, value);
+            break;
+        }
+
         case MetaKind::Struct:
         {
             if (!node.IsMap() || !type.fields)
@@ -130,6 +189,7 @@ namespace Engine::Serialization
         }
     }
 
+#pragma endregion
     void SerializeTagComponent(YAML::Emitter &out, TagComponent &component)
     {
         SERIALIZE_COMPONENT(out, component, TagComponent);
@@ -142,23 +202,7 @@ namespace Engine::Serialization
 
     void SerializeCameraComponent(YAML::Emitter &out, CameraComponent &component)
     {
-        out << YAML::Key << "CameraComponent";
-        out << YAML::BeginMap;
-        out << YAML::Key << "Primary" << YAML::Value << component.Primary;
-        out << YAML::Key << "FixedAspectRatio" << YAML::Value << component.FixedAspectRatio;
-
-        out << YAML::Key << "ProjectionType" << YAML::Value << (int)component.ProjectionType;
-        out << YAML::Key << "AspectRatio" << YAML::Value << component.AspectRatio;
-        // Orthographic properties
-        out << YAML::Key << "OrthographicSize" << YAML::Value << component.OrthographicSize;
-        out << YAML::Key << "OrthographicNearClip" << YAML::Value << component.OrthographicNear;
-        out << YAML::Key << "OrthographicFarClip" << YAML::Value << component.OrthographicFar;
-        // Perspective properties
-        out << YAML::Key << "PerspectiveFOV" << YAML::Value << component.PerspectiveFOV;
-        out << YAML::Key << "PerspectiveNearClip" << YAML::Value << component.PerspectiveNear;
-        out << YAML::Key << "PerspectiveFarClip" << YAML::Value << component.PerspectiveFar;
-
-        out << YAML::EndMap;
+        SERIALIZE_COMPONENT(out, component, CameraComponent);
     }
 
     void SerializeSpriteComponent(YAML::Emitter &out, SpriteComponent &component)
@@ -173,13 +217,7 @@ namespace Engine::Serialization
 
     void SerializeRigidbody2DComponent(YAML::Emitter &out, Rigidbody2DComponent &component)
     {
-        out << YAML::Key << "Rigidbody2DComponent";
-        out << YAML::BeginMap;
-        out << YAML::Key << "Type" << YAML::Value << (int)component.Type;
-        out << YAML::Key << "Velocity" << YAML::Value << component.Velocity;
-        out << YAML::Key << "AngularVelocity" << YAML::Value << component.AngularVelocity;
-        out << YAML::Key << "FixedRotation" << YAML::Value << component.FixedRotation;
-        out << YAML::EndMap;
+        SERIALIZE_COMPONENT(out, component, Rigidbody2DComponent);
     }
 
     void SerializeBoxCollider2DComponent(YAML::Emitter &out, BoxCollider2DComponent &component)
@@ -211,46 +249,7 @@ namespace Engine::Serialization
 
     bool DeserializeCameraComponent(const YAML::Node &componentNode, CameraComponent &component)
     {
-        if (componentNode["Primary"])
-        {
-            component.Primary = componentNode["Primary"].as<bool>();
-        }
-        if (componentNode["FixedAspectRatio"])
-        {
-            component.FixedAspectRatio = componentNode["FixedAspectRatio"].as<bool>();
-        }
-        if (componentNode["ProjectionType"])
-        {
-            component.ProjectionType = (SceneCameraProjectionType)componentNode["ProjectionType"].as<int>();
-        }
-        if (componentNode["AspectRatio"])
-        {
-            component.AspectRatio = componentNode["AspectRatio"].as<float>();
-        }
-        if (componentNode["OrthographicSize"])
-        {
-            component.OrthographicSize = componentNode["OrthographicSize"].as<float>();
-        }
-        if (componentNode["OrthographicNearClip"])
-        {
-            component.OrthographicNear = componentNode["OrthographicNearClip"].as<float>();
-        }
-        if (componentNode["OrthographicFarClip"])
-        {
-            component.OrthographicFar = componentNode["OrthographicFarClip"].as<float>();
-        }
-        if (componentNode["PerspectiveFOV"])
-        {
-            component.PerspectiveFOV = componentNode["PerspectiveFOV"].as<float>();
-        }
-        if (componentNode["PerspectiveNearClip"])
-        {
-            component.PerspectiveNear = componentNode["PerspectiveNearClip"].as<float>();
-        }
-        if (componentNode["PerspectiveFarClip"])
-        {
-            component.PerspectiveFar = componentNode["PerspectiveFarClip"].as<float>();
-        }
+        DESERILIZE_COMPONENT(componentNode, component, CameraComponent);
         return true;
     }
 
@@ -294,22 +293,7 @@ namespace Engine::Serialization
 
     bool DeserializeRigidbody2DComponent(const YAML::Node &componentNode, Rigidbody2DComponent &component)
     {
-        if (componentNode["Type"])
-        {
-            component.Type = (Rigidbody2DComponent::BodyType)componentNode["Type"].as<int>();
-        }
-        if (componentNode["Velocity"])
-        {
-            component.Velocity = componentNode["Velocity"].as<glm::vec2>();
-        }
-        if (componentNode["AngularVelocity"])
-        {
-            component.AngularVelocity = componentNode["AngularVelocity"].as<float>();
-        }
-        if (componentNode["FixedRotation"])
-        {
-            component.FixedRotation = componentNode["FixedRotation"].as<bool>();
-        }
+        DESERILIZE_COMPONENT(componentNode, component, Rigidbody2DComponent);
         return true;
     }
 

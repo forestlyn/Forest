@@ -14,6 +14,7 @@ enum class MetaKind
     Int4,
     Bool,
     String,
+    Enum,
     Struct,
     UUID
 };
@@ -61,6 +62,24 @@ struct MetaField
     MetaUIHint ui{};
 };
 
+struct MetaEnumValue
+{
+    const char *Name = nullptr;
+    int64_t Value = 0;
+};
+
+template <typename E>
+int64_t EnumToIntImpl(const void *obj)
+{
+    return static_cast<int64_t>(*static_cast<const E *>(obj));
+}
+
+template <typename E>
+void EnumFromIntImpl(void *obj, int64_t value)
+{
+    *static_cast<E *>(obj) = static_cast<E>(value);
+}
+
 struct MetaType
 {
     const char *name = nullptr;
@@ -68,4 +87,8 @@ struct MetaType
     size_t size = 0;
 
     const std::vector<MetaField> *fields = nullptr;
+    const std::vector<MetaEnumValue> *enumValues = nullptr;
+
+    int64_t (*EnumToInt)(const void *) = nullptr;
+    void (*EnumFromInt)(void *, int64_t) = nullptr;
 };

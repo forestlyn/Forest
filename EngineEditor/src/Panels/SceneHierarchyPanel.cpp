@@ -236,7 +236,7 @@ namespace EngineEditor
                                                                 int currentBodyType = (int)rigidbody2D.Type;
                                                                 if (ImGui::Combo("Body Type", &currentBodyType, bodyTypeStrings, IM_ARRAYSIZE(bodyTypeStrings)))
                                                                 {
-                                                                    rigidbody2D.Type = (Engine::Rigidbody2DComponent::BodyType)currentBodyType;
+                                                                    rigidbody2D.Type = (Engine::Rigidbody2DBodyType)currentBodyType;
                                                                 }
                                                                 ImGui::DragFloat2("Velocity", glm::value_ptr(rigidbody2D.Velocity), 0.1f);
                                                                 ImGui::DragFloat("Angular Velocity", &rigidbody2D.AngularVelocity, 0.1f);

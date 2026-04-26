@@ -53,8 +53,21 @@ namespace Engine
         }
     };
 
+    REFLECT_ENUM_BEGIN(SceneCameraProjectionType)
+    REFLECT_ENUM_VALUE(Perspective)
+    REFLECT_ENUM_VALUE(Orthographic)
+    REFLECT_ENUM_END(SceneCameraProjectionType)
+
     REFLECT_TYPE_BEGIN(CameraComponent)
+    REFLECT_FIELD(ProjectionType)
     REFLECT_FIELD(Primary)
     REFLECT_FIELD(FixedAspectRatio)
+    REFLECT_FIELD(OrthographicSize)
+    REFLECT_FIELD(OrthographicNear)
+    REFLECT_FIELD(OrthographicFar)
+    REFLECT_FIELD(PerspectiveFOV)
+    REFLECT_FIELD(PerspectiveNear)
+    REFLECT_FIELD(PerspectiveFar)
+    REFLECT_FIELD(AspectRatio)
     REFLECT_TYPE_END(CameraComponent)
 } // namespace Engine

@@ -24,3 +24,24 @@
     }                                                                        \
     }                                                                        \
     ;
+
+#define REFLECT_ENUM_BEGIN(EnumType) \
+    template <>                      \
+    struct MetaResolver<EnumType>    \
+    {                                \
+        static const MetaType &Get() \
+        {                            \
+            using Self = EnumType;   \
+            static const std::vector<MetaEnumValue> values = {
+
+#define REFLECT_ENUM_VALUE(Value) \
+    {#Value, static_cast<int64_t>(Self::Value)},
+
+#define REFLECT_ENUM_END(EnumType)                                                                                                            \
+    }                                                                                                                                         \
+    ;                                                                                                                                         \
+    static const MetaType t{#EnumType, MetaKind::Enum, sizeof(Self), nullptr, &values, &EnumToIntImpl<EnumType>, &EnumFromIntImpl<EnumType>}; \
+    return t;                                                                                                                                 \
+    }                                                                                                                                         \
+    }                                                                                                                                         \
+    ;
