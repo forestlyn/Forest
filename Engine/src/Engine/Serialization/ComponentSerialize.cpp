@@ -2,24 +2,142 @@
 #include "Engine/Core/Core.h"
 #include "Engine/Scripts/ScriptEngine.h"
 #include "Engine/Project/Project.h"
+#include "Engine/Reflection/Reflect.h"
+
+#define SERIALIZE_COMPONENT(out, obj, ComponentType)           \
+    do                                                         \
+    {                                                          \
+        out << YAML::Key << #ComponentType;                    \
+        SerializeValue(out, &(obj), Reflect<ComponentType>()); \
+    } while (0)
+
+#define DESERILIZE_COMPONENT(node, obj, ComponentType)              \
+    do                                                              \
+    {                                                               \
+        DeserializeValue(&(obj), Reflect<ComponentType>(), (node)); \
+    } while (0)
 namespace Engine::Serialization
 {
-    void SerializeTagComponent(YAML::Emitter &out, TagComponent &entity)
+
+    inline void SerializeValue(YAML::Emitter &out, const void *obj, const MetaType &type)
     {
-        out << YAML::Key << "TagComponent";
-        out << YAML::BeginMap;
-        out << YAML::Key << "Tag" << YAML::Value << entity.Tag;
-        out << YAML::EndMap;
+        switch (type.kind)
+        {
+        case MetaKind::Bool:
+            out << *static_cast<const bool *>(obj);
+            break;
+
+        case MetaKind::Int:
+            out << *static_cast<const int *>(obj);
+            break;
+
+        case MetaKind::Float:
+            out << *static_cast<const float *>(obj);
+            break;
+
+        case MetaKind::Float2:
+            out << *static_cast<const glm::vec2 *>(obj);
+            break;
+
+        case MetaKind::Float3:
+            out << *static_cast<const glm::vec3 *>(obj);
+            break;
+
+        case MetaKind::Float4:
+            out << *static_cast<const glm::vec4 *>(obj);
+            break;
+
+        case MetaKind::String:
+            out << *static_cast<const std::string *>(obj);
+            break;
+
+        case MetaKind::Struct:
+        {
+            out << YAML::BeginMap;
+
+            if (type.fields)
+            {
+                for (const MetaField &field : *type.fields)
+                {
+                    out << YAML::Key << field.name;
+                    out << YAML::Value;
+                    SerializeValue(out, field.getConst(obj), *field.type);
+                }
+            }
+
+            out << YAML::EndMap;
+            break;
+        }
+
+        default:
+            throw std::runtime_error("Unsupported MetaKind in SerializeValue");
+        }
+    }
+
+    inline void DeserializeValue(void *obj, const MetaType &type, const YAML::Node &node)
+    {
+        if (!node)
+            return;
+
+        switch (type.kind)
+        {
+        case MetaKind::Bool:
+            *static_cast<bool *>(obj) = node.as<bool>();
+            break;
+
+        case MetaKind::Int:
+            *static_cast<int *>(obj) = node.as<int>();
+            break;
+
+        case MetaKind::Float:
+            *static_cast<float *>(obj) = node.as<float>();
+            break;
+
+        case MetaKind::Float2:
+            *static_cast<glm::vec2 *>(obj) = node.as<glm::vec2>();
+            break;
+
+        case MetaKind::Float3:
+            *static_cast<glm::vec3 *>(obj) = node.as<glm::vec3>();
+            break;
+
+        case MetaKind::Float4:
+            *static_cast<glm::vec4 *>(obj) = node.as<glm::vec4>();
+            break;
+
+        case MetaKind::String:
+            *static_cast<std::string *>(obj) = node.as<std::string>();
+            break;
+
+        case MetaKind::Struct:
+        {
+            if (!node.IsMap() || !type.fields)
+                return;
+
+            for (const MetaField &field : *type.fields)
+            {
+                YAML::Node child = node[field.name];
+                if (!child)
+                    continue; // 缺字段就保留默认值
+
+                DeserializeValue(field.get(obj), *field.type, child);
+            }
+            break;
+        }
+
+        default:
+            throw std::runtime_error("Unsupported MetaKind in DeserializeValue");
+        }
+    }
+
+    void SerializeTagComponent(YAML::Emitter &out, TagComponent &component)
+    {
+        SERIALIZE_COMPONENT(out, component, TagComponent);
     }
 
     void SerializeTransformComponent(YAML::Emitter &out, TransformComponent &component)
     {
-        out << YAML::Key << "TransformComponent";
-        out << YAML::BeginMap;
-        out << YAML::Key << "Position" << YAML::Value << component.GetPosition();
-        out << YAML::Key << "Rotation" << YAML::Value << component.GetRotation();
-        out << YAML::Key << "Scale" << YAML::Value << component.GetScale();
-        out << YAML::EndMap;
+        SERIALIZE_COMPONENT(out, component, TransformComponent);
     }
 
     void SerializeCameraComponent(YAML::Emitter &out, CameraComponent &component)
@@ -45,29 +163,12 @@ namespace Engine::Serialization
 
     void SerializeSpriteComponent(YAML::Emitter &out, SpriteComponent &component)
     {
-        out << YAML::Key << "SpriteComponent";
-        out << YAML::BeginMap;
-        out << YAML::Key << "Color" << YAML::Value << component.Color;
-        if (component.Texture)
-        {
-            out << YAML::Key << "TexturePath" << YAML::Value << component.Texture->GetPath();
-        }
-        else
-        {
-            out << YAML::Key << "TexturePath" << YAML::Value << "None";
-        }
-        out << YAML::Key << "TilingFactor" << YAML::Value << component.TilingFactor;
-        out << YAML::EndMap;
+        SERIALIZE_COMPONENT(out, component, SpriteComponent);
     }
 
     void SerializeCircleComponent(YAML::Emitter &out, CircleComponent &component)
     {
-        out << YAML::Key << "CircleComponent";
-        out << YAML::BeginMap;
-        out << YAML::Key << "Color" << YAML::Value << component.Color;
-        out << YAML::Key << "Thickness" << YAML::Value << component.Thickness;
-        out << YAML::Key << "Fade" << YAML::Value << component.Fade;
-        out << YAML::EndMap;
+        SERIALIZE_COMPONENT(out, component, CircleComponent);
     }
 
     void SerializeRigidbody2DComponent(YAML::Emitter &out, Rigidbody2DComponent &component)
@@ -83,82 +184,28 @@ namespace Engine::Serialization
 
     void SerializeBoxCollider2DComponent(YAML::Emitter &out, BoxCollider2DComponent &component)
     {
-        out << YAML::Key << "BoxCollider2DComponent";
-        out << YAML::BeginMap;
-        out << YAML::Key << "Offset" << YAML::Value << component.Offset;
-        out << YAML::Key << "Size" << YAML::Value << component.Size;
-        out << YAML::Key << "Density" << YAML::Value << component.Density;
-        out << YAML::Key << "Friction" << YAML::Value << component.Friction;
-        out << YAML::Key << "Restitution" << YAML::Value << component.Restitution;
-        out << YAML::Key << "RestitutionThreshold" << YAML::Value << component.RestitutionThreshold;
-        out << YAML::EndMap;
+        SERIALIZE_COMPONENT(out, component, BoxCollider2DComponent);
     }
 
     void SerializeCircleCollider2DComponent(YAML::Emitter &out, CircleCollider2DComponent &component)
     {
-        out << YAML::Key << "CircleCollider2DComponent";
-        out << YAML::BeginMap;
-        out << YAML::Key << "Radius" << YAML::Value << component.Radius;
-        out << YAML::Key << "Offset" << YAML::Value << component.Offset;
-        out << YAML::Key << "Density" << YAML::Value << component.Density;
-        out << YAML::Key << "Friction" << YAML::Value << component.Friction;
-        out << YAML::Key << "Restitution" << YAML::Value << component.Restitution;
-        out << YAML::Key << "RestitutionThreshold" << YAML::Value << component.RestitutionThreshold;
-        out << YAML::EndMap;
+        SERIALIZE_COMPONENT(out, component, CircleCollider2DComponent);
     }
 
     void SerializeScriptComponent(YAML::Emitter &out, ScriptComponent &component)
     {
-        out << YAML::Key << "ScriptComponent";
-        out << YAML::BeginMap;
-        out << YAML::Key << "ScriptClassName" << YAML::Value << component.ScriptClassName;
-        out << YAML::EndMap;
+        SERIALIZE_COMPONENT(out, component, ScriptComponent);
     }
 
     bool DeserializeTagComponent(const YAML::Node &componentNode, TagComponent &component)
     {
-        if (componentNode["Tag"])
-        {
-            component.Tag = componentNode["Tag"].as<std::string>();
-            return true;
-        }
-        else
-        {
-            LOG_WARN("TagComponent missing Tag during deserialization. Setting to default empty string.");
-            component.Tag = "UnNamed Entity";
-            return true;
-        }
+        DESERILIZE_COMPONENT(componentNode, component, TagComponent);
+        return true;
     }
 
     bool DeserializeTransformComponent(const YAML::Node &componentNode, TransformComponent &component)
     {
-        if (componentNode["Position"])
-        {
-            component.SetPosition(componentNode["Position"].as<glm::vec3>());
-        }
-        else
-        {
-            LOG_WARN("TransformComponent missing Position during deserialization. Setting to default (0,0,0).");
-            component.SetPosition(glm::vec3(0.0f));
-        }
-        if (componentNode["Rotation"])
-        {
-            component.SetRotation(componentNode["Rotation"].as<glm::vec3>());
-        }
-        else
-        {
-            LOG_WARN("TransformComponent missing Rotation during deserialization. Setting to default (0,0,0).");
-            component.SetRotation(glm::vec3(0.0f));
-        }
-        if (componentNode["Scale"])
-        {
-            component.SetScale(componentNode["Scale"].as<glm::vec3>());
-        }
-        else
-        {
-            LOG_WARN("TransformComponent missing Scale during deserialization. Setting to default (1,1,1).");
-            component.SetScale(glm::vec3(1.0f));
-        }
+        DESERILIZE_COMPONENT(componentNode, component, TransformComponent);
         return true;
     }
 
@@ -241,18 +288,7 @@ namespace Engine::Serialization
 
     bool DeserializeCircleComponent(const YAML::Node &componentNode, CircleComponent &component)
     {
-        if (componentNode["Color"])
-        {
-            component.Color = componentNode["Color"].as<glm::vec4>();
-        }
-        if (componentNode["Thickness"])
-        {
-            component.Thickness = componentNode["Thickness"].as<float>();
-        }
-        if (componentNode["Fade"])
-        {
-            component.Fade = componentNode["Fade"].as<float>();
-        }
+        DESERILIZE_COMPONENT(componentNode, component, CircleComponent);
         return true;
     }
 
@@ -279,73 +315,18 @@ namespace Engine::Serialization
 
     bool DeserializeBoxCollider2DComponent(const YAML::Node &componentNode, BoxCollider2DComponent &component)
     {
-        if (componentNode["Offset"])
-        {
-            component.Offset = componentNode["Offset"].as<glm::vec2>();
-        }
-        if (componentNode["Size"])
-        {
-            component.Size = componentNode["Size"].as<glm::vec2>();
-        }
-        if (componentNode["Density"])
-        {
-            component.Density = componentNode["Density"].as<float>();
-        }
-        if (componentNode["Friction"])
-        {
-            component.Friction = componentNode["Friction"].as<float>();
-        }
-        if (componentNode["Restitution"])
-        {
-            component.Restitution = componentNode["Restitution"].as<float>();
-        }
-        if (componentNode["RestitutionThreshold"])
-        {
-            component.RestitutionThreshold = componentNode["RestitutionThreshold"].as<float>();
-        }
+        DESERILIZE_COMPONENT(componentNode, component, BoxCollider2DComponent);
         return true;
     }
 
     bool DeserializeCircleCollider2DComponent(const YAML::Node &componentNode, CircleCollider2DComponent &component)
     {
-        if (componentNode["Radius"])
-        {
-            component.Radius = componentNode["Radius"].as<float>();
-        }
-        if (componentNode["Offset"])
-        {
-            component.Offset = componentNode["Offset"].as<glm::vec2>();
-        }
-        if (componentNode["Density"])
-        {
-            component.Density = componentNode["Density"].as<float>();
-        }
-        if (componentNode["Friction"])
-        {
-            component.Friction = componentNode["Friction"].as<float>();
-        }
-        if (componentNode["Restitution"])
-        {
-            component.Restitution = componentNode["Restitution"].as<float>();
-        }
-        if (componentNode["RestitutionThreshold"])
-        {
-            component.RestitutionThreshold = componentNode["RestitutionThreshold"].as<float>();
-        }
+        DESERILIZE_COMPONENT(componentNode, component, CircleCollider2DComponent);
         return true;
     }
     bool DeserializeScriptComponent(const YAML::Node &componentNode, ScriptComponent &component)
     {
-        if (componentNode["ScriptClassName"])
-        {
-            component.ScriptClassName = componentNode["ScriptClassName"].as<std::string>();
-            return true;
-        }
-        else
-        {
-            LOG_WARN("ScriptComponent missing ScriptClassName during deserialization. Setting to default empty string.");
-            component.ScriptClassName = "";
-            return true;
-        }
+        DESERILIZE_COMPONENT(componentNode, component, ScriptComponent);
+        return true;
     }
 } // namespace Engine::Serialization

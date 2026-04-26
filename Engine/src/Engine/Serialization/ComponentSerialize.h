@@ -4,7 +4,7 @@
 #include "SerializeUtils.h"
 namespace Engine::Serialization
 {
-    void SerializeTagComponent(YAML::Emitter &out, TagComponent &entity);
+    void SerializeTagComponent(YAML::Emitter &out, TagComponent &component);
     void SerializeTransformComponent(YAML::Emitter &out, TransformComponent &component);
     void SerializeCameraComponent(YAML::Emitter &out, CameraComponent &component);
     void SerializeSpriteComponent(YAML::Emitter &out, SpriteComponent &component);

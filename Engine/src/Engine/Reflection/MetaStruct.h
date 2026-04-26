@@ -41,10 +41,18 @@ struct MetaUIHint
     const char *tooltip = nullptr;
 };
 
+enum class FieldCategory
+{
+    Value,
+    ObjectReference,
+    AssetReference
+};
+
 struct MetaField
 {
     const char *name = nullptr;
     const MetaType *type = nullptr;
+    FieldCategory category = FieldCategory::Value;
 
     void *(*get)(void *) = nullptr;
     const void *(*getConst)(const void *) = nullptr;

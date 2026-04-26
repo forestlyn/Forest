@@ -24,12 +24,14 @@ const void *MetaGetConst(const void *obj)
 
 template <typename Class, typename FieldT, FieldT Class::*Member>
 MetaField MakeField(const char *name,
+                    FieldCategory category = FieldCategory::Value,
                     PropertyFlags flags = Property_None,
                     MetaUIHint ui = {})
 {
     return MetaField{
         name,
         &Reflect<FieldT>(),
+        category,
         &MetaGet<Class, FieldT, Member>,
         &MetaGetConst<Class, FieldT, Member>,
         flags,
