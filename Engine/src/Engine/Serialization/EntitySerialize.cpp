@@ -2,6 +2,7 @@
 #include "Engine/Scripts/ScriptEngine.h"
 #include <algorithm>
 #include <vector>
+
 #define SERIALIZE_SCRIPT_FIELD(fieldType, type)            \
     case fieldType:                                        \
     {                                                      \
@@ -9,6 +10,7 @@
         out << YAML::Value << fieldValue.GetValue<type>(); \
         break;                                             \
     }
+
 #define DESERIALIZE_SCRIPT_FIELD(fieldType, type)                                                 \
     case fieldType:                                                                               \
     {                                                                                             \
@@ -25,229 +27,190 @@
 
 namespace Engine::Serialization
 {
+    static void SerializeScriptFields(YAML::Emitter &out, Entity entity, const ScriptComponent &scriptComp)
+    {
+        UUID entityID = entity.GetUUID();
+        auto &fieldMap = Engine::ScriptEngine::GetScriptFieldMap(entityID);
+        if (fieldMap.empty())
+        {
+            return;
+        }
+
+        std::string fieldMapKey = scriptComp.ScriptClassName + "_Fields";
+        out << YAML::Key << fieldMapKey;
+        out << YAML::BeginMap;
+
+        std::vector<std::string> fieldNames;
+        fieldNames.reserve(fieldMap.size());
+        for (const auto &[fieldName, fieldValue] : fieldMap)
+        {
+            fieldNames.push_back(fieldName);
+        }
+        std::sort(fieldNames.begin(), fieldNames.end());
+
+        for (const auto &fieldName : fieldNames)
+        {
+            const auto &fieldValue = fieldMap.at(fieldName);
+            out << YAML::Key << fieldName;
+            out << YAML::BeginMap;
+            out << YAML::Key << "Name" << YAML::Value << fieldValue.Field.Name;
+            out << YAML::Key << "Type" << YAML::Value << (int)fieldValue.Field.FieldType;
+            switch (fieldValue.Field.FieldType)
+            {
+                SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Float, float);
+                SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Double, double);
+                SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Bool, bool);
+                SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Char, char);
+                SERIALIZE_SCRIPT_FIELD(ScriptFieldType::UByte, uint8_t);
+                SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Byte, int8_t);
+                SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Short, int16_t);
+                SERIALIZE_SCRIPT_FIELD(ScriptFieldType::UShort, uint16_t);
+                SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Int, int);
+                SERIALIZE_SCRIPT_FIELD(ScriptFieldType::UInt, uint32_t);
+                SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Long, int64_t);
+                SERIALIZE_SCRIPT_FIELD(ScriptFieldType::ULong, uint64_t);
+                SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector2, glm::vec2);
+                SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector3, glm::vec3);
+                SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector4, glm::vec4);
+                SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Entity, UUID);
+            }
+            out << YAML::EndMap; // Field
+        }
+
+        out << YAML::EndMap; // Fields
+    }
+
+    static void DeserializeScriptFields(const YAML::Node &entityNode, Entity &entity, const ScriptComponent &scriptComp)
+    {
+        std::string fieldMapKey = scriptComp.ScriptClassName + "_Fields";
+        if (!entityNode[fieldMapKey])
+        {
+            return;
+        }
+
+        UUID entityID = entity.GetUUID();
+        auto &fieldMap = Engine::ScriptEngine::GetScriptFieldMap(entityID);
+        for (auto &fieldNode : entityNode[fieldMapKey])
+        {
+            std::string fieldName = fieldNode.first.as<std::string>();
+            auto &fieldDataNode = fieldNode.second;
+            ScriptFieldInstance fieldInstance;
+            fieldInstance.Field.Name = fieldDataNode["Name"].as<std::string>();
+            fieldInstance.Field.FieldType = (ScriptFieldType)fieldDataNode["Type"].as<int>();
+            switch (fieldInstance.Field.FieldType)
+            {
+                DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Float, float);
+                DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Double, double);
+                DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Bool, bool);
+                DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Char, char);
+                DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::UByte, uint8_t);
+                DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Byte, int8_t);
+                DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Short, int16_t);
+                DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::UShort, uint16_t);
+                DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Int, int);
+                DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::UInt, uint32_t);
+                DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Long, int64_t);
+                DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::ULong, uint64_t);
+                DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector2, glm::vec2);
+                DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector3, glm::vec3);
+                DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector4, glm::vec4);
+                DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Entity, UUID);
+            default:
+            {
+                ENGINE_WARN("Unknown script field type for field " + fieldName);
+                break;
+            }
+            }
+            fieldMap[fieldName] = fieldInstance;
+        }
+    }
+#pragma region Component Serialization
+    template <IsSerializableComponent T>
+    static void SerializeComponentIfExists(YAML::Emitter &out, Entity entity)
+    {
+        if (!entity.HasComponent<T>())
+        {
+            return;
+        }
+
+        auto &component = entity.GetComponent<T>();
+        SerializeComponent(out, component);
+    }
+
+    template <>
+    void SerializeComponentIfExists<ScriptComponent>(YAML::Emitter &out, Entity entity)
+    {
+        if (!entity.HasComponent<ScriptComponent>())
+        {
+            return;
+        }
+
+        auto &scriptComp = entity.GetComponent<ScriptComponent>();
+        SerializeComponent(out, scriptComp);
+        SerializeScriptFields(out, entity, scriptComp);
+    }
+
+    template <typename... T>
+    static void SerializeComponents(YAML::Emitter &out, Entity entity, ComponentGroup<T...>)
+    {
+        (SerializeComponentIfExists<T>(out, entity), ...);
+    }
+
+    template <IsSerializableComponent T>
+    static bool DeserializeComponentIfExists(const YAML::Node &entityNode, Entity &entity)
+    {
+        const char *componentName = Reflect<T>().name;
+        if (!entityNode[componentName])
+        {
+            return true;
+        }
+
+        auto &componentNode = entityNode[componentName];
+        auto &component = entity.AddComponent<T>();
+        return DeserializeComponent(componentNode, component);
+    }
+
+    template <>
+    bool DeserializeComponentIfExists<ScriptComponent>(const YAML::Node &entityNode, Entity &entity)
+    {
+        const char *componentName = Reflect<ScriptComponent>().name;
+        if (!entityNode[componentName])
+        {
+            return true;
+        }
+        auto &componentNode = entityNode[componentName];
+        auto &scriptComp = entity.AddComponent<ScriptComponent>();
+        if (!DeserializeComponent(componentNode, scriptComp))
+        {
+            return false;
+        }
+        DeserializeScriptFields(entityNode, entity, scriptComp);
+        return true;
+    }
+
+    template <typename... T>
+    static bool DeserializeComponents(const YAML::Node &entityNode, Entity &entity, ComponentGroup<T...>)
+    {
+        return (DeserializeComponentIfExists<T>(entityNode, entity) && ...);
+    }
+
+#pragma endregion
+
     void SerializeEntity(YAML::Emitter &out, Entity entity)
     {
         out << YAML::BeginMap; // Entity
         out << YAML::Key << "EntityID" << YAML::Value << entity.GetUUID();
 
-        if (entity.HasComponent<TagComponent>())
-        {
-            auto &tagComp = entity.GetComponent<TagComponent>();
-            SerializeComponent(out, tagComp);
-        }
-        if (entity.HasComponent<TransformComponent>())
-        {
-            auto &transformComp = entity.GetComponent<TransformComponent>();
-            SerializeComponent(out, transformComp);
-        }
-        if (entity.HasComponent<CameraComponent>())
-        {
-            auto &cameraComp = entity.GetComponent<CameraComponent>();
-            SerializeComponent(out, cameraComp);
-        }
-        if (entity.HasComponent<SpriteComponent>())
-        {
-            auto &spriteComp = entity.GetComponent<SpriteComponent>();
-            SerializeComponent(out, spriteComp);
-        }
-        if (entity.HasComponent<CircleComponent>())
-        {
-            auto &circleComp = entity.GetComponent<CircleComponent>();
-            SerializeComponent(out, circleComp);
-        }
-        if (entity.HasComponent<Rigidbody2DComponent>())
-        {
-            auto &rigidbody2DComp = entity.GetComponent<Rigidbody2DComponent>();
-            SerializeComponent(out, rigidbody2DComp);
-        }
-        if (entity.HasComponent<BoxCollider2DComponent>())
-        {
-            auto &boxCollider2DComp = entity.GetComponent<BoxCollider2DComponent>();
-            SerializeComponent(out, boxCollider2DComp);
-        }
-        if (entity.HasComponent<CircleCollider2DComponent>())
-        {
-            auto &circleCollider2DComp = entity.GetComponent<CircleCollider2DComponent>();
-            SerializeComponent(out, circleCollider2DComp);
-        }
-        if (entity.HasComponent<ScriptComponent>())
-        {
-            auto &scriptComp = entity.GetComponent<ScriptComponent>();
-            SerializeComponent(out, scriptComp);
-            // Serialize script fields
-            UUID entityID = entity.GetUUID();
-            auto &fieldMap = Engine::ScriptEngine::GetScriptFieldMap(entityID);
-            if (!fieldMap.empty())
-            {
-                std::string scriptClassName = scriptComp.ScriptClassName;
-                std::string fieldMapKey = scriptClassName + "_Fields";
-                out << YAML::Key << fieldMapKey;
-                out << YAML::BeginMap;
-                std::vector<std::string> fieldNames;
-                fieldNames.reserve(fieldMap.size());
-                for (const auto &[fieldName, fieldValue] : fieldMap)
-                {
-                    fieldNames.push_back(fieldName);
-                }
-                std::sort(fieldNames.begin(), fieldNames.end());
+        SerializeComponents(out, entity, REFLECT_SERIALIZE_TYPE{});
 
-                for (const auto &fieldName : fieldNames)
-                {
-                    const auto &fieldValue = fieldMap.at(fieldName);
-                    out << YAML::Key << fieldName;
-                    out << YAML::BeginMap;
-                    out << YAML::Key << "Name" << YAML::Value << fieldValue.Field.Name;
-                    out << YAML::Key << "Type" << YAML::Value << (int)fieldValue.Field.FieldType;
-                    switch (fieldValue.Field.FieldType)
-                    {
-                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Float, float);
-                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Double, double);
-                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Bool, bool);
-                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Char, char);
-                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::UByte, uint8_t);
-                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Byte, int8_t);
-                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Short, int16_t);
-                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::UShort, uint16_t);
-                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Int, int);
-                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::UInt, uint32_t);
-                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Long, int64_t);
-                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::ULong, uint64_t);
-                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector2, glm::vec2);
-                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector3, glm::vec3);
-                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector4, glm::vec4);
-                        SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Entity, UUID);
-                    }
-                    out << YAML::EndMap; // Field
-                }
-                out << YAML::EndMap; // Fields
-            }
-        }
         out << YAML::EndMap; // Entity
     }
 
     bool DeserializeEntity(const YAML::Node &entityNode, Entity &entity)
     {
-        // 反序列化组件
-        if (entityNode["TagComponent"])
+        if (!DeserializeComponents(entityNode, entity, REFLECT_SERIALIZE_TYPE{}))
         {
-            auto &tagNode = entityNode["TagComponent"];
-            auto &tagComp = entity.AddComponent<TagComponent>();
-            if (!DeserializeComponent(tagNode, tagComp))
-            {
-                return false;
-            }
-        }
-        if (entityNode["TransformComponent"])
-        {
-            auto &transformNode = entityNode["TransformComponent"];
-            auto &transformComp = entity.AddComponent<TransformComponent>();
-            if (!DeserializeComponent(transformNode, transformComp))
-            {
-                return false;
-            }
-        }
-        if (entityNode["CameraComponent"])
-        {
-            auto &cameraNode = entityNode["CameraComponent"];
-            auto &cameraComp = entity.AddComponent<CameraComponent>();
-            if (!DeserializeComponent(cameraNode, cameraComp))
-            {
-                return false;
-            }
-        }
-        if (entityNode["SpriteComponent"])
-        {
-            auto &spriteNode = entityNode["SpriteComponent"];
-            auto &spriteComp = entity.AddComponent<SpriteComponent>();
-            if (!DeserializeComponent(spriteNode, spriteComp))
-            {
-                return false;
-            }
-        }
-        if (entityNode["CircleComponent"])
-        {
-            auto &circleNode = entityNode["CircleComponent"];
-            auto &circleComp = entity.AddComponent<CircleComponent>();
-            if (!DeserializeComponent(circleNode, circleComp))
-            {
-                return false;
-            }
-        }
-        if (entityNode["Rigidbody2DComponent"])
-        {
-            auto &rigidbody2DNode = entityNode["Rigidbody2DComponent"];
-            auto &rigidbody2DComp = entity.AddComponent<Rigidbody2DComponent>();
-            if (!DeserializeComponent(rigidbody2DNode, rigidbody2DComp))
-            {
-                return false;
-            }
-        }
-        if (entityNode["BoxCollider2DComponent"])
-        {
-            auto &boxCollider2DNode = entityNode["BoxCollider2DComponent"];
-            auto &boxCollider2DComp = entity.AddComponent<BoxCollider2DComponent>();
-            if (!DeserializeComponent(boxCollider2DNode, boxCollider2DComp))
-            {
-                return false;
-            }
-        }
-        if (entityNode["CircleCollider2DComponent"])
-        {
-            auto circleCollider2DNode = entityNode["CircleCollider2DComponent"];
-            auto &circleCollider2DComp = entity.AddComponent<CircleCollider2DComponent>();
-            if (!DeserializeComponent(circleCollider2DNode, circleCollider2DComp))
-            {
-                return false;
-            }
-        }
-        if (entityNode["ScriptComponent"])
-        {
-            auto &scriptNode = entityNode["ScriptComponent"];
-            auto &scriptComp = entity.AddComponent<ScriptComponent>();
-            if (!DeserializeComponent(scriptNode, scriptComp))
-            {
-                return false;
-            }
-            std::string scriptClassName = scriptComp.ScriptClassName;
-            std::string fieldMapKey = scriptClassName + "_Fields";
-            if (entityNode[fieldMapKey])
-            {
-                UUID entityID = entity.GetUUID();
-                auto &fieldMap = Engine::ScriptEngine::GetScriptFieldMap(entityID);
-                for (auto &fieldNode : entityNode[fieldMapKey])
-                {
-                    std::string fieldName = fieldNode.first.as<std::string>();
-                    auto &fieldDataNode = fieldNode.second;
-                    ScriptFieldInstance fieldInstance;
-                    fieldInstance.Field.Name = fieldDataNode["Name"].as<std::string>();
-                    fieldInstance.Field.FieldType = (ScriptFieldType)fieldDataNode["Type"].as<int>();
-                    switch (fieldInstance.Field.FieldType)
-                    {
-                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Float, float);
-                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Double, double);
-                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Bool, bool);
-                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Char, char);
-                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::UByte, uint8_t);
-                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Byte, int8_t);
-                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Short, int16_t);
-                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::UShort, uint16_t);
-                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Int, int);
-                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::UInt, uint32_t);
-                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Long, int64_t);
-                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::ULong, uint64_t);
-                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector2, glm::vec2);
-                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector3, glm::vec3);
-                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector4, glm::vec4);
-                        DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Entity, UUID);
-                    default:
-                    {
-                        ENGINE_WARN("Unknown script field type for field " + fieldName);
-                        break;
-                    }
-                    }
-                    fieldMap[fieldName] = fieldInstance;
-                }
-            }
+            return false;
         }
         return true;
     }
