@@ -18,6 +18,23 @@ namespace Engine
     {
     };
 
+    template <typename T, typename... Components>
+    struct IsInComponentGroupImpl : std::disjunction<std::is_same<T, Components>...>
+    {
+    };
+
+    template <typename T, typename Group>
+    struct IsInComponentGroupHelper;
+
+    template <typename T, typename... Components>
+    struct IsInComponentGroupHelper<T, ComponentGroup<Components...>>
+        : IsInComponentGroupImpl<T, Components...>
+    {
+    };
+
+    template <typename T, typename Group>
+    concept IsInComponentGroup = IsInComponentGroupHelper<T, Group>::value;
+
     using AllComponents = ComponentGroup<
         TransformComponent,
         CameraComponent,

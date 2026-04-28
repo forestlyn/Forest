@@ -1,5 +1,7 @@
 #include "EntitySerialize.h"
 #include "Engine/Scripts/ScriptEngine.h"
+#include <algorithm>
+#include <vector>
 #define SERIALIZE_SCRIPT_FIELD(fieldType, type)            \
     case fieldType:                                        \
     {                                                      \
@@ -31,47 +33,47 @@ namespace Engine::Serialization
         if (entity.HasComponent<TagComponent>())
         {
             auto &tagComp = entity.GetComponent<TagComponent>();
-            SerializeTagComponent(out, tagComp);
+            SerializeComponent(out, tagComp);
         }
         if (entity.HasComponent<TransformComponent>())
         {
             auto &transformComp = entity.GetComponent<TransformComponent>();
-            SerializeTransformComponent(out, transformComp);
+            SerializeComponent(out, transformComp);
         }
         if (entity.HasComponent<CameraComponent>())
         {
             auto &cameraComp = entity.GetComponent<CameraComponent>();
-            SerializeCameraComponent(out, cameraComp);
+            SerializeComponent(out, cameraComp);
         }
         if (entity.HasComponent<SpriteComponent>())
         {
             auto &spriteComp = entity.GetComponent<SpriteComponent>();
-            SerializeSpriteComponent(out, spriteComp);
+            SerializeComponent(out, spriteComp);
         }
         if (entity.HasComponent<CircleComponent>())
         {
             auto &circleComp = entity.GetComponent<CircleComponent>();
-            SerializeCircleComponent(out, circleComp);
+            SerializeComponent(out, circleComp);
         }
         if (entity.HasComponent<Rigidbody2DComponent>())
         {
             auto &rigidbody2DComp = entity.GetComponent<Rigidbody2DComponent>();
-            SerializeRigidbody2DComponent(out, rigidbody2DComp);
+            SerializeComponent(out, rigidbody2DComp);
         }
         if (entity.HasComponent<BoxCollider2DComponent>())
         {
             auto &boxCollider2DComp = entity.GetComponent<BoxCollider2DComponent>();
-            SerializeBoxCollider2DComponent(out, boxCollider2DComp);
+            SerializeComponent(out, boxCollider2DComp);
         }
         if (entity.HasComponent<CircleCollider2DComponent>())
         {
             auto &circleCollider2DComp = entity.GetComponent<CircleCollider2DComponent>();
-            SerializeCircleCollider2DComponent(out, circleCollider2DComp);
+            SerializeComponent(out, circleCollider2DComp);
         }
         if (entity.HasComponent<ScriptComponent>())
         {
             auto &scriptComp = entity.GetComponent<ScriptComponent>();
-            SerializeScriptComponent(out, scriptComp);
+            SerializeComponent(out, scriptComp);
             // Serialize script fields
             UUID entityID = entity.GetUUID();
             auto &fieldMap = Engine::ScriptEngine::GetScriptFieldMap(entityID);
@@ -81,8 +83,17 @@ namespace Engine::Serialization
                 std::string fieldMapKey = scriptClassName + "_Fields";
                 out << YAML::Key << fieldMapKey;
                 out << YAML::BeginMap;
+                std::vector<std::string> fieldNames;
+                fieldNames.reserve(fieldMap.size());
                 for (const auto &[fieldName, fieldValue] : fieldMap)
                 {
+                    fieldNames.push_back(fieldName);
+                }
+                std::sort(fieldNames.begin(), fieldNames.end());
+
+                for (const auto &fieldName : fieldNames)
+                {
+                    const auto &fieldValue = fieldMap.at(fieldName);
                     out << YAML::Key << fieldName;
                     out << YAML::BeginMap;
                     out << YAML::Key << "Name" << YAML::Value << fieldValue.Field.Name;
@@ -121,7 +132,7 @@ namespace Engine::Serialization
         {
             auto &tagNode = entityNode["TagComponent"];
             auto &tagComp = entity.AddComponent<TagComponent>();
-            if (!DeserializeTagComponent(tagNode, tagComp))
+            if (!DeserializeComponent(tagNode, tagComp))
             {
                 return false;
             }
@@ -130,7 +141,7 @@ namespace Engine::Serialization
         {
             auto &transformNode = entityNode["TransformComponent"];
             auto &transformComp = entity.AddComponent<TransformComponent>();
-            if (!DeserializeTransformComponent(transformNode, transformComp))
+            if (!DeserializeComponent(transformNode, transformComp))
             {
                 return false;
             }
@@ -139,7 +150,7 @@ namespace Engine::Serialization
         {
             auto &cameraNode = entityNode["CameraComponent"];
             auto &cameraComp = entity.AddComponent<CameraComponent>();
-            if (!DeserializeCameraComponent(cameraNode, cameraComp))
+            if (!DeserializeComponent(cameraNode, cameraComp))
             {
                 return false;
             }
@@ -148,7 +159,7 @@ namespace Engine::Serialization
         {
             auto &spriteNode = entityNode["SpriteComponent"];
             auto &spriteComp = entity.AddComponent<SpriteComponent>();
-            if (!DeserializeSpriteComponent(spriteNode, spriteComp))
+            if (!DeserializeComponent(spriteNode, spriteComp))
             {
                 return false;
             }
@@ -157,7 +168,7 @@ namespace Engine::Serialization
         {
             auto &circleNode = entityNode["CircleComponent"];
             auto &circleComp = entity.AddComponent<CircleComponent>();
-            if (!DeserializeCircleComponent(circleNode, circleComp))
+            if (!DeserializeComponent(circleNode, circleComp))
             {
                 return false;
             }
@@ -166,7 +177,7 @@ namespace Engine::Serialization
         {
             auto &rigidbody2DNode = entityNode["Rigidbody2DComponent"];
             auto &rigidbody2DComp = entity.AddComponent<Rigidbody2DComponent>();
-            if (!DeserializeRigidbody2DComponent(rigidbody2DNode, rigidbody2DComp))
+            if (!DeserializeComponent(rigidbody2DNode, rigidbody2DComp))
             {
                 return false;
             }
@@ -175,7 +186,7 @@ namespace Engine::Serialization
         {
             auto &boxCollider2DNode = entityNode["BoxCollider2DComponent"];
             auto &boxCollider2DComp = entity.AddComponent<BoxCollider2DComponent>();
-            if (!DeserializeBoxCollider2DComponent(boxCollider2DNode, boxCollider2DComp))
+            if (!DeserializeComponent(boxCollider2DNode, boxCollider2DComp))
             {
                 return false;
             }
@@ -184,7 +195,7 @@ namespace Engine::Serialization
         {
             auto circleCollider2DNode = entityNode["CircleCollider2DComponent"];
             auto &circleCollider2DComp = entity.AddComponent<CircleCollider2DComponent>();
-            if (!DeserializeCircleCollider2DComponent(circleCollider2DNode, circleCollider2DComp))
+            if (!DeserializeComponent(circleCollider2DNode, circleCollider2DComp))
             {
                 return false;
             }
@@ -193,7 +204,7 @@ namespace Engine::Serialization
         {
             auto &scriptNode = entityNode["ScriptComponent"];
             auto &scriptComp = entity.AddComponent<ScriptComponent>();
-            if (!DeserializeScriptComponent(scriptNode, scriptComp))
+            if (!DeserializeComponent(scriptNode, scriptComp))
             {
                 return false;
             }

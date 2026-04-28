@@ -1,8 +1,10 @@
 #include "SceneSerialize.h"
 #include "EntitySerialize.h"
 #include <yaml-cpp/yaml.h>
+#include <algorithm>
 #include <fstream>
 #include <filesystem>
+#include <vector>
 namespace fs = std::filesystem;
 namespace Engine::Serialization
 {
@@ -46,11 +48,19 @@ namespace Engine::Serialization
         out << YAML::Value << "Untitled";
         out << YAML::Key << "Entities";
         out << YAML::BeginSeq;
+        std::vector<Entity> entities;
         auto view = m_Scene->GetRegistry().view<TagComponent>();
         for (auto entity : view)
         {
-            Entity e{entity, m_Scene.get()};
-            SerializeEntity(out, e);
+            entities.emplace_back(entity, m_Scene.get());
+        }
+
+        std::sort(entities.begin(), entities.end(), [](Entity lhs, Entity rhs)
+                  { return (uint64_t)lhs.GetUUID() < (uint64_t)rhs.GetUUID(); });
+
+        for (auto entity : entities)
+        {
+            SerializeEntity(out, entity);
         }
         out << YAML::EndSeq;
         out << YAML::EndMap;

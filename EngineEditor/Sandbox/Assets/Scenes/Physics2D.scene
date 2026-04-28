@@ -1,5 +1,46 @@
 Scene: Untitled
 Entities:
+  - EntityID: 1108859090500040080
+    TagComponent:
+      Tag: Second Camera
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      ProjectionType: Orthographic
+      Primary: false
+      FixedAspectRatio: false
+      OrthographicSize: 10
+      OrthographicNear: -1
+      OrthographicFar: 1
+      PerspectiveFOV: 45
+      PerspectiveNear: 0.1
+      PerspectiveFar: 1000
+      AspectRatio: 1.5367762
+  - EntityID: 5589837931712714978
+    TagComponent:
+      Tag: Square
+    TransformComponent:
+      Position: [1.2640316, 5.3411304e-07, 0]
+      Rotation: [0, 0, -89.99997]
+      Scale: [0.9999986, 0.9999986, 1]
+    SpriteComponent:
+      Color: [0.8, 0.2, 0.3, 1]
+      TilingFactor: 1
+      TexturePath: None
+    Rigidbody2DComponent:
+      Type: Dynamic
+      Velocity: [0, 9.8]
+      AngularVelocity: 0
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.84
+      RestitutionThreshold: 0.9
+      Offset: [0, 0]
+      Size: [1, 1]
   - EntityID: 9096553039105538474
     TagComponent:
       Tag: Circle
@@ -24,64 +65,6 @@ Entities:
       RollingResistance: 0.05
       Restitution: 0.45
       RestitutionThreshold: 0.5
-  - EntityID: 5589837931712714978
-    TagComponent:
-      Tag: Square
-    TransformComponent:
-      Position: [1.2640316, 5.3411304e-07, 0]
-      Rotation: [0, 0, -89.99997]
-      Scale: [0.9999986, 0.9999986, 1]
-    SpriteComponent:
-      Color: [0.8, 0.2, 0.3, 1]
-      TilingFactor: 1
-    Rigidbody2DComponent:
-      Type: Dynamic
-      Velocity: [0, 9.8]
-      AngularVelocity: 0
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Density: 1
-      Friction: 0.5
-      Restitution: 0.84
-      RestitutionThreshold: 0.9
-      Offset: [0, 0]
-      Size: [1, 1]
-  - EntityID: 15481874266898090421
-    TagComponent:
-      Tag: Main Camera
-    TransformComponent:
-      Position: [0, 0, 10]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      ProjectionType: Perspective
-      Primary: true
-      FixedAspectRatio: false
-      OrthographicSize: 10
-      OrthographicNear: -1
-      OrthographicFar: 1
-      PerspectiveFOV: 45
-      PerspectiveNear: 0.1
-      PerspectiveFar: 1000
-      AspectRatio: 1.5367762
-  - EntityID: 1108859090500040080
-    TagComponent:
-      Tag: Second Camera
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      ProjectionType: Orthographic
-      Primary: false
-      FixedAspectRatio: false
-      OrthographicSize: 10
-      OrthographicNear: -1
-      OrthographicFar: 1
-      PerspectiveFOV: 45
-      PerspectiveNear: 0.1
-      PerspectiveFar: 1000
-      AspectRatio: 1.5367762
   - EntityID: 10581122825863251169
     TagComponent:
       Tag: Platform
@@ -92,6 +75,7 @@ Entities:
     SpriteComponent:
       Color: [0.4283616, 0.76567656, 0.22490169, 1]
       TilingFactor: 1
+      TexturePath: None
     Rigidbody2DComponent:
       Type: Static
       Velocity: [0, 9.8]
@@ -131,34 +115,30 @@ Entities:
     ScriptComponent:
       ScriptClassName: Sandbox.Player
     Sandbox.Player_Fields:
-      IntValue2:
-        Name: IntValue2
-        Type: 9
-        Value: 2
-      IntValue:
-        Name: IntValue
-        Type: 9
-        Value: 0
-      IsActive:
-        Name: IsActive
-        Type: 3
-        Value: true
-      speed:
-        Name: speed
-        Type: 1
-        Value: 0.1
-      Vector3Value:
-        Name: Vector3Value
-        Type: 14
-        Value: [0, 0, 0]
       DoubleValue:
         Name: DoubleValue
         Type: 2
         Value: 0
+      IntValue:
+        Name: IntValue
+        Type: 9
+        Value: 0
+      IntValue2:
+        Name: IntValue2
+        Type: 9
+        Value: 2
+      IsActive:
+        Name: IsActive
+        Type: 3
+        Value: true
       Vector2Value:
         Name: Vector2Value
         Type: 13
         Value: [0, 0]
+      Vector3Value:
+        Name: Vector3Value
+        Type: 14
+        Value: [0, 0, 0]
       playerEntity:
         Name: playerEntity
         Type: 16
@@ -167,3 +147,25 @@ Entities:
         Name: playerEntity2
         Type: 16
         Value: 0
+      speed:
+        Name: speed
+        Type: 1
+        Value: 0.1
+  - EntityID: 15481874266898090421
+    TagComponent:
+      Tag: Main Camera
+    TransformComponent:
+      Position: [0, 0, 10]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      ProjectionType: Perspective
+      Primary: true
+      FixedAspectRatio: false
+      OrthographicSize: 10
+      OrthographicNear: -1
+      OrthographicFar: 1
+      PerspectiveFOV: 45
+      PerspectiveNear: 0.1
+      PerspectiveFar: 1000
+      AspectRatio: 1.5367762
