@@ -118,146 +118,18 @@ namespace EngineEditor
             }
         }
 
-        UIUtils::DrawComponent<Engine::TransformComponent>("Transform", entity, [](Engine::TransformComponent &transform)
-                                                           {
-                                                               auto position = transform.Position;
-                                                               auto rotation = transform.Rotation;
-                                                               auto scale = transform.Scale;
-                                                               if (UIUtils::DrawVector3Control("Position", position))
-                                                               {
-                                                                   transform.SetPosition(position);
-                                                               }
-                                                               ImGui::Separator();
-                                                               if (UIUtils::DrawVector3Control("Rotation", rotation))
-                                                               {
-                                                                   transform.SetRotation(rotation);
-                                                               }
-                                                                ImGui::Separator();
-                                                               if (UIUtils::DrawVector3Control("Scale", scale, 1.0f))
-                                                               {
-                                                                   transform.SetScale(scale);
-                                                               } }, false);
+        UIUtils::DrawComponent<Engine::TransformComponent>("Transform", entity, false);
 
-        UIUtils::DrawComponent<Engine::SpriteComponent>("Sprite Renderer", entity, [](Engine::SpriteComponent &sprite)
-                                                        {
-                                                            ImGui::ColorEdit4("Color", glm::value_ptr(sprite.Color));
-                                                            ImGui::Button("Texture");
-                                                            if (ImGui::BeginDragDropTarget())
-                                                            {
-                                                                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-                                                                {
-                                                                    const wchar_t *path = (const wchar_t *)payload->Data;
-                                                                    std::filesystem::path texturePath = std::filesystem::path(path);
-                                                                    sprite.Texture = Engine::Renderer::Texture2D::Create(texturePath.string());
-                                                                    ENGINE_TRACE("Loaded texture from path: {}", texturePath.string());
-                                                                }
-                                                                ImGui::EndDragDropTarget();
-                                                            }
-                                                            ImGui::SameLine();
-                                                            ImGui::Button("Clear Texture");
-                                                            if (ImGui::IsItemClicked()){
-                                                                sprite.Texture = nullptr;
-                                                            }
-                                                            ImGui::DragFloat("Tiling Factor", &sprite.TilingFactor, 0.1f, 0.01f, 10.0f); });
+        UIUtils::DrawComponent<Engine::SpriteComponent>("Sprite Renderer", entity);
 
-        UIUtils::DrawComponent<Engine::CameraComponent>("Camera", entity, [](Engine::CameraComponent &cameraComp)
-                                                        {
-                                                            bool projectionChanged = false;
+        UIUtils::DrawComponent<Engine::CameraComponent>("Camera", entity);
 
-                                                            const char *projectionTypeStrings[] = {"Perspective", "Orthographic"};
-                                                            int currentProjectionType = (int)cameraComp.ProjectionType;
-                                                            if (ImGui::Combo("Projection Type", &currentProjectionType, projectionTypeStrings, IM_ARRAYSIZE(projectionTypeStrings)))
-                                                            {
-                                                                cameraComp.ProjectionType = (Engine::SceneCameraProjectionType)currentProjectionType;
-                                                                projectionChanged = true;
-                                                            }
+        UIUtils::DrawComponent<Engine::CircleComponent>("Circle", entity);
 
-                                                            bool isPrimary = cameraComp.Primary;
-                                                            if (ImGui::Checkbox("Primary Camera", &isPrimary))
-                                                            {
-                                                                cameraComp.Primary = isPrimary;
-                                                            }
-                                                            bool fixedAspectRatio = cameraComp.FixedAspectRatio;
-                                                            if (ImGui::Checkbox("Fixed Aspect Ratio", &fixedAspectRatio))
-                                                            {
-                                                                cameraComp.FixedAspectRatio = fixedAspectRatio;
-                                                            }
+        UIUtils::DrawComponent<Engine::Rigidbody2DComponent>("Rigidbody 2D", entity);
 
-                                                            if (ImGui::DragFloat("Aspect Ratio", &cameraComp.AspectRatio, 0.01f, 0.1f, 10.0f))
-                                                            {
-                                                                projectionChanged = true;
-                                                            }
-
-                                                            if (cameraComp.ProjectionType == Engine::SceneCameraProjectionType::Orthographic)
-                                                            {
-                                                                if (ImGui::DragFloat("Orthographic Size", &cameraComp.OrthographicSize, 0.1f, 0.01f))
-                                                                {
-                                                                    projectionChanged = true;
-                                                                }
-                                                                if (ImGui::DragFloat("Near Clip", &cameraComp.OrthographicNear, 0.1f, 0.01f))
-                                                                {
-                                                                    projectionChanged = true;
-                                                                }
-                                                                if (ImGui::DragFloat("Far Clip", &cameraComp.OrthographicFar, 0.1f))
-                                                                {
-                                                                    projectionChanged = true;
-                                                                }
-                                                            }
-                                                            else if (cameraComp.ProjectionType == Engine::SceneCameraProjectionType::Perspective)
-                                                            {
-                                                                if (ImGui::DragFloat("Field of View", &cameraComp.PerspectiveFOV))
-                                                                {
-                                                                    projectionChanged = true;
-                                                                }
-                                                                if (ImGui::DragFloat("Near Clip", &cameraComp.PerspectiveNear))
-                                                                {
-                                                                    projectionChanged = true;
-                                                                }
-                                                                if (ImGui::DragFloat("Far Clip", &cameraComp.PerspectiveFar))
-                                                                {
-                                                                    projectionChanged = true;
-                                                                }
-                                                            }
-
-                                                            if (projectionChanged)
-                                                            {
-                                                                cameraComp.RecalculateProjection();
-                                                            } });
-
-        UIUtils::DrawComponent<Engine::CircleComponent>("Circle", entity, [](Engine::CircleComponent &circle)
-                                                        {
-                                                                ImGui::ColorEdit4("Color", glm::value_ptr(circle.Color));
-                                                                ImGui::DragFloat("Thickness", &circle.Thickness, 0.01f, 0.0f, 1.0f);
-                                                                ImGui::DragFloat("Fade", &circle.Fade, 0.01f, 0.0f, 1.0f); });
-
-        UIUtils::DrawComponent<Engine::Rigidbody2DComponent>("Rigidbody 2D", entity, [](Engine::Rigidbody2DComponent &rigidbody2D)
-                                                             {
-                                                                const char *bodyTypeStrings[] = {"Static", "Kinematic", "Dynamic"};
-                                                                int currentBodyType = (int)rigidbody2D.Type;
-                                                                if (ImGui::Combo("Body Type", &currentBodyType, bodyTypeStrings, IM_ARRAYSIZE(bodyTypeStrings)))
-                                                                {
-                                                                    rigidbody2D.Type = (Engine::Rigidbody2DBodyType)currentBodyType;
-                                                                }
-                                                                ImGui::DragFloat2("Velocity", glm::value_ptr(rigidbody2D.Velocity), 0.1f);
-                                                                ImGui::DragFloat("Angular Velocity", &rigidbody2D.AngularVelocity, 0.1f);
-                                                                ImGui::Checkbox("Fixed Rotation", &rigidbody2D.FixedRotation); });
-
-        UIUtils::DrawComponent<Engine::BoxCollider2DComponent>("Box Collider 2D", entity, [](Engine::BoxCollider2DComponent &boxCollider)
-                                                               {
-                                                                  ImGui::DragFloat2("Offset", glm::value_ptr(boxCollider.Offset), 0.1f);
-                                                                  ImGui::DragFloat2("Size", glm::value_ptr(boxCollider.Size), 0.1f, 0.01f);
-                                                                  ImGui::DragFloat("Density", &boxCollider.Density, 0.1f, 0.0f);
-                                                                  ImGui::DragFloat("Friction", &boxCollider.Friction, 0.01f, 0.0f, 1.0f);
-                                                                  ImGui::DragFloat("Restitution", &boxCollider.Restitution, 0.01f, 0.0f, 1.0f);
-                                                                  ImGui::DragFloat("Restitution Threshold", &boxCollider.RestitutionThreshold, 0.1f, 0.0f); });
-        UIUtils::DrawComponent<Engine::CircleCollider2DComponent>("Circle Collider 2D", entity, [](Engine::CircleCollider2DComponent &circleCollider)
-                                                                  {
-                                                                    ImGui::DragFloat("Radius", &circleCollider.Radius, 0.1f, 0.01f);
-                                                                    ImGui::DragFloat2("Offset", glm::value_ptr(circleCollider.Offset), 0.1f);
-                                                                    ImGui::DragFloat("Density", &circleCollider.Density, 0.1f, 0.0f);
-                                                                    ImGui::DragFloat("Friction", &circleCollider.Friction, 0.01f, 0.0f, 1.0f);
-                                                                    ImGui::DragFloat("Restitution", &circleCollider.Restitution, 0.01f, 0.0f, 1.0f);
-                                                                    ImGui::DragFloat("Restitution Threshold", &circleCollider.RestitutionThreshold, 0.1f, 0.0f); });
+        UIUtils::DrawComponent<Engine::BoxCollider2DComponent>("Box Collider 2D", entity);
+        UIUtils::DrawComponent<Engine::CircleCollider2DComponent>("Circle Collider 2D", entity);
 
         UIUtils::DrawComponent<Engine::ScriptComponent>("Script", entity, [entity, scene = m_Context](Engine::ScriptComponent &scriptComponent)
                                                         {

@@ -122,6 +122,8 @@ namespace Engine::Serialization
             {
                 for (const MetaField &field : *type.fields)
                 {
+                    if (!(field.flags & PropertyFlags::Property_Serializable))
+                        continue; // 不参与序列化
                     out << YAML::Key << field.name;
                     out << YAML::Value;
                     SerializeValue(out, field.getConst(obj), *field.type);

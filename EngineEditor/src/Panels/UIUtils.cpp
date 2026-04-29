@@ -2,8 +2,9 @@
 #include <imgui_internal.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <functional>
-#include "Engine/Scene/Component.h"
 #include "Engine/Core/UUID.h"
+#include "Engine/Reflection/ReflectMacro.h"
+
 namespace EngineEditor
 {
     bool UIUtils::DrawVector3Control(const std::string &label, glm::vec3 &values, float resetValue, float columnWidth)
@@ -79,6 +80,196 @@ namespace EngineEditor
         ImGui::PopID();
         return changed;
     }
+
+    bool UIUtils::DrawValueEdit(const std::string &label, void *value, const Engine::MetaType &type)
+    {
+        switch (type.kind)
+        {
+        case Engine::MetaKind::Bool:
+        {
+            bool *boolValue = (bool *)value;
+            if (ImGui::Checkbox(label.c_str(), boolValue))
+            {
+                return true;
+            }
+            break;
+        }
+        case Engine::MetaKind::Int:
+        {
+            int *intValue = (int *)value;
+            if (ImGui::DragInt(label.c_str(), intValue))
+            {
+                return true;
+            }
+            break;
+        }
+        case Engine::MetaKind::Int2:
+        {
+            glm::ivec2 *vec2Value = (glm::ivec2 *)value;
+            if (ImGui::DragInt2(label.c_str(), glm::value_ptr(*vec2Value)))
+            {
+                return true;
+            }
+            break;
+        }
+        case Engine::MetaKind::Int3:
+        {
+            glm::ivec3 *vec3Value = (glm::ivec3 *)value;
+            if (ImGui::DragInt3(label.c_str(), glm::value_ptr(*vec3Value)))
+            {
+                return true;
+            }
+            break;
+        }
+        case Engine::MetaKind::Int4:
+        {
+            glm::ivec4 *vec4Value = (glm::ivec4 *)value;
+            if (ImGui::DragInt4(label.c_str(), glm::value_ptr(*vec4Value)))
+            {
+                return true;
+            }
+            break;
+        }
+        case Engine::MetaKind::Float:
+        {
+            float *floatValue = (float *)value;
+            if (ImGui::DragFloat(label.c_str(), floatValue))
+            {
+                return true;
+            }
+            break;
+        }
+        case Engine::MetaKind::Float2:
+        {
+            glm::vec2 *vec2Value = (glm::vec2 *)value;
+            if (ImGui::DragFloat2(label.c_str(), glm::value_ptr(*vec2Value), 0.1f))
+            {
+                return true;
+            }
+            break;
+        }
+        case Engine::MetaKind::Float3:
+        {
+            glm::vec3 *vec3Value = (glm::vec3 *)value;
+            DrawVector3Control(label, *vec3Value);
+            break;
+        }
+        case Engine::MetaKind::Float4:
+        {
+            glm::vec4 *vec4Value = (glm::vec4 *)value;
+            if (ImGui::DragFloat4(label.c_str(), glm::value_ptr(*vec4Value), 0.1f))
+            {
+                return true;
+            }
+            break;
+        }
+        case Engine::MetaKind::String:
+        {
+            std::string *stringValue = (std::string *)value;
+            char buffer[256];
+            strncpy(buffer, stringValue->c_str(), sizeof(buffer));
+            if (ImGui::InputText(label.c_str(), buffer, sizeof(buffer)))
+            {
+                *stringValue = buffer;
+                return true;
+            }
+            break;
+        }
+        case Engine::MetaKind::Enum:
+        {
+            if (!type.enumValues || !type.EnumToInt || !type.EnumFromInt)
+            {
+                ImGui::Text("Invalid enum metadata");
+                break;
+            }
+
+            const int64_t currentValue = type.EnumToInt(value);
+            const char *currentName = "Unknown";
+            for (const auto &enumValue : *type.enumValues)
+            {
+                if (enumValue.Value == currentValue)
+                {
+                    currentName = enumValue.Name;
+                    break;
+                }
+            }
+
+            bool changed = false;
+            if (ImGui::BeginCombo(label.c_str(), currentName))
+            {
+                for (const auto &enumValue : *type.enumValues)
+                {
+                    const bool selected = enumValue.Value == currentValue;
+                    if (ImGui::Selectable(enumValue.Name, selected))
+                    {
+                        type.EnumFromInt(value, enumValue.Value);
+                        changed = true;
+                    }
+                    if (selected)
+                    {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
+            if (changed)
+            {
+                return true;
+            }
+            break;
+        }
+        case Engine::MetaKind::UUID:
+        {
+            Engine::UUID *uuidValue = (Engine::UUID *)value;
+            ImGui::Text("UUID: %s", std::to_string((uint64_t)(*uuidValue)).c_str());
+            break;
+        }
+        default:
+            ImGui::Text("Unsupported type");
+            break;
+        }
+        return false;
+    }
+
+    bool UIUtils::DrawMetaType(const std::string &label, void *obj, const Engine::MetaType &type)
+    {
+        switch (type.kind)
+        {
+        case Engine::MetaKind::Float:
+        case Engine::MetaKind::Float2:
+        case Engine::MetaKind::Float3:
+        case Engine::MetaKind::Float4:
+        case Engine::MetaKind::Int:
+        case Engine::MetaKind::Int2:
+        case Engine::MetaKind::Int3:
+        case Engine::MetaKind::Int4:
+        case Engine::MetaKind::Bool:
+        case Engine::MetaKind::String:
+        case Engine::MetaKind::Enum:
+        case Engine::MetaKind::UUID:
+            return DrawValueEdit(label, obj, type);
+        case Engine::MetaKind::Struct:
+        {
+            if (!type.fields)
+            {
+                ImGui::Text("No fields");
+                return false;
+            }
+            for (const auto &field : *type.fields)
+            {
+                if (DrawMetaType(field.name, field.get(obj), *field.type))
+                {
+                    return true;
+                }
+            }
+            break;
+        }
+        default:
+            ImGui::Text("Unsupported type: %s %d", label.c_str(), static_cast<int>(type.kind));
+            break;
+        }
+    }
+
     void UIUtils::DrawScriptInstance(const Engine::ScriptField &field, Engine::Ref<Engine::ScriptInstance> scriptInstance)
     {
         switch (field.FieldType)
@@ -442,13 +633,58 @@ namespace EngineEditor
         }
     }
 
+    template <IsUIComponent T>
+    void UIUtils::DrawComponent(const std::string &name, Engine::Entity entity, bool removeable)
+    {
+        ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_SpanAvailWidth;
+        if (!entity.HasComponent<T>())
+            return;
+        auto &component = entity.GetComponent<T>();
+        ImGui::Separator();
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 4));
+
+        ImVec2 contentRegion = ImGui::GetContentRegionAvail();
+        float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
+
+        bool opened = ImGui::TreeNodeEx(name.c_str(), treeNodeFlags);
+        if (removeable)
+        {
+            ImGui::SameLine(contentRegion.x - lineHeight * 0.5f);
+            if (ImGui::Button("+", ImVec2{lineHeight, lineHeight}))
+            {
+                ImGui::OpenPopup("RemoveComponent");
+            }
+            if (ImGui::BeginPopup("RemoveComponent"))
+            {
+                if (ImGui::MenuItem("Remove Component"))
+                {
+                    entity.GetComponent<T>().SetRemove(true);
+                }
+                ImGui::EndPopup();
+            }
+        }
+        ImGui::PopStyleVar();
+
+        if (opened)
+        {
+            ImGui::Separator();
+            DrawMetaType(name, &component, Engine::Reflect<T>());
+            ImGui::TreePop();
+        }
+
+        if (entity.GetComponent<T>().IsRemove())
+        {
+            entity.RemoveComponent<T>();
+        }
+    }
+
     // Explicit template instantiations
-    template void UIUtils::DrawComponent<Engine::TransformComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::TransformComponent &)> &uiFunction, bool removeable);
-    template void UIUtils::DrawComponent<Engine::SpriteComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::SpriteComponent &)> &uiFunction, bool removeable);
-    template void UIUtils::DrawComponent<Engine::CameraComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::CameraComponent &)> &uiFunction, bool removeable);
-    template void UIUtils::DrawComponent<Engine::Rigidbody2DComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::Rigidbody2DComponent &)> &uiFunction, bool removeable);
-    template void UIUtils::DrawComponent<Engine::BoxCollider2DComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::BoxCollider2DComponent &)> &uiFunction, bool removeable);
-    template void UIUtils::DrawComponent<Engine::CircleComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::CircleComponent &)> &uiFunction, bool removeable);
-    template void UIUtils::DrawComponent<Engine::CircleCollider2DComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::CircleCollider2DComponent &)> &uiFunction, bool removeable);
+    template void UIUtils::DrawComponent<Engine::TransformComponent>(const std::string &name, Engine::Entity entity, bool removeable);
+    template void UIUtils::DrawComponent<Engine::SpriteComponent>(const std::string &name, Engine::Entity entity, bool removeable);
+    template void UIUtils::DrawComponent<Engine::CameraComponent>(const std::string &name, Engine::Entity entity, bool removeable);
+    template void UIUtils::DrawComponent<Engine::Rigidbody2DComponent>(const std::string &name, Engine::Entity entity, bool removeable);
+    template void UIUtils::DrawComponent<Engine::BoxCollider2DComponent>(const std::string &name, Engine::Entity entity, bool removeable);
+    template void UIUtils::DrawComponent<Engine::CircleComponent>(const std::string &name, Engine::Entity entity, bool removeable);
+    template void UIUtils::DrawComponent<Engine::CircleCollider2DComponent>(const std::string &name, Engine::Entity entity, bool removeable);
     template void UIUtils::DrawComponent<Engine::ScriptComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::ScriptComponent &)> &uiFunction, bool removeable);
 }

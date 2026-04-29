@@ -15,7 +15,7 @@ namespace Engine
     {
     private:
         friend class EngineEditor::SceneHierarchyPanel;
-        friend struct ::MetaResolver<TransformComponent>;
+        friend struct MetaResolver<TransformComponent>;
 
         bool dirty = true;
 
