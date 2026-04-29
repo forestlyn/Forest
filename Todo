@@ -27,11 +27,13 @@
 - [ ] 可通过脚本控制发射开关和发射率
 
 ### 3) C++ 反射系统
-- [ ] 定义元数据系统（TypeInfo、FieldInfo、MethodInfo、Attribute）
-- [ ] 实现注册机制（宏注册或代码生成二选一）
-- [ ] 支持基础类型 + glm + UUID + 引擎常见组件
-- [ ] 将反射接入 Inspector 自动绘制
-- [ ] 将反射接入 YAML 序列化（自动字段遍历）
+- [x] 定义元数据系统（TypeInfo、FieldInfo、MethodInfo、Attribute）
+- [x] 实现注册机制（宏注册或代码生成二选一）
+- [x] 支持基础类型 + glm + UUID + 引擎常见组件
+- [x] 将反射接入 Inspector 自动绘制
+- [x] 将反射接入 YAML 序列化（自动字段遍历）
+- [ ] 反射改为链式
+- [ ]  增加条件展示字段
 - [ ] 与 ScriptGlue 对齐字段映射，减少手写绑定
 
 验收标准：
@@ -89,8 +91,8 @@
 
 ## 当前推荐实施顺序
 
-- [ ] Step 1：先做 C++ 反射最小集（Type/Field + Inspector）
-- [ ] Step 2：基于反射重构组件序列化，减少重复代码
+- [x] Step 1：先做 C++ 反射最小集（Type/Field + Inspector）
+- [x] Step 2：基于反射重构组件序列化，减少重复代码
 - [ ] Step 3：做动画组件与状态机（先 2D 帧动画）
 - [ ] Step 4：做粒子组件与编辑器预览
 - [ ] Step 5：补 Asset/Prefab，打通内容生产流程
