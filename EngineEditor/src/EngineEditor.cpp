@@ -108,22 +108,28 @@ namespace EngineEditor
                 if (mousePos.x >= m_SceneViewportBounds[0].x && mousePos.x <= m_SceneViewportBounds[1].x &&
                     mousePos.y >= m_SceneViewportBounds[0].y && mousePos.y <= m_SceneViewportBounds[1].y)
                 {
+                    int pixelData = -1;
+                    if (m_FrameBuffer->TryGetPixelData(m_PendingPixelDataRequestID, pixelData))
+                    {
+                        if (pixelData != -1)
+                        {
+                            m_HoveredEntity = Engine::Entity((entt::entity)pixelData, m_ActiveScene.get());
+                        }
+                        else
+                        {
+                            m_HoveredEntity = {};
+                        }
+                    }
+
                     int mouseX = (int)(mousePos.x - m_SceneViewportBounds[0].x);
                     int mouseY = (int)(mousePos.y - m_SceneViewportBounds[0].y);
                     mouseY = m_SceneViewportSize.y - mouseY; // Flip Y coordinate
 
-                    int pixelData = m_FrameBuffer->GetPixelData(1, mouseX, mouseY);
-                    if (pixelData != -1)
-                    {
-                        m_HoveredEntity = Engine::Entity((entt::entity)pixelData, m_ActiveScene.get());
-                    }
-                    else
-                    {
-                        m_HoveredEntity = {};
-                    }
+                    m_PendingPixelDataRequestID = m_FrameBuffer->RequestPixelData(1, mouseX, mouseY);
                 }
                 else
                 {
+                    m_PendingPixelDataRequestID = 0;
                     m_HoveredEntity = {};
                 }
 

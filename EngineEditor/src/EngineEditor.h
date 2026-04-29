@@ -6,6 +6,7 @@
 #include "Camera/EditorCamera.h"
 #include "Panels/ContentBrowserPanel.h"
 #include "Engine/Renderer/Shader/Texture.h"
+#include <cstdint>
 namespace EngineEditor
 {
 
@@ -67,6 +68,7 @@ namespace EngineEditor
         bool m_FocusScene = false, m_HoverScene = false;
         glm::ivec2 m_SceneViewportSize = {0, 0};
         Engine::Entity m_HoveredEntity;
+        uint64_t m_PendingPixelDataRequestID = 0;
 
         EditorCamera m_EditorCamera;
         Engine::Ref<Engine::Scene> m_ActiveScene;

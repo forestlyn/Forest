@@ -61,22 +61,56 @@ namespace Platform::OpenGL
         ENQUEUE_RENDER_COMMAND_END()
     }
 
-    const int OpenGLFrameBuffer::GetPixelData(int index, int x, int y) const
+    uint64_t OpenGLFrameBuffer::RequestPixelData(int index, int x, int y)
     {
         ENGINE_PROFILING_FUNC();
+        ENGINE_ASSERT(index < m_ColorAttachmentSpecifications.size(), "Color attachment index out of bounds!");
+
+        if (index < 0 || index >= m_ColorAttachmentSpecifications.size() || x < 0 || y < 0 ||
+            x >= (int)m_Spec.Width || y >= (int)m_Spec.Height)
+        {
+            return 0;
+        }
+
+        uint64_t requestID = m_NextPixelReadRequestID++;
+
+        ENQUEUE_RENDER_COMMAND(this, index, x, y, requestID)
         ENGINE_ASSERT(index < m_ColorAttachments.size(), "Color attachment index out of bounds!");
 
+        glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
         glReadBuffer(GL_COLOR_ATTACHMENT0 + index);
-        int pixelData = 0;
+
+        int pixelData = -1;
         glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
-        return pixelData;
+
+        {
+            std::scoped_lock<std::mutex> lock(m_PixelReadbackMutex);
+            m_CompletedPixelReadRequestID = requestID;
+            m_CompletedPixelData = pixelData;
+        }
+        ENQUEUE_RENDER_COMMAND_END()
+
+        return requestID;
+    }
+
+    bool OpenGLFrameBuffer::TryGetPixelData(uint64_t requestID, int &outPixelData) const
+    {
+        ENGINE_PROFILING_FUNC();
+        if (requestID == 0)
+            return false;
+
+        std::scoped_lock<std::mutex> lock(m_PixelReadbackMutex);
+        if (m_CompletedPixelReadRequestID < requestID)
+            return false;
+
+        outPixelData = m_CompletedPixelData;
+        return true;
     }
 
     void OpenGLFrameBuffer::ClearAttachment(int index, int value)
     {
         ENGINE_PROFILING_FUNC();
         ENGINE_ASSERT(index < m_ColorAttachments.size(), "Color attachment index out of bounds!");
-
         glClearBufferiv(GL_COLOR, index, &value);
     }
 

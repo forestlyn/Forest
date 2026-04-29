@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <cstdint>
 
 namespace Engine::Renderer
 {
@@ -59,8 +60,10 @@ namespace Engine::Renderer
 
         virtual const FrameBufferSpecification &GetSpecification() const = 0;
 
-        // should make sure the framebuffer is bind before calling this function
-        virtual const int GetPixelData(int index, int x, int y) const = 0;
+        // Pixel readback is asynchronous when the renderer runs on a render thread.
+        // Returns 0 when the request is invalid and no readback command was queued.
+        virtual uint64_t RequestPixelData(int index, int x, int y) = 0;
+        virtual bool TryGetPixelData(uint64_t requestID, int &outPixelData) const = 0;
         // should make sure the framebuffer is bind before calling this function
         virtual void ClearAttachment(int index, int value) = 0;
 
