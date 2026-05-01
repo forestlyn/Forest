@@ -14,6 +14,6 @@ namespace Engine
     };
 
     REFLECT_TYPE_BEGIN(TagComponent)
-    REFLECT_FIELD(Tag)
+    REFLECT_FIELD(Tag);
     REFLECT_TYPE_END(TagComponent)
 }

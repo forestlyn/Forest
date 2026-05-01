@@ -16,6 +16,6 @@ namespace Engine
     };
 
     REFLECT_TYPE_BEGIN(IDComponent)
-    REFLECT_FIELD(ID)
+    REFLECT_FIELD(ID);
     REFLECT_TYPE_END(IDComponent)
 } // namespace Engine

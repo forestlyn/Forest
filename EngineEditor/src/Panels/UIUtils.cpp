@@ -257,6 +257,16 @@ namespace EngineEditor
             }
             for (const auto &field : *type.fields)
             {
+                if (Engine::HasPropertyFlag(field.flags, Engine::Property_Hidden))
+                {
+                    continue;
+                }
+
+                if (!Engine::IsFieldVisible(field, obj))
+                {
+                    continue;
+                }
+
                 if (DrawMetaType(field.name, field.get(obj), *field.type))
                 {
                     return true;

@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <glm/glm.hpp>
@@ -37,6 +38,11 @@ namespace Engine
         return static_cast<PropertyFlags>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
     }
 
+    inline bool HasPropertyFlag(PropertyFlags flags, PropertyFlags flag)
+    {
+        return (static_cast<uint32_t>(flags) & static_cast<uint32_t>(flag)) != 0;
+    }
+
     struct MetaType;
 
     struct MetaUIHint
@@ -65,7 +71,13 @@ namespace Engine
 
         PropertyFlags flags = PropertyFlags::Property_Serializable | PropertyFlags::Property_Editable;
         MetaUIHint ui{};
+        bool (*visible)(const void *) = nullptr;
     };
+
+    inline bool IsFieldVisible(const MetaField &field, const void *obj)
+    {
+        return !field.visible || field.visible(obj);
+    }
 
     struct MetaEnumValue
     {

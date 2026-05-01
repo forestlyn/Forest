@@ -14,8 +14,8 @@ namespace Engine
     };
 
     REFLECT_TYPE_BEGIN(CircleComponent)
-    REFLECT_FIELD(Color)
-    REFLECT_FIELD(Thickness)
-    REFLECT_FIELD(Fade)
+    REFLECT_FIELD(Color);
+    REFLECT_FIELD(Thickness);
+    REFLECT_FIELD(Fade);
     REFLECT_TYPE_END(CircleComponent)
 }

@@ -74,9 +74,9 @@ namespace Engine
     };
 
     REFLECT_TYPE_BEGIN(TransformComponent)
-    REFLECT_FIELD(Position)
-    REFLECT_FIELD(Rotation)
-    REFLECT_FIELD(Scale)
+    REFLECT_FIELD(Position);
+    REFLECT_FIELD(Rotation);
+    REFLECT_FIELD(Scale);
     REFLECT_TYPE_END(TransformComponent)
 
 }

@@ -53,21 +53,31 @@ namespace Engine
         }
     };
 
+    inline bool IsOrthographicCamera(const CameraComponent &camera)
+    {
+        return camera.ProjectionType == SceneCameraProjectionType::Orthographic;
+    }
+
+    inline bool IsPerspectiveCamera(const CameraComponent &camera)
+    {
+        return camera.ProjectionType == SceneCameraProjectionType::Perspective;
+    }
+
     REFLECT_ENUM_BEGIN(SceneCameraProjectionType)
     REFLECT_ENUM_VALUE(Perspective)
     REFLECT_ENUM_VALUE(Orthographic)
     REFLECT_ENUM_END(SceneCameraProjectionType)
 
     REFLECT_TYPE_BEGIN(CameraComponent)
-    REFLECT_FIELD(ProjectionType)
-    REFLECT_FIELD(Primary)
-    REFLECT_FIELD(FixedAspectRatio)
-    REFLECT_FIELD(OrthographicSize)
-    REFLECT_FIELD(OrthographicNear)
-    REFLECT_FIELD(OrthographicFar)
-    REFLECT_FIELD(PerspectiveFOV)
-    REFLECT_FIELD(PerspectiveNear)
-    REFLECT_FIELD(PerspectiveFar)
-    REFLECT_FIELD(AspectRatio)
+    REFLECT_FIELD(ProjectionType).UI().TOOLTIP("Camera projection mode.");
+    REFLECT_FIELD(Primary).UI().TOOLTIP("Primary scene camera.");
+    REFLECT_FIELD(FixedAspectRatio).UI().TOOLTIP("Keep the camera aspect ratio fixed.");
+    REFLECT_FIELD(OrthographicSize).VISIBLEIF<&IsOrthographicCamera>().UI().TOOLTIP("Orthographic camera size.");
+    REFLECT_FIELD(OrthographicNear).VISIBLEIF<&IsOrthographicCamera>().UI().TOOLTIP("Orthographic near clip plane.");
+    REFLECT_FIELD(OrthographicFar).VISIBLEIF<&IsOrthographicCamera>().UI().TOOLTIP("Orthographic far clip plane.");
+    REFLECT_FIELD(PerspectiveFOV).VISIBLEIF<&IsPerspectiveCamera>().UI().TOOLTIP("Perspective field of view.");
+    REFLECT_FIELD(PerspectiveNear).VISIBLEIF<&IsPerspectiveCamera>().UI().TOOLTIP("Perspective near clip plane.");
+    REFLECT_FIELD(PerspectiveFar).VISIBLEIF<&IsPerspectiveCamera>().UI().TOOLTIP("Perspective far clip plane.");
+    REFLECT_FIELD(AspectRatio).UI(0, 100, 0.01f).TOOLTIP("Camera projection aspect ratio.");
     REFLECT_TYPE_END(CameraComponent)
 } // namespace Engine

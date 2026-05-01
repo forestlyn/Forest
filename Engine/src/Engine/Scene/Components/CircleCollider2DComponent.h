@@ -19,12 +19,12 @@ namespace Engine
     };
 
     REFLECT_TYPE_BEGIN(CircleCollider2DComponent)
-    REFLECT_FIELD(Radius)
-    REFLECT_FIELD(Offset)
-    REFLECT_FIELD(Density)
-    REFLECT_FIELD(Friction)
-    REFLECT_FIELD(RollingResistance)
-    REFLECT_FIELD(Restitution)
-    REFLECT_FIELD(RestitutionThreshold)
+    REFLECT_FIELD(Radius);
+    REFLECT_FIELD(Offset);
+    REFLECT_FIELD(Density);
+    REFLECT_FIELD(Friction);
+    REFLECT_FIELD(RollingResistance);
+    REFLECT_FIELD(Restitution);
+    REFLECT_FIELD(RestitutionThreshold);
     REFLECT_TYPE_END(CircleCollider2DComponent)
 } // namespace Engine

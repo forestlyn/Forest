@@ -18,11 +18,11 @@ namespace Engine
     };
 
     REFLECT_TYPE_BEGIN(BoxCollider2DComponent)
-    REFLECT_FIELD(Density)
-    REFLECT_FIELD(Friction)
-    REFLECT_FIELD(Restitution)
-    REFLECT_FIELD(RestitutionThreshold)
-    REFLECT_FIELD(Offset)
-    REFLECT_FIELD(Size)
+    REFLECT_FIELD(Density);
+    REFLECT_FIELD(Friction);
+    REFLECT_FIELD(Restitution);
+    REFLECT_FIELD(RestitutionThreshold);
+    REFLECT_FIELD(Offset);
+    REFLECT_FIELD(Size);
     REFLECT_TYPE_END(BoxCollider2DComponent)
 } // namespace Engine

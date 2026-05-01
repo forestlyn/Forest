@@ -28,7 +28,7 @@ namespace Engine
     template <typename Class, typename FieldT, FieldT Class::*Member>
     MetaField MakeField(const char *name,
                         FieldCategory category = FieldCategory::Value,
-                        PropertyFlags flags = Property_None,
+                        PropertyFlags flags = PropertyFlags::Property_Serializable | PropertyFlags::Property_Editable,
                         MetaUIHint ui = {})
     {
         // ENGINE_INFO("Registering field: {}::{}", typeid(Class).name(), name);
@@ -39,7 +39,8 @@ namespace Engine
             &MetaGet<Class, FieldT, Member>,
             &MetaGetConst<Class, FieldT, Member>,
             flags,
-            ui};
+            ui,
+            nullptr};
     }
 
     template <>

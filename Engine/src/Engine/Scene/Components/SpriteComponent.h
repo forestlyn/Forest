@@ -15,7 +15,7 @@ namespace Engine
     };
 
     REFLECT_TYPE_BEGIN(SpriteComponent)
-    REFLECT_FIELD(Color)
-    REFLECT_FIELD(TilingFactor)
+    REFLECT_FIELD(Color);
+    REFLECT_FIELD(TilingFactor);
     REFLECT_TYPE_END(SpriteComponent)
 }
