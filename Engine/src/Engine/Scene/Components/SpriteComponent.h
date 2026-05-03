@@ -18,8 +18,8 @@ namespace Engine
     };
 
     REFLECT_TYPE_BEGIN(SpriteComponent)
-    REFLECT_FIELD(Color);
+    REFLECT_FIELD(Color).UIKIND(UIKind::UITYPE_Color);
     REFLECT_FIELD(TilingFactor);
-    REFLECT_FIELD(TextureRef).Category(FieldCategory::AssetReference);
+    REFLECT_FIELD(TextureRef).Category(FieldCategory::AssetReference).UIKIND(UIKind::UITYPE_Texture2D);
     REFLECT_TYPE_END(SpriteComponent)
 }

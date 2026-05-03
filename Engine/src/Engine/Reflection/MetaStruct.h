@@ -45,6 +45,14 @@ namespace Engine
         Property_Transient = 1 << 4,    // 不参与序列化
     };
 
+    enum UIKind
+    {
+        UITYPE_Default,
+        UITYPE_Color,
+        UITYPE_FilePath,
+        UITYPE_Texture2D,
+    };
+
     inline PropertyFlags operator|(PropertyFlags a, PropertyFlags b)
     {
         return static_cast<PropertyFlags>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
@@ -63,6 +71,7 @@ namespace Engine
         float maxValue = 0.0f;
         float step = 0.1f;
         const char *tooltip = nullptr;
+        UIKind uiKind = UIKind::UITYPE_Default;
     };
 
     enum class FieldCategory
@@ -82,6 +91,8 @@ namespace Engine
         const void *(*getConst)(const void *) = nullptr;
 
         PropertyFlags flags = PropertyFlags::Property_Serializable | PropertyFlags::Property_Editable;
+
+        // UI 提示信息
         MetaUIHint ui{};
         bool (*visible)(const void *) = nullptr;
     };

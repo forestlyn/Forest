@@ -69,6 +69,12 @@ namespace Engine
             return Tooltip(tooltip);
         }
 
+        FieldBuilder &UIKIND(UIKind uiKind)
+        {
+            m_Field.ui.uiKind = uiKind;
+            return *this;
+        }
+
         template <bool (*Predicate)(const Class &)>
         FieldBuilder &VisibleIf()
         {

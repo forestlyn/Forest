@@ -81,7 +81,7 @@ namespace EngineEditor
         return changed;
     }
 
-    bool UIUtils::DrawValueEdit(const std::string &label, void *value, const Engine::MetaType &type)
+    bool UIUtils::DrawValueEdit(const std::string &label, void *value, const Engine::MetaType &type, Engine::UIKind uiKind)
     {
         switch (type.kind)
         {
@@ -157,7 +157,14 @@ namespace EngineEditor
         case Engine::MetaKind::Float4:
         {
             glm::vec4 *vec4Value = (glm::vec4 *)value;
-            if (ImGui::DragFloat4(label.c_str(), glm::value_ptr(*vec4Value), 0.1f))
+            if (uiKind == Engine::UIKind::UITYPE_Color)
+            {
+                if (ImGui::ColorEdit4(label.c_str(), glm::value_ptr(*vec4Value)))
+                {
+                    return true;
+                }
+            }
+            else if (ImGui::DragFloat4(label.c_str(), glm::value_ptr(*vec4Value), 0.1f))
             {
                 return true;
             }
@@ -224,6 +231,23 @@ namespace EngineEditor
             ImGui::Text("UUID: %s", std::to_string((uint64_t)(*uuidValue)).c_str());
             break;
         }
+        case Engine::MetaKind::ResourceRef:
+        {
+            ImGui::Text("Resource Path: %s", ((Engine::ResourceRef<void> *)value)->path.c_str());
+            if (uiKind == Engine::UIKind::UITYPE_Texture2D)
+            {
+                // Draw texture preview or selection UI
+                if (((Engine::ResourceRef<void> *)value)->IsLoaded())
+                {
+                    ImGui::Image(((Engine::ResourceRef<Engine::Renderer::Texture2D> *)value)->instance->GetRendererID(), ImVec2(64, 64));
+                }
+                else
+                {
+                    ImGui::Text("No Texture");
+                }
+            }
+            break;
+        }
         default:
             ImGui::Text("Unsupported type");
             break;
@@ -231,7 +255,7 @@ namespace EngineEditor
         return false;
     }
 
-    bool UIUtils::DrawMetaType(const std::string &label, void *obj, const Engine::MetaType &type)
+    bool UIUtils::DrawMetaType(const std::string &label, void *obj, const Engine::MetaType &type, Engine::UIKind uiKind)
     {
         switch (type.kind)
         {
@@ -247,7 +271,8 @@ namespace EngineEditor
         case Engine::MetaKind::String:
         case Engine::MetaKind::Enum:
         case Engine::MetaKind::UUID:
-            return DrawValueEdit(label, obj, type);
+        case Engine::MetaKind::ResourceRef:
+            return DrawValueEdit(label, obj, type, uiKind);
         case Engine::MetaKind::Struct:
         {
             if (!type.fields)
@@ -267,7 +292,7 @@ namespace EngineEditor
                     continue;
                 }
 
-                if (DrawMetaType(field.name, field.get(obj), *field.type))
+                if (DrawMetaType(field.name, field.get(obj), *field.type, field.ui.uiKind))
                 {
                     return true;
                 }

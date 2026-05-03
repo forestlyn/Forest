@@ -104,9 +104,7 @@ namespace Engine::Renderer
         delete[] quadIndices; // 取消分配 CPU 端临时内存 (必须在 Render 线程用完后释放)
 
         // 创建默认白色贴图
-        auto WhiteTexture = Texture2D::Create(1, 1);
-        uint32_t whitePixel = 0xffffffff;
-        WhiteTexture->SetData(&whitePixel, sizeof(uint32_t));
+        auto WhiteTexture = ResourceManager::Get()->GetOrLoad<Engine::Renderer::Texture2D>("resources/assets/textures/DefaultTexture.png");
         m_SceneData.TextureSlots[0] = WhiteTexture;
 
         int32_t textureSlots[m_SceneData.MaxTextureSlots];

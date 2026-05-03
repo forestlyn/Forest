@@ -8,7 +8,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Color: [0.8, 0.2, 0.3, 1]
+      Color: [1, 1, 1, 1]
       TilingFactor: 1.7
       TextureRef:
         path: Assets\Textures\Checkerboard.png
