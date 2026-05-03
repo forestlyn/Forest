@@ -39,8 +39,6 @@ namespace Engine::Serialization
     template <typename T>
     bool DeserializeComponentImpl(const YAML::Node &componentNode, T &component);
 
-    bool DeserializeComponentImpl(const YAML::Node &componentNode, SpriteComponent &component);
-
     template <IsSerializableComponent T>
     void SerializeComponent(YAML::Emitter &out, const T &component)
     {
@@ -132,6 +130,20 @@ namespace Engine::Serialization
             break;
         }
 
+        case MetaKind::UUID:
+        {
+            const UUID *uuidValue = static_cast<const UUID *>(obj);
+            out << std::to_string((uint64_t)(*uuidValue));
+            break;
+        }
+
+        case MetaKind::ResourceRef:
+        {
+            if (type.SerializeYaml)
+                type.SerializeYaml(out, obj);
+            break;
+        }
+
         default:
             ENGINE_ERROR("Unsupported MetaKind in SerializeValue: {}", (int)type.kind);
             break;
@@ -218,6 +230,13 @@ namespace Engine::Serialization
 
                 DeserializeValue(field.get(obj), *field.type, child);
             }
+            break;
+        }
+
+        case MetaKind::ResourceRef:
+        {
+            if (type.DeserializeYaml)
+                type.DeserializeYaml(obj, node);
             break;
         }
 

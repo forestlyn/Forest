@@ -4,6 +4,12 @@
 #include <vector>
 #include <glm/glm.hpp>
 
+namespace YAML
+{
+    class Emitter;
+    class Node;
+}
+
 namespace Engine
 {
 
@@ -21,7 +27,8 @@ namespace Engine
         String,
         Enum,
         Struct,
-        UUID
+        UUID,
+        ResourceRef
     };
 
     enum PropertyFlags : uint32_t
@@ -113,5 +120,8 @@ namespace Engine
 
         int64_t (*EnumToInt)(const void *) = nullptr;
         void (*EnumFromInt)(void *, int64_t) = nullptr;
+
+        void (*SerializeYaml)(YAML::Emitter &, const void *) = nullptr;
+        bool (*DeserializeYaml)(void *, const YAML::Node &) = nullptr;
     };
 }

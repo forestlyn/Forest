@@ -1,6 +1,7 @@
 #pragma once
 #include "MetaStruct.h"
 #include "Engine/Core/UUID.h"
+#include "Engine/Serialization/SerializeUtils.h"
 namespace Engine
 {
 
@@ -188,16 +189,23 @@ namespace Engine
     };
 
     template <typename T>
-    struct ResourceRef;
-
-    template <typename T>
     struct MetaResolver<ResourceRef<T>>
     {
+        static void SerializeYaml(YAML::Emitter &out, const void *obj)
+        {
+            out << YAML::convert<ResourceRef<T>>::encode(*static_cast<const ResourceRef<T> *>(obj));
+        }
+
+        static bool DeserializeYaml(void *obj, const YAML::Node &node)
+        {
+            return YAML::convert<ResourceRef<T>>::decode(node, *static_cast<ResourceRef<T> *>(obj));
+        }
+
         static const MetaType &Get()
         {
             static const std::vector<MetaField> fields = {
                 MakeField<ResourceRef<T>, std::string, &ResourceRef<T>::path>("path")};
-            static const MetaType t{"ResourceRef", MetaKind::Struct, sizeof(ResourceRef<T>), &fields};
+            static const MetaType t{"ResourceRef", MetaKind::ResourceRef, sizeof(ResourceRef<T>), &fields, nullptr, nullptr, nullptr, &SerializeYaml, &DeserializeYaml};
             return t;
         }
     };

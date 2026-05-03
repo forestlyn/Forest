@@ -2,6 +2,7 @@
 #include "yaml-cpp/yaml.h"
 #include <glm/glm.hpp>
 #include "Engine/Core/UUID.h"
+#include "Engine/Resource/ResourceRef.h"
 namespace YAML
 {
     // Serialize to YAML
@@ -37,5 +38,26 @@ namespace YAML
         static Node encode(const Engine::UUID &uuid);
 
         static bool decode(const Node &node, Engine::UUID &uuid);
+    };
+
+    template <typename T>
+    struct convert<Engine::ResourceRef<T>>
+    {
+        static Node encode(const Engine::ResourceRef<T> &ref)
+        {
+            Node node;
+            node["path"] = ref.path;
+            return node;
+        }
+
+        static bool decode(const Node &node, Engine::ResourceRef<T> &ref)
+        {
+            if (!node.IsMap() || !node["path"])
+                return false;
+
+            ref.path = node["path"].as<std::string>();
+            ref.instance = nullptr; // 反序列化时不加载资源，只设置路径，实际加载由资源管理器负责
+            return true;
+        }
     };
 } // namespace YAML

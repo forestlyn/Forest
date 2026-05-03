@@ -609,7 +609,7 @@ namespace Engine::Renderer
         if (src.TextureRef.IsValid() && src.TextureRef.IsLoaded())
         {
             float TextureIndex = GetTextureIndex(src.TextureRef.instance);
-            ENGINE_INFO("Texture Index for SpriteComponent: {}", TextureIndex);
+            // ENGINE_INFO("Texture Index for SpriteComponent: {}", TextureIndex);
             DrawQuadInternal(transform, color, TextureIndex, TilingFactor, entityID);
             return;
         }

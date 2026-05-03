@@ -28,7 +28,8 @@ Entities:
     SpriteComponent:
       Color: [0.8, 0.2, 0.3, 1]
       TilingFactor: 1
-      TexturePath: None
+      TextureRef:
+        path: ""
     Rigidbody2DComponent:
       Type: Dynamic
       Velocity: [0, 9.8]
@@ -75,7 +76,8 @@ Entities:
     SpriteComponent:
       Color: [0.4283616, 0.76567656, 0.22490169, 1]
       TilingFactor: 1
-      TexturePath: None
+      TextureRef:
+        path: ""
     Rigidbody2DComponent:
       Type: Static
       Velocity: [0, 9.8]

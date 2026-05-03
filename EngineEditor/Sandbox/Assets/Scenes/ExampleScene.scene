@@ -10,7 +10,8 @@ Entities:
     SpriteComponent:
       Color: [0.8, 0.2, 0.3, 1]
       TilingFactor: 1
-      TexturePath: None
+      TextureRef:
+        path: ""
   - EntityID: 11660386218841461092
     TagComponent:
       Tag: Main Camera
