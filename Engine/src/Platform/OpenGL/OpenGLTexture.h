@@ -7,7 +7,7 @@ namespace Platform::OpenGL
     {
     public:
         OpenGLTexture2D(uint32_t width, uint32_t height);
-        OpenGLTexture2D(uint32_t width, uint32_t height, int channels, void *data);
+        OpenGLTexture2D(uint32_t width, uint32_t height, int channels, void *data, const std::string &path);
         virtual ~OpenGLTexture2D();
 
         virtual void Init() override;
@@ -23,16 +23,22 @@ namespace Platform::OpenGL
 
         virtual bool operator==(const Engine::Renderer::Texture &other) const override
         {
-            // ENGINE_INFO("Comparing OpenGLTexture2D instances: {0} and {1}", m_RendererID, ((OpenGLTexture2D &)other).m_RendererID);
-            return m_RendererID == other.GetRendererID();
+            if (this == &other)
+                return true;
+
+            if (!m_Path.empty() && m_Path == other.GetPath())
+                return true;
+
+            uint32_t otherRendererID = other.GetRendererID();
+            return m_RendererID != 0 && otherRendererID != 0 && m_RendererID == otherRendererID;
         }
 
     private:
         std::string m_Path;
         uint32_t m_Width, m_Height;
-        uint32_t m_RendererID;
+        uint32_t m_RendererID = 0;
 
-        int internalFormat, dataFormat;
+        int internalFormat = 0, dataFormat = 0;
         void *m_Data = nullptr;
     };
 } // namespace Platform::OpenGL

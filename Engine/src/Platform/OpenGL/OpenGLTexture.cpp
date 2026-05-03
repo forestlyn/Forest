@@ -11,7 +11,8 @@ namespace Platform::OpenGL
         internalFormat = GL_RGBA8;
     }
 
-    OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, int channels, void *data) : m_Width(width), m_Height(height), m_Data(data)
+    OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, int channels, void *data, const std::string &path)
+        : m_Path(path), m_Width(width), m_Height(height), m_Data(data)
     {
         if (channels == 4)
         {
@@ -22,6 +23,11 @@ namespace Platform::OpenGL
         {
             internalFormat = GL_RGB8;
             dataFormat = GL_RGB;
+        }
+        else
+        {
+            ENGINE_ERROR("Unsupported texture channel count: {0} in texture: {1}", channels, path);
+            ENGINE_ASSERT(false, "Unsupported texture channel count!");
         }
     }
 

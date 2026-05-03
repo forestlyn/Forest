@@ -7,8 +7,8 @@ namespace Engine::Renderer
     {
         ENGINE_INFO("load {0} ing", path);
         stbi_set_flip_vertically_on_load(1);
-        unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-
+        unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 4);
+        channels = 4; // 强制使用 RGBA 格式
         if (!data)
         {
             // 加载失败时直接返回，防止发生未初始化的内存拷贝与崩溃

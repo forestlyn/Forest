@@ -48,6 +48,10 @@ namespace Engine
                 m_Cache[path] = cachedResource; // 存入缓存
                 return newResource;
             }
+            else
+            {
+                ENGINE_ERROR("Failed to load resource: {0}", path);
+            }
 
             return nullptr;
         }

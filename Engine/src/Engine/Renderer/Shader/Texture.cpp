@@ -41,8 +41,12 @@ namespace Engine::Renderer
             ENGINE_INFO("Load Texture:{0}", path);
             int width, height, channels;
             void *textureData = LoadImg(path, width, height, channels);
-            ENGINE_ASSERT(textureData);
-            Ref<Platform::OpenGL::OpenGLTexture2D> textureRef = Ref<Platform::OpenGL::OpenGLTexture2D>(new Platform::OpenGL::OpenGLTexture2D(width, height, channels, textureData));
+            if (!textureData)
+            {
+                ENGINE_ERROR("Failed to load texture: {0}", path);
+                return nullptr;
+            }
+            Ref<Platform::OpenGL::OpenGLTexture2D> textureRef = Ref<Platform::OpenGL::OpenGLTexture2D>(new Platform::OpenGL::OpenGLTexture2D(width, height, channels, textureData, path));
             ENQUEUE_RENDER_COMMAND(textureRef)
             textureRef->Init();
             ENQUEUE_RENDER_COMMAND_END()

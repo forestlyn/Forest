@@ -307,10 +307,13 @@ namespace Engine::Renderer
         uint32_t indexCount = m_SceneData.QuadIndexCount;
 
 #ifdef ENGINE_ENABLE_RENDERTHREAD
-        ENQUEUE_RENDER_COMMAND(indexCount)
-        for (uint32_t i = 0; i < m_SceneData.TextureSlotIndex; i++)
+        uint32_t textureSlotIndex = m_SceneData.TextureSlotIndex;
+        std::array<Ref<Texture2D>, Renderer2D::Scene2DData::MaxTextureSlots> textureSlots = m_SceneData.TextureSlots;
+
+        ENQUEUE_RENDER_COMMAND(indexCount, textureSlotIndex, textureSlots)
+        for (uint32_t i = 0; i < textureSlotIndex; i++)
         {
-            m_SceneData.TextureSlots[i]->Bind(i);
+            textureSlots[i]->Bind(i);
         }
         m_SceneData.QuadTextureShader->Bind();
         RenderCommand::DrawIndexed(m_SceneData.QuadVertexArray, indexCount);
@@ -606,11 +609,16 @@ namespace Engine::Renderer
         if (src.TextureRef.IsValid() && src.TextureRef.IsLoaded())
         {
             float TextureIndex = GetTextureIndex(src.TextureRef.instance);
+            ENGINE_INFO("Texture Index for SpriteComponent: {}", TextureIndex);
             DrawQuadInternal(transform, color, TextureIndex, TilingFactor, entityID);
             return;
         }
         else
         {
+            if (src.TextureRef.IsValid())
+            {
+                ENGINE_ERROR("Invalid Texture Reference for SpriteComponent. Using default white texture.");
+            }
             float TextureIndex = 0.0f; // White Texture
             DrawQuadInternal(transform, color, TextureIndex, TilingFactor, entityID);
         }
