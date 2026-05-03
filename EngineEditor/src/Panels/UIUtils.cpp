@@ -681,6 +681,7 @@ namespace EngineEditor
         ImVec2 contentRegion = ImGui::GetContentRegionAvail();
         float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
 
+        ImGui::PushID(name.c_str());
         bool opened = ImGui::TreeNodeEx(name.c_str(), treeNodeFlags);
         if (removeable)
         {
@@ -699,13 +700,13 @@ namespace EngineEditor
             }
         }
         ImGui::PopStyleVar();
-
         if (opened)
         {
             ImGui::Separator();
             DrawMetaType(name, &component, Engine::Reflect<T>());
             ImGui::TreePop();
         }
+        ImGui::PopID();
 
         if (entity.GetComponent<T>().IsRemove())
         {
