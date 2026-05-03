@@ -36,8 +36,6 @@ namespace Engine::Serialization
     template <typename T>
     void SerializeComponentImpl(YAML::Emitter &out, const T &component);
 
-    void SerializeComponentImpl(YAML::Emitter &out, const SpriteComponent &component);
-
     template <typename T>
     bool DeserializeComponentImpl(const YAML::Node &componentNode, T &component);
 

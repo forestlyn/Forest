@@ -26,11 +26,16 @@ namespace Engine
 
     enum PropertyFlags : uint32_t
     {
-        Property_None = 0,              // 默认属性，无特殊标记
-        Property_Hidden = 1 << 0,       // 编辑器中隐藏
-        Property_ReadOnly = 1 << 1,     // 编辑器中只读
-        Property_Editable = 1 << 2,     // 编辑器中可编辑（默认）
+        Property_None = 0, // 默认属性，无特殊标记
+
+        // 编辑器相关
+        Property_Hidden = 1 << 0,   // 编辑器中隐藏
+        Property_ReadOnly = 1 << 1, // 编辑器中只读
+        Property_Editable = 1 << 2, // 编辑器中可编辑（默认）
+
+        // 序列化相关
         Property_Serializable = 1 << 3, // 参与序列化（默认）
+        Property_Transient = 1 << 4,    // 不参与序列化
     };
 
     inline PropertyFlags operator|(PropertyFlags a, PropertyFlags b)

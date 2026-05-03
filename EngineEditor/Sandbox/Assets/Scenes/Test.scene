@@ -9,27 +9,9 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Color: [0.8, 0.2, 0.3, 1]
-      TexturePath: assets\textures\Checkerboard.png
       TilingFactor: 1.7
-  - EntityID: 12767053449660698538
-    TagComponent:
-      Tag: Main Camera
-    TransformComponent:
-      Position: [-1.7, 0.5, 20]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Primary: true
-      FixedAspectRatio: false
-      Camera:
-        ProjectionType: 1
-        AspectRatio: 2.0353699
-        OrthographicSize: 10
-        OrthographicNearClip: -1
-        OrthographicFarClip: 1
-        PerspectiveFOV: 45
-        PerspectiveNearClip: 0.1
-        PerspectiveFarClip: 1000
+      TextureRef:
+        path: Assets\Textures\Checkerboard.png
   - EntityID: 11506737753637743183
     TagComponent:
       Tag: Square2
@@ -39,5 +21,24 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Color: [1, 0.122112215, 0.122112215, 1]
-      TexturePath: None
       TilingFactor: 1
+      TextureRef:
+        path: ""
+  - EntityID: 12767053449660698538
+    TagComponent:
+      Tag: Main Camera
+    TransformComponent:
+      Position: [-1.7, 0.5, 20]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      ProjectionType: Orthographic
+      Primary: true
+      FixedAspectRatio: false
+      OrthographicSize: 10
+      OrthographicNear: -1
+      OrthographicFar: 1
+      PerspectiveFOV: 45
+      PerspectiveNear: 0.1
+      PerspectiveFar: 1000
+      AspectRatio: 1.5367762

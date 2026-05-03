@@ -2,6 +2,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "RenderCommand.h"
 #include "Engine/Profile/Instrumentor.h"
+#include "Engine/Resource/ResourceManager.h"
 
 namespace Engine::Renderer
 {
@@ -597,9 +598,14 @@ namespace Engine::Renderer
         ENGINE_PROFILING_FUNC();
         auto color = src.Color;
         float TilingFactor = src.TilingFactor;
-        if (src.Texture)
+        if (src.TextureRef.IsValid() && !src.TextureRef.IsLoaded() && ResourceManager::Get())
         {
-            float TextureIndex = GetTextureIndex(src.Texture);
+            src.TextureRef.instance = ResourceManager::Get()->GetOrLoad<Texture2D>(src.TextureRef.path);
+        }
+
+        if (src.TextureRef.IsValid() && src.TextureRef.IsLoaded())
+        {
+            float TextureIndex = GetTextureIndex(src.TextureRef.instance);
             DrawQuadInternal(transform, color, TextureIndex, TilingFactor, entityID);
             return;
         }

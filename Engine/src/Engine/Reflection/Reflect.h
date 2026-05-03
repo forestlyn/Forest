@@ -186,4 +186,19 @@ namespace Engine
             return t;
         }
     };
+
+    template <typename T>
+    struct ResourceRef;
+
+    template <typename T>
+    struct MetaResolver<ResourceRef<T>>
+    {
+        static const MetaType &Get()
+        {
+            static const std::vector<MetaField> fields = {
+                MakeField<ResourceRef<T>, std::string, &ResourceRef<T>::path>("path")};
+            static const MetaType t{"ResourceRef", MetaKind::Struct, sizeof(ResourceRef<T>), &fields};
+            return t;
+        }
+    };
 }

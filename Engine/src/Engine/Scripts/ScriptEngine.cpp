@@ -38,8 +38,11 @@ namespace Engine
         Scope<filewatch::FileWatch<std::string>> AppAssemblyFileWatcher;
         bool IsReloadingAssembly = false;
 
+        /// @brief Key: Full class name (Namespace.ClassName), Value: ScriptClass
         std::unordered_map<std::string, Ref<ScriptClass>> EntityClasses;
+        /// @brief Key: Entity UUID, Value: ScriptInstance associated with the entity in runtime
         std::unordered_map<UUID, Ref<ScriptInstance>> EntityInstances;
+        /// @brief Key: Entity UUID, Value: Map of field name to ScriptFieldInstance for that entity
         std::unordered_map<UUID, ScriptFieldMap> EntityFieldMaps;
 
         ScriptClass *EntityClass = nullptr;
