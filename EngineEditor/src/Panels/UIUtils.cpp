@@ -233,9 +233,10 @@ namespace EngineEditor
         }
         case Engine::MetaKind::ResourceRef:
         {
-            ImGui::Text("Resource Path: %s", ((Engine::ResourceRef<void> *)value)->path.c_str());
             if (uiKind == Engine::UIKind::UITYPE_Texture2D)
             {
+                DrawResourceRefField<Engine::Renderer::Texture2D>(label.c_str(), *(Engine::ResourceRef<Engine::Renderer::Texture2D> *)value);
+
                 // Draw texture preview or selection UI
                 if (((Engine::ResourceRef<void> *)value)->IsLoaded())
                 {
@@ -303,6 +304,7 @@ namespace EngineEditor
             ImGui::Text("Unsupported type: %s %d", label.c_str(), static_cast<int>(type.kind));
             break;
         }
+        return true;
     }
 
     void UIUtils::DrawScriptInstance(const Engine::ScriptField &field, Engine::Ref<Engine::ScriptInstance> scriptInstance)

@@ -7,6 +7,10 @@
 #include "Engine/Scripts/ScriptEngine.h"
 #include "Engine/Reflection/MetaStruct.h"
 #include "Engine/Scene/Component.h"
+#include "Engine/Resource/ResourceRef.h"
+#include "Payload/DragDropPayload.h"
+#include "Engine/Project/Project.h"
+#include <filesystem>
 namespace EngineEditor
 {
     using REFLECT_UI_TYPE = Engine::ComponentGroup<
@@ -57,6 +61,30 @@ namespace EngineEditor
         static void DrawAddComponents(Engine::ComponentGroup<T...> components, Engine::Entity entity)
         {
             DrawAddComponents<T...>(entity);
+        }
+
+        template <typename T>
+        static void DrawResourceRefField(const char *label, Engine::ResourceRef<T> &ref)
+        {
+            ImGui::Text("%s", label);
+            ImGui::SameLine();
+            ImGui::Button(ref.path.empty() ? "None" : ref.path.c_str(), ImVec2(-1, 0));
+
+            if (ImGui::BeginDragDropTarget())
+            {
+                const char *expectedPayload = ResourcePayloadTrait<T>::value;
+
+                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(expectedPayload))
+                {
+                    const wchar_t *path = (const wchar_t *)payload->Data;
+                    std::filesystem::path filepath(path);
+                    // ENGINE_INFO("Accepted payload of type '{}'", expectedPayload);
+                    // ENGINE_INFO("Payload data: {}", filepath.string());
+                    std::string newPath = filepath.string();
+                    ref.SetPath(newPath);
+                }
+                ImGui::EndDragDropTarget();
+            }
         }
 
         // draw in Editor

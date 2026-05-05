@@ -613,10 +613,6 @@ namespace Engine::Renderer
         }
         else
         {
-            if (src.TextureRef.IsValid())
-            {
-                ENGINE_ERROR("Invalid Texture Reference for SpriteComponent. Using default white texture.");
-            }
             float TextureIndex = 0.0f; // White Texture
             DrawQuadInternal(transform, color, TextureIndex, TilingFactor, entityID);
         }

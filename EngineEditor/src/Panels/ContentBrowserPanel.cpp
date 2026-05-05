@@ -2,7 +2,8 @@
 #include "imgui.h"
 #include "Engine/Project/Project.h"
 #include "Engine/pcheader.h"
-#include "Engine/ResourceManager/ResourceManager.h"
+#include "Engine/Resource/ResourceManager.h"
+#include "Payload/DragDropPayload.h"
 namespace EngineEditor
 {
     ContentBrowserPanel::ContentBrowserPanel() : m_CurrentDirectory(Engine::Project::GetActiveProjectAssetDirectory()),
@@ -52,13 +53,25 @@ namespace EngineEditor
             std::string filenameString = path.filename().string();
 
             ImGui::PushID(filenameString.c_str());
+
             Engine::Ref<Engine::Renderer::Texture2D> icon = entry.is_directory() ? m_DirectoryIcon : m_FileIcon;
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
             ImGui::ImageButton("##icon", ImTextureRef((void *)(uintptr_t)icon->GetRendererID()), ImVec2(thumbnailWidth, thumbnailHeight));
             if (ImGui::BeginDragDropSource())
             {
                 const wchar_t *itemPath = path.c_str();
-                ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t));
+                std::string extStr = path.extension().string();
+                const char *ext = extStr.c_str();
+                const char *payloadType = "CONTENT_BROWSER_ITEM";
+                if (extStr == ".scene")
+                {
+                    payloadType = EngineEditor::ResourcePayloadTrait<Engine::Scene>::value;
+                }
+                else if (extStr == ".png" || extStr == ".jpg")
+                {
+                    payloadType = EngineEditor::ResourcePayloadTrait<Engine::Renderer::Texture2D>::value;
+                }
+                ImGui::SetDragDropPayload(payloadType, itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t));
                 ImGui::EndDragDropSource();
             }
             ImGui::PopStyleColor();

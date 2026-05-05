@@ -2,6 +2,7 @@
 #include "Engine/Renderer/Shader/Texture.h"
 #include "ResourceRef.h"
 #include <unordered_map>
+#include <unordered_set>
 #include <string>
 #include <memory>
 #include <algorithm>
@@ -13,6 +14,8 @@ namespace Engine
         static ResourceManager *s_Instance;
 
         std::unordered_map<std::string, ResourceRef<void>> m_Cache;
+
+        std::unordered_set<std::string> m_LostResources; // 记录丢失/损坏的资源路径
 
     public:
         static ResourceManager *Get() { return s_Instance; }
@@ -38,6 +41,13 @@ namespace Engine
                 return std::static_pointer_cast<T>(it->second.instance);
             }
 
+            auto lostIt = m_LostResources.find(path);
+            if (lostIt != m_LostResources.end())
+            {
+                // ENGINE_WARN("Resource previously failed to load: {0}", path);
+                return nullptr;
+            }
+
             Ref<T> newResource = LoadAssetFromFile<T>(path);
 
             if (newResource)
@@ -51,6 +61,7 @@ namespace Engine
             else
             {
                 ENGINE_ERROR("Failed to load resource: {0}", path);
+                m_LostResources.insert(path);
             }
 
             return nullptr;

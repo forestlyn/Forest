@@ -19,5 +19,14 @@ namespace Engine
             path = "";
             instance = nullptr;
         }
+
+        void SetPath(const std::string &newPath)
+        {
+            if (path != newPath)
+            {
+                path = newPath;
+                instance = nullptr; // 强制刷新
+            }
+        }
     };
 }

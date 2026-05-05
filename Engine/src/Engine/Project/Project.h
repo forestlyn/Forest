@@ -48,6 +48,21 @@ namespace Engine
             return GetActiveProjectAssetDirectory() / relativePath;
         }
 
+        static std::filesystem::path GetPathRelativeToAssets(const std::filesystem::path &absolutePath)
+        {
+            std::filesystem::path assetDir = GetActiveProjectAssetDirectory();
+            if (absolutePath.string().find(assetDir.string()) == 0)
+            {
+                return std::filesystem::relative(absolutePath, assetDir);
+            }
+            return absolutePath;
+        }
+
+        static std::filesystem::path GetAbsoluteAssetsPath(const std::filesystem::path &relativePath)
+        {
+            return GetActiveProjectAssetDirectory() / relativePath;
+        }
+
         ProjectSettings &GetProjectSettings()
         {
             return m_Settings;

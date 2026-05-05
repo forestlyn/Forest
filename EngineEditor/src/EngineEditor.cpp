@@ -13,6 +13,7 @@
 #include "Engine/Scripts/ScriptEngine.h"
 #include "Engine/Project/Project.h"
 #include "Utils.h"
+#include "Panels/Payload/DragDropPayload.h"
 namespace EngineEditor
 {
 
@@ -261,7 +262,7 @@ namespace EngineEditor
             ImGui::Image((void *)(uint64_t)textureID, ImVec2{(float)m_Specs.Width, (float)m_Specs.Height}, ImVec2{0, 1}, ImVec2{1, 0});
             if (ImGui::BeginDragDropTarget())
             {
-                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(ResourcePayloadTrait<Engine::Scene>::value))
                 {
                     const wchar_t *path = (const wchar_t *)payload->Data;
                     std::filesystem::path filepath(path);
