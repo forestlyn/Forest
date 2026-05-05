@@ -2,15 +2,16 @@
 #include "imgui.h"
 #include "Engine/Project/Project.h"
 #include "Engine/pcheader.h"
+#include "Engine/ResourceManager/ResourceManager.h"
 namespace EngineEditor
 {
     ContentBrowserPanel::ContentBrowserPanel() : m_CurrentDirectory(Engine::Project::GetActiveProjectAssetDirectory()),
                                                  m_BaseAssetsDirectory(Engine::Project::GetActiveProjectAssetDirectory())
     {
         ENGINE_INFO("ContentBrowserPanel initialized with current directory: {}", m_CurrentDirectory.string());
-        m_DirectoryIcon = Engine::Renderer::Texture2D::Create("resources/assets/textures/icon/folder_2377907.png");
-        m_FileIcon = Engine::Renderer::Texture2D::Create("resources/assets/textures/icon/document_3677274.png");
-        m_BackIcon = Engine::Renderer::Texture2D::Create("resources/assets/textures/icon/BackIcon.png");
+        m_DirectoryIcon = Engine::ResourceManager::Get()->GetOrLoad<Engine::Renderer::Texture2D>("resources/assets/textures/icon/folder_2377907.png");
+        m_FileIcon = Engine::ResourceManager::Get()->GetOrLoad<Engine::Renderer::Texture2D>("resources/assets/textures/icon/document_3677274.png");
+        m_BackIcon = Engine::ResourceManager::Get()->GetOrLoad<Engine::Renderer::Texture2D>("resources/assets/textures/icon/BackIcon.png");
     }
     void ContentBrowserPanel::OnImGuiRender()
     {
