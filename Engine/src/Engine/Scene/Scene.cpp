@@ -213,11 +213,27 @@ namespace Engine
             ScriptEngine::OnRuntimeStart(this);
             ENGINE_INFO("Creating script instances for entities with ScriptComponent");
             auto view = m_Registry.view<ScriptComponent>();
+
+            // First: create all script instances
             for (auto entity : view)
             {
                 ENGINE_INFO("Creating script instance for entity with ID {}", (uint64_t)m_Registry.get<IDComponent>(entity).ID);
                 Entity e = {entity, this};
                 ScriptEngine::OnCreateEntity(e);
+            }
+
+            // Second: Create Object instances for all script instances (for fields that are Entity or Component references)
+            for (auto entity : view)
+            {
+                Entity e = {entity, this};
+                ScriptEngine::ResolveScriptReferences(e);
+            }
+
+            // Third: invoke OnCreate for all script instances
+            for (auto entity : view)
+            {
+                Entity e = {entity, this};
+                ScriptEngine::OnInvokeCreateEntity(e);
             }
         }
         m_Running = true;

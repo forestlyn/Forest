@@ -24,12 +24,12 @@ Entities:
     TransformComponent:
       Position: [1.2640316, 5.3411304e-07, 0]
       Rotation: [0, 0, 0]
-      Scale: [0.9999986, 0.9999986, 1]
+      Scale: [3.7, 4.6, 1]
     SpriteComponent:
       Color: [0.8, 0.2, 0.3, 1]
       TilingFactor: 1
       TextureRef:
-        path: F:\code\C++\Forest\EngineEditor\Sandbox\Assets\Textures\ForestLogo.png
+        path: F:\code\C++\Forest\EngineEditor\Sandbox\Assets\Textures\Checkerboard.png
     Rigidbody2DComponent:
       Type: Dynamic
       Velocity: [0, 9.8]
@@ -141,14 +141,22 @@ Entities:
         Name: Vector3Value
         Type: 14
         Value: [0, 0, 0]
+      m_Rigidbody:
+        Name: m_Rigidbody
+        Type: 17
+        Value: 12292112353008337462
+      m_Transform:
+        Name: m_Transform
+        Type: 17
+        Value: 12292112353008337462
       playerEntity:
         Name: playerEntity
         Type: 16
-        Value: 0
+        Value: 12292112353008337462
       playerEntity2:
         Name: playerEntity2
         Type: 16
-        Value: 0
+        Value: 12292112353008337462
       speed:
         Name: speed
         Type: 1

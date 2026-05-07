@@ -37,7 +37,18 @@ namespace Engine
         return mono_class_is_subclass_of(monoClass, entityClass, false);
     }
 
-    ScriptFieldType MonoTypeToScriptFieldType(MonoType *monoType, MonoClass *entityClass)
+    bool IsSubtypeOfComponent(MonoType *monoType, MonoClass *componentClass)
+    {
+        MonoClass *monoClass = mono_class_from_mono_type(monoType);
+        if (!monoClass)
+        {
+            ENGINE_ERROR("Failed to get MonoClass from MonoType");
+            return false;
+        }
+        return mono_class_is_subclass_of(monoClass, componentClass, false);
+    }
+
+    ScriptFieldType MonoTypeToScriptFieldType(MonoType *monoType, MonoClass *entityClass, MonoClass *componentClass)
     {
         std::string typeName = mono_type_get_name(monoType);
 
@@ -46,6 +57,11 @@ namespace Engine
         {
             if (IsSubtypeOfEntity(monoType, entityClass))
                 return ScriptFieldType::Entity;
+            if (IsSubtypeOfComponent(monoType, componentClass))
+            {
+                // ENGINE_INFO("Type {} is a Component", typeName);
+                return ScriptFieldType::Component;
+            }
             ENGINE_ERROR("Unknown type: {}", typeName);
             return ScriptFieldType::None;
         }
@@ -81,6 +97,48 @@ namespace Engine
         return entityID;
     }
 
+    uint64_t GetEntityIDFromComponentField(MonoObject *instance, MonoClassField *field)
+    {
+        uint64_t entityID = 0;
+        if (field)
+        {
+            if (instance)
+            {
+                // 首先获取字段的值（可能是一个 Component 对象）
+                MonoObject *fieldValue = nullptr;
+                mono_field_get_value(instance, field, &fieldValue);
+
+                if (fieldValue)
+                {
+                    // 从 Component 对象中获取 Entity 字段
+                    MonoClass *componentClass = mono_object_get_class(fieldValue);
+                    MonoClassField *entityField = mono_class_get_field_from_name(componentClass, "Entity");
+
+                    if (entityField)
+                    {
+                        // 读取 Entity 字段的值（这是一个 Entity 对象）
+                        MonoObject *entityObject = nullptr;
+                        mono_field_get_value(fieldValue, entityField, &entityObject);
+
+                        if (entityObject)
+                        {
+                            // 从 Entity 对象中获取 ID 字段
+                            MonoClass *entityClass = mono_object_get_class(entityObject);
+                            MonoClassField *idField = mono_class_get_field_from_name(entityClass, "ID");
+
+                            if (idField)
+                            {
+                                // 读取 ID 字段的值
+                                mono_field_get_value(entityObject, idField, &entityID);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return entityID;
+    }
+
     void GetFieldDefaultValue(MonoObject *instance, MonoClassField *field, ScriptFieldType fieldType, uint8_t *outBuffer)
     {
         switch (fieldType)
@@ -90,7 +148,7 @@ namespace Engine
             float value = 0.0f;
             mono_field_get_value(instance, field, &value);
             memcpy(outBuffer, &value, sizeof(float));
-            ENGINE_INFO("Default value for field '{}' is {}", mono_field_get_name(field), value);
+            // ENGINE_INFO("Default value for field '{}' is {}", mono_field_get_name(field), value);
             break;
         }
         case ScriptFieldType::Double:
@@ -141,8 +199,8 @@ namespace Engine
             int32_t value = 0;
             mono_field_get_value(instance, field, &value);
             memcpy(outBuffer, &value, sizeof(int32_t));
-            ENGINE_INFO("Default value for field '{}' is {}", mono_field_get_name(field), value);
-            ENGINE_INFO("Default value for field '{}' is {}", mono_field_get_name(field), *(int32_t *)outBuffer);
+            // ENGINE_INFO("Default value for field '{}' is {}", mono_field_get_name(field), value);
+            // ENGINE_INFO("Default value for field '{}' is {}", mono_field_get_name(field), *(int32_t *)outBuffer);
             break;
         }
         case ScriptFieldType::UInt:
@@ -191,6 +249,13 @@ namespace Engine
         {
             uint64_t entityID = GetEntityIDFromEntityField(instance, field);
             memcpy(outBuffer, &entityID, sizeof(uint64_t));
+            break;
+        }
+        case ScriptFieldType::Component:
+        {
+            uint64_t entityID = GetEntityIDFromComponentField(instance, field);
+            memcpy(outBuffer, &entityID, sizeof(uint64_t));
+            // ENGINE_INFO("Default value for component field '{}' is EntityID {}", mono_field_get_name(field), entityID);
             break;
         }
         default:

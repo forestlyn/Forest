@@ -87,6 +87,26 @@ namespace EngineEditor
             }
         }
 
+        // template <typename T>
+        // static void DrawObjectRefField(const char *label, UUID &uuid, const std::function<T *(const UUID &)> &resolver)
+        // {
+        //     ImGui::Text("%s", label);
+        //     ImGui::SameLine();
+        //     ImGui::Button(resolver(uuid) ? "Set" : "None", ImVec2(-1, 0));
+
+        //     if (ImGui::BeginDragDropTarget())
+        //     {
+        //         const char *expectedPayload = typeid(T).name();
+
+        //         if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(expectedPayload))
+        //         {
+        //             T *object = *(T **)payload->Data;
+        //             ref = object;
+        //         }
+        //         ImGui::EndDragDropTarget();
+        //     }
+        // }
+
         // draw in Editor
         static void DrawScriptField(const Engine::ScriptField &field, Engine::ScriptFieldInstance &scriptFieldInstance);
         // draw in Running

@@ -48,4 +48,14 @@ namespace Engine
         ADD_ENGINE_INTERNAL_CALL(EntityInternalCalls, FindEntityByName);
         ADD_ENGINE_INTERNAL_CALL(EntityInternalCalls, GetScriptInstance);
     }
+
+    bool ScriptGlue::EntityHasComponent(UUID entityID, MonoType *componentType)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        ENGINE_ASSERT(scene);
+        Entity entity = scene->GetEntityByUUID(entityID);
+        ENGINE_ASSERT(entity);
+        ENGINE_ASSERT(s_EntityHasComponentFuncs.find(componentType) != s_EntityHasComponentFuncs.end());
+        return s_EntityHasComponentFuncs.at(componentType)(entity);
+    }
 }

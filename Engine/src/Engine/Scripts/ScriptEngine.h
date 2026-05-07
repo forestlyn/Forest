@@ -32,7 +32,8 @@ namespace Engine
         Vector2,
         Vector3,
         Vector4,
-        Entity
+        Entity,
+        Component
     };
     struct ScriptField
     {
@@ -58,6 +59,11 @@ namespace Engine
         {
             return FieldType == ScriptFieldType::Entity;
         }
+
+        bool IsObject() const
+        {
+            return FieldType == ScriptFieldType::Component || FieldType == ScriptFieldType::Entity;
+        }
     };
     class ScriptInstance;
     class ScriptClass;
@@ -81,9 +87,10 @@ namespace Engine
 
         static void OnRuntimeStart(Scene *scene);
         static void OnCreateEntity(Entity entity);
+        static void ResolveScriptReferences(Entity entity);
+        static void OnInvokeCreateEntity(Entity entity);
 
         static void OnUpdateEntity(Entity entity, Core::Timestep ts);
-
         static bool EntityClassExists(const std::string &className);
 
     private:

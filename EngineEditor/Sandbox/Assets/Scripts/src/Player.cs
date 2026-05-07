@@ -4,8 +4,8 @@ namespace Sandbox
 {
     public class Player : Entity
     {
-        private TransformComponent m_Transform;
-        private Rigidbody2DComponent m_Rigidbody;
+        public TransformComponent m_Transform;
+        public Rigidbody2DComponent m_Rigidbody;
 
         public float speed = 0.1f;
         public int IntValue2 = 42;
@@ -27,8 +27,8 @@ namespace Sandbox
             Score = 0;
             Name = "Player_" + ID;
             Log.NativeLog($"Player {Name} created with initial score {Score}");
-            m_Transform = GetComponent<TransformComponent>();
-            m_Rigidbody = GetComponent<Rigidbody2DComponent>();
+            // m_Transform = GetComponent<TransformComponent>();
+            // m_Rigidbody = GetComponent<Rigidbody2DComponent>();
         }
 
         public override void OnUpdate(float deltaTime)

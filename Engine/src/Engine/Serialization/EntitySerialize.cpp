@@ -73,6 +73,7 @@ namespace Engine::Serialization
                 SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector3, glm::vec3);
                 SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector4, glm::vec4);
                 SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Entity, UUID);
+                SERIALIZE_SCRIPT_FIELD(ScriptFieldType::Component, UUID);
             }
             out << YAML::EndMap; // Field
         }
@@ -115,6 +116,7 @@ namespace Engine::Serialization
                 DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector3, glm::vec3);
                 DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Vector4, glm::vec4);
                 DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Entity, UUID);
+                DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Component, UUID);
             default:
             {
                 ENGINE_WARN("Unknown script field type for field " + fieldName);
