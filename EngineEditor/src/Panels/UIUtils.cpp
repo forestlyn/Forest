@@ -228,7 +228,7 @@ namespace EngineEditor
         case Engine::MetaKind::UUID:
         {
             Engine::UUID *uuidValue = (Engine::UUID *)value;
-            ImGui::Text("UUID: %s", std::to_string((uint64_t)(*uuidValue)).c_str());
+            ImGui::Text("Draw Value Edit UUID: %s", std::to_string((uint64_t)(*uuidValue)).c_str());
             break;
         }
         case Engine::MetaKind::ResourceRef:
@@ -307,7 +307,7 @@ namespace EngineEditor
         return true;
     }
 
-    void UIUtils::DrawScriptInstance(const Engine::ScriptField &field, Engine::Ref<Engine::ScriptInstance> scriptInstance)
+    void UIUtils::DrawScriptInstance(const Engine::ScriptField &field, Engine::Ref<Engine::ScriptInstance> scriptInstance, Engine::Ref<Engine::Scene> m_Context)
     {
         switch (field.FieldType)
         {
@@ -454,8 +454,43 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::Entity:
         {
+            std::string entityName = "None (Entity)";
             Engine::UUID value = scriptInstance->GetFieldValue<Engine::UUID>(field.Name);
+            if (value.Valid())
+            {
+                Engine::Entity targetEntity = m_Context->GetEntityByUUID(value);
+                if (targetEntity)
+                    entityName = targetEntity.GetName();
+                else
+                    entityName = "Missing Reference";
+            }
+            ImGui::PushID(field.Name.c_str());
+            ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - 20.0f);
+            ImGui::Text("%s:", field.Name.c_str());
+            ImGui::SameLine();
+            ImGui::Button(entityName.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 25.0f, 0));
+
+            if (ImGui::BeginDragDropTarget())
+            {
+                // ENGINE_INFO("Accepting drag drop for Entity field '{}'", field.Name);
+                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(ResourcePayloadTrait<Engine::Entity>::value))
+                {
+                    Engine::UUID droppedEntityID = *(Engine::UUID *)payload->Data;
+                    scriptInstance->SetFieldValue(field.Name, droppedEntityID);
+                }
+                ImGui::EndDragDropTarget();
+            }
+
+            ImGui::PopItemWidth();
+            ImGui::SameLine();
+            if (ImGui::Button("X", ImVec2(20.0f, 0)))
+            {
+                Engine::UUID emptyUUID = 0;
+                scriptInstance->SetFieldValue(field.Name, emptyUUID);
+            }
+
             ImGui::Text("Entity:%s", std::to_string((uint64_t)value).c_str());
+            ImGui::PopID();
             break;
         }
         default:
@@ -466,7 +501,7 @@ namespace EngineEditor
         }
     }
 
-    void UIUtils::DrawScriptField(const Engine::ScriptField &field, Engine::ScriptFieldInstance &scriptFieldInstance)
+    void UIUtils::DrawScriptField(const Engine::ScriptField &field, Engine::ScriptFieldInstance &scriptFieldInstance, Engine::Ref<Engine::Scene> m_Context)
     {
         switch (field.FieldType)
         {
@@ -613,8 +648,43 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::Entity:
         {
+            std::string entityName = "None (Entity)";
             Engine::UUID value = scriptFieldInstance.GetValue<Engine::UUID>();
+            if (value.Valid())
+            {
+                Engine::Entity targetEntity = m_Context->GetEntityByUUID(value);
+                if (targetEntity)
+                    entityName = targetEntity.GetName();
+                else
+                    entityName = "Missing Reference";
+            }
+            ImGui::PushID(field.Name.c_str());
+            ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - 20.0f);
+            ImGui::Text("%s:", field.Name.c_str());
+            ImGui::SameLine();
+            ImGui::Button(entityName.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 25.0f, 0));
+
+            if (ImGui::BeginDragDropTarget())
+            {
+                // ENGINE_INFO("Accepting drag drop for Entity field '{}'", field.Name);
+                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(ResourcePayloadTrait<Engine::Entity>::value))
+                {
+                    Engine::UUID droppedEntityID = *(Engine::UUID *)payload->Data;
+                    scriptFieldInstance.SetValue(droppedEntityID);
+                }
+                ImGui::EndDragDropTarget();
+            }
+
+            ImGui::PopItemWidth();
+            ImGui::SameLine();
+            if (ImGui::Button("X", ImVec2(20.0f, 0)))
+            {
+                Engine::UUID emptyUUID = 0;
+                scriptFieldInstance.SetValue(emptyUUID);
+            }
+
             ImGui::Text("Entity:%s", std::to_string((uint64_t)value).c_str());
+            ImGui::PopID();
             break;
         }
         default:

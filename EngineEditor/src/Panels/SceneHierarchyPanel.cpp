@@ -8,9 +8,22 @@
 #include <filesystem>
 namespace EngineEditor
 {
+
+    SceneHierarchyPanel::SceneHierarchyPanel()
+    {
+        LoadIcons();
+    }
+
     SceneHierarchyPanel::SceneHierarchyPanel(const Engine::Ref<Engine::Scene> &context)
         : m_Context(context)
     {
+        LoadIcons();
+    }
+
+    void SceneHierarchyPanel::LoadIcons()
+    {
+        m_LockIcon = Engine::Renderer::Texture2D::Create("resources/assets/textures/icon/lock.png");
+        m_UnlockIcon = Engine::Renderer::Texture2D::Create("resources/assets/textures/icon/unlock.png");
     }
 
     void SceneHierarchyPanel::OnImGuiRender()
@@ -21,7 +34,7 @@ namespace EngineEditor
 
         if (m_Context)
         {
-            if (ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered())
+            if (!m_LockSelection && ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered())
             {
                 SetSelectedEntity({});
             }
@@ -40,6 +53,12 @@ namespace EngineEditor
             {
                 Engine::Entity e{entity, m_Context.get()};
                 DrawEntityNode(e);
+                if (ImGui::BeginDragDropSource())
+                {
+                    Engine::UUID entityID = e.GetUUID();
+                    ImGui::SetDragDropPayload(ResourcePayloadTrait<Engine::Entity>::value, &entityID, sizeof(Engine::UUID));
+                    ImGui::EndDragDropSource();
+                }
             }
             if (view.empty())
             {
@@ -68,7 +87,7 @@ namespace EngineEditor
         ImGuiTreeNodeFlags flags = ((m_SelectionEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
         flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
         bool opened = ImGui::TreeNodeEx((void *)(uint64_t)(uint32_t)(entt::entity)entity, flags, tag.c_str());
-        if (ImGui::IsItemClicked())
+        if (ImGui::IsItemClicked() && !m_LockSelection)
         {
             SetSelectedEntity(entity);
         }
@@ -116,6 +135,17 @@ namespace EngineEditor
                 UIUtils::DrawAddComponents(Engine::AddableComponents{}, entity);
                 ImGui::EndPopup();
             }
+
+            if (m_LockIcon && m_UnlockIcon)
+            { // Lock Entity
+                ImGui::SameLine();
+                auto unlock = ImTextureRef((void *)(uint64_t)m_UnlockIcon->GetRendererID());
+                auto lock = ImTextureRef((void *)(uint64_t)m_LockIcon->GetRendererID());
+                if (ImGui::ImageButton("Lock", m_LockSelection ? unlock : lock, ImVec2(25, 25), ImVec2(1, 1), ImVec2(0, 0), ImVec4(0, 0, 0, 0), ImVec4(1, 1, 1, 1)))
+                {
+                    m_LockSelection = !m_LockSelection;
+                }
+            }
         }
 
         UIUtils::DrawComponent<Engine::TransformComponent>("Transform", entity, false);
@@ -155,7 +185,7 @@ namespace EngineEditor
                 }
                 for (const auto &fieldPair : instance->GetScriptClass()->GetFields())
                 {
-                    UIUtils::DrawScriptInstance(fieldPair.second, instance);
+                    UIUtils::DrawScriptInstance(fieldPair.second, instance,scene);
                 }
             }
             else
@@ -180,7 +210,7 @@ namespace EngineEditor
                         if (scriptFieldMap.find(fieldName) != scriptFieldMap.end())
                         {
                             auto &fieldInstance = scriptFieldMap.at(fieldName);
-                            UIUtils::DrawScriptField(field, fieldInstance);
+                            UIUtils::DrawScriptField(field, fieldInstance,scene);
                         }
                         else
                         {
@@ -190,7 +220,7 @@ namespace EngineEditor
                             ENGINE_INFO("Creating new script field instance for field '{}' with size {} value {}", 
                                 field.Name, sizeof(field.DefaultValue), *(int32_t *)field.DefaultValue);
                             scriptFieldInstance.CopyValueToBuffer(field.DefaultValue, sizeof(field.DefaultValue));
-                            UIUtils::DrawScriptField(field, scriptFieldInstance);
+                            UIUtils::DrawScriptField(field, scriptFieldInstance, scene);
                         }
                         if (!exists)
                         {

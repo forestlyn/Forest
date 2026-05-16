@@ -7,6 +7,11 @@ namespace Engine::Renderer
 namespace Engine
 {
     class Scene;
+    class Entity;
+    // 组件类
+    class SpriteComponent;
+    class CameraComponent;
+    class TransformComponent;
 }
 namespace EngineEditor
 {
@@ -34,5 +39,9 @@ namespace EngineEditor
     {
         static constexpr const char *value = PAYLOAD_SCENE;
     };
-
+    template <>
+    struct ResourcePayloadTrait<Engine::Entity>
+    {
+        static constexpr const char *value = PAYLOAD_SCENE_ENTITY;
+    };
 }

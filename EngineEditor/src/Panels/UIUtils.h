@@ -108,8 +108,8 @@ namespace EngineEditor
         // }
 
         // draw in Editor
-        static void DrawScriptField(const Engine::ScriptField &field, Engine::ScriptFieldInstance &scriptFieldInstance);
+        static void DrawScriptField(const Engine::ScriptField &field, Engine::ScriptFieldInstance &scriptFieldInstance, Engine::Ref<Engine::Scene> m_Context);
         // draw in Running
-        static void DrawScriptInstance(const Engine::ScriptField &field, Engine::Ref<Engine::ScriptInstance> scriptInstance);
+        static void DrawScriptInstance(const Engine::ScriptField &field, Engine::Ref<Engine::ScriptInstance> scriptInstance, Engine::Ref<Engine::Scene> m_Context);
     };
 }

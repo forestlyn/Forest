@@ -1,11 +1,12 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Scene/Entity.h"
+#include "Engine/Renderer/Shader/Texture.h"
 namespace EngineEditor
 {
     class SceneHierarchyPanel
     {
     public:
-        SceneHierarchyPanel() = default;
+        SceneHierarchyPanel();
         SceneHierarchyPanel(const Engine::Ref<Engine::Scene> &context);
         ~SceneHierarchyPanel() = default;
 
@@ -43,10 +44,16 @@ namespace EngineEditor
     private:
         void DrawEntityNode(Engine::Entity entity);
         void DrawComponents(Engine::Entity entity);
+        void LoadIcons();
 
     private:
         Engine::Ref<Engine::Scene> m_Context;
         Engine::Entity m_SelectionEntity;
         Engine::UUID m_SelectionEntityID;
+
+        bool m_LockSelection = false;
+
+        Engine::Ref<Engine::Renderer::Texture2D> m_LockIcon;
+        Engine::Ref<Engine::Renderer::Texture2D> m_UnlockIcon;
     };
 };

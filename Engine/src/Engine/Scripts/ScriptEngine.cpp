@@ -323,7 +323,7 @@ namespace Engine
                         MonoObject *managedEntity = CreateManagedEntityReference(fieldClass, referencedEntityID);
                         if (managedEntity)
                         {
-                            instance->SetFieldValueInternal(fieldName, managedEntity);
+                            mono_field_set_value(instance->GetManagedObject(), fieldIt->second.MonoField, managedEntity);
                         }
                         else
                         {
@@ -345,7 +345,7 @@ namespace Engine
                         MonoObject *managedComponent = CreateManagedComponentObject(fieldClass, referencedEntityID);
                         if (managedComponent)
                         {
-                            instance->SetFieldValueInternal(fieldName, managedComponent);
+                            mono_field_set_value(instance->GetManagedObject(), fieldIt->second.MonoField, managedComponent);
                         }
                         else
                         {
@@ -666,6 +666,30 @@ namespace Engine
             return false;
 
         const ScriptField &scriptField = it->second;
+
+        if (scriptField.IsObject())
+        {
+            uint64_t entityID = *(uint64_t *)value;
+            MonoObject *managedObject = nullptr;
+
+            if (entityID != 0)
+            {
+                MonoType *fieldType = mono_field_get_type(scriptField.MonoField);
+                MonoClass *fieldClass = mono_class_from_mono_type(fieldType);
+
+                if (scriptField.IsEntity())
+                {
+                    managedObject = CreateManagedEntityReference(fieldClass, entityID);
+                }
+                else
+                {
+                    managedObject = CreateManagedComponentObject(fieldClass, entityID);
+                }
+            }
+            mono_field_set_value(instance, scriptField.MonoField, managedObject);
+            return true;
+        }
+
         mono_field_set_value(instance, scriptField.MonoField, (void *)value);
         return true;
     }

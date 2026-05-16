@@ -15,6 +15,11 @@ namespace Engine
             return m_UUID == other.m_UUID;
         }
 
+        bool Valid()
+        {
+            return m_UUID != 0;
+        }
+
     private:
         uint64_t m_UUID;
     };
