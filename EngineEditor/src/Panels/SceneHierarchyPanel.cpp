@@ -141,7 +141,7 @@ namespace EngineEditor
                 ImGui::SameLine();
                 auto unlock = ImTextureRef((void *)(uint64_t)m_UnlockIcon->GetRendererID());
                 auto lock = ImTextureRef((void *)(uint64_t)m_LockIcon->GetRendererID());
-                if (ImGui::ImageButton("Lock", m_LockSelection ? unlock : lock, ImVec2(25, 25), ImVec2(1, 1), ImVec2(0, 0), ImVec4(0, 0, 0, 0), ImVec4(1, 1, 1, 1)))
+                if (ImGui::ImageButton("Lock", m_LockSelection ? lock : unlock, ImVec2(25, 25), ImVec2(1, 1), ImVec2(0, 0), ImVec4(0, 0, 0, 0), ImVec4(1, 1, 1, 1)))
                 {
                     m_LockSelection = !m_LockSelection;
                 }
