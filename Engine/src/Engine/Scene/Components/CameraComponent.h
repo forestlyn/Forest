@@ -2,6 +2,7 @@
 #include "BaseComponent.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Engine/Scene/EntityRef.h"
 namespace Engine
 {
     enum class SceneCameraProjectionType
@@ -28,6 +29,10 @@ namespace Engine
         float PerspectiveFar = 1000.0f;
 
         float AspectRatio = 16.0f / 9.0f;
+
+        // Follow Target
+        bool FollowTarget = false;
+        EntityRef TargetEntity = {};
 
         // 投影矩阵
         glm::mat4 ProjectionMatrix{1.0f};
@@ -63,6 +68,11 @@ namespace Engine
         return camera.ProjectionType == SceneCameraProjectionType::Perspective;
     }
 
+    inline bool HasFollowTarget(const CameraComponent &camera)
+    {
+        return camera.FollowTarget;
+    }
+
     REFLECT_ENUM_BEGIN(SceneCameraProjectionType)
     REFLECT_ENUM_VALUE(Perspective)
     REFLECT_ENUM_VALUE(Orthographic)
@@ -79,5 +89,7 @@ namespace Engine
     REFLECT_FIELD(PerspectiveNear).VISIBLEIF<&IsPerspectiveCamera>().UI().TOOLTIP("Perspective near clip plane.");
     REFLECT_FIELD(PerspectiveFar).VISIBLEIF<&IsPerspectiveCamera>().UI().TOOLTIP("Perspective far clip plane.");
     REFLECT_FIELD(AspectRatio).UI(0, 100, 0.01f).TOOLTIP("Camera projection aspect ratio.");
+    REFLECT_FIELD(FollowTarget).UI().TOOLTIP("Whether the camera should follow a target entity.");
+    REFLECT_FIELD(TargetEntity).VISIBLEIF<&HasFollowTarget>().UI().TOOLTIP("The target entity for the camera to follow.");
     REFLECT_TYPE_END(CameraComponent)
 } // namespace Engine

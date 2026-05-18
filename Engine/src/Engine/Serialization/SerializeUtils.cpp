@@ -108,6 +108,22 @@ namespace YAML
         return true;
     }
 
-#pragma endregion
+    Node convert<Engine::EntityRef>::encode(const Engine::EntityRef &entityRef)
+    {
+        Node node;
+        node.push_back((uint64_t)entityRef.uuid);
+        return node;
+    }
 
+    bool convert<Engine::EntityRef>::decode(const Node &node, Engine::EntityRef &entityRef)
+    {
+        if (!node.IsScalar())
+        {
+            return false;
+        }
+        uint64_t uuidValue = node.as<uint64_t>();
+        entityRef.uuid = Engine::UUID(uuidValue);
+        return true;
+    }
+#pragma endregion
 }

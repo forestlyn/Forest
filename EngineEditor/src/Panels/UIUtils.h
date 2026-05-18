@@ -8,6 +8,7 @@
 #include "Engine/Reflection/MetaStruct.h"
 #include "Engine/Scene/Component.h"
 #include "Engine/Resource/ResourceRef.h"
+#include "Engine/Scene/EntityRef.h"
 #include "Payload/DragDropPayload.h"
 #include "Engine/Project/Project.h"
 #include <filesystem>
@@ -31,7 +32,7 @@ namespace EngineEditor
     {
     public:
         static bool DrawValueEdit(const std::string &label, void *value, const Engine::MetaType &type, Engine::UIKind uiKind = Engine::UIKind::UITYPE_Default);
-        static bool DrawMetaType(const std::string &label, void *obj, const Engine::MetaType &type, Engine::UIKind uiKind = Engine::UIKind::UITYPE_Default);
+        static bool DrawMetaType(const std::string &label, void *obj, const Engine::MetaType &type, Engine::UIKind uiKind = Engine::UIKind::UITYPE_Default, Engine::Ref<Engine::Scene> context = nullptr);
 
         static bool DrawVector3Control(const std::string &label, glm::vec3 &values, float resetValue = 0.0f, float columnWidth = 100.0f);
 
@@ -39,7 +40,7 @@ namespace EngineEditor
         static void DrawComponent(const std::string &name, Engine::Entity entity, const std::function<void(T &)> &uiFunction, bool removeable = true);
 
         template <IsUIComponent T>
-        static void DrawComponent(const std::string &name, Engine::Entity entity, bool removeable = true);
+        static void DrawComponent(const std::string &name, Engine::Entity entity, bool removeable = true, Engine::Ref<Engine::Scene> context = nullptr);
 
         template <typename... T>
         static void DrawAddComponents(Engine::Entity entity)
@@ -87,25 +88,40 @@ namespace EngineEditor
             }
         }
 
-        // template <typename T>
-        // static void DrawObjectRefField(const char *label, UUID &uuid, const std::function<T *(const UUID &)> &resolver)
-        // {
-        //     ImGui::Text("%s", label);
-        //     ImGui::SameLine();
-        //     ImGui::Button(resolver(uuid) ? "Set" : "None", ImVec2(-1, 0));
+        static void DrawEntityRefField(const char *label, Engine::EntityRef &entityRef, Engine::Ref<Engine::Scene> context = nullptr)
+        {
+            ImGui::Text("%s", label);
+            ImGui::SameLine();
+            if (context)
+            {
+                std::string entityName = "None (Entity)";
+                if (entityRef.uuid.Valid())
+                {
+                    Engine::Entity targetEntity = context->GetEntityByUUID(entityRef.uuid);
+                    if (targetEntity)
+                        entityName = targetEntity.GetName();
+                    else
+                        entityName = "Missing Reference";
+                }
+                ImGui::Button(entityName.c_str(), ImVec2(-1, 0));
+            }
+            else
+            {
+                ImGui::Button(entityRef.uuid.Valid() ? "Set" : "None", ImVec2(-1, 0));
+            }
 
-        //     if (ImGui::BeginDragDropTarget())
-        //     {
-        //         const char *expectedPayload = typeid(T).name();
+            if (ImGui::BeginDragDropTarget())
+            {
+                const char *expectedPayload = ResourcePayloadTrait<Engine::Entity>::value;
 
-        //         if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(expectedPayload))
-        //         {
-        //             T *object = *(T **)payload->Data;
-        //             ref = object;
-        //         }
-        //         ImGui::EndDragDropTarget();
-        //     }
-        // }
+                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(expectedPayload))
+                {
+                    Engine::UUID entity = *(Engine::UUID *)payload->Data;
+                    entityRef.uuid = entity;
+                }
+                ImGui::EndDragDropTarget();
+            }
+        }
 
         // draw in Editor
         static void DrawScriptField(const Engine::ScriptField &field, Engine::ScriptFieldInstance &scriptFieldInstance, Engine::Ref<Engine::Scene> m_Context);

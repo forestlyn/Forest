@@ -148,18 +148,18 @@ namespace EngineEditor
             }
         }
 
-        UIUtils::DrawComponent<Engine::TransformComponent>("Transform", entity, false);
+        UIUtils::DrawComponent<Engine::TransformComponent>("Transform", entity, false, m_Context);
 
-        UIUtils::DrawComponent<Engine::SpriteComponent>("Sprite Renderer", entity);
+        UIUtils::DrawComponent<Engine::SpriteComponent>("Sprite Renderer", entity, true, m_Context);
 
-        UIUtils::DrawComponent<Engine::CameraComponent>("Camera", entity);
+        UIUtils::DrawComponent<Engine::CameraComponent>("Camera", entity, true, m_Context);
 
-        UIUtils::DrawComponent<Engine::CircleComponent>("Circle", entity);
+        UIUtils::DrawComponent<Engine::CircleComponent>("Circle", entity, true, m_Context);
 
-        UIUtils::DrawComponent<Engine::Rigidbody2DComponent>("Rigidbody 2D", entity);
+        UIUtils::DrawComponent<Engine::Rigidbody2DComponent>("Rigidbody 2D", entity, true, m_Context);
 
-        UIUtils::DrawComponent<Engine::BoxCollider2DComponent>("Box Collider 2D", entity);
-        UIUtils::DrawComponent<Engine::CircleCollider2DComponent>("Circle Collider 2D", entity);
+        UIUtils::DrawComponent<Engine::BoxCollider2DComponent>("Box Collider 2D", entity, true, m_Context);
+        UIUtils::DrawComponent<Engine::CircleCollider2DComponent>("Circle Collider 2D", entity, true, m_Context);
 
         UIUtils::DrawComponent<Engine::ScriptComponent>("Script", entity, [entity, scene = m_Context](Engine::ScriptComponent &scriptComponent)
                                                         {

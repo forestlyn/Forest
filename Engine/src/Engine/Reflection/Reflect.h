@@ -1,6 +1,7 @@
 #pragma once
 #include "MetaStruct.h"
 #include "Engine/Core/UUID.h"
+#include "Engine/Scene/EntityRef.h"
 #include "Engine/Serialization/SerializeUtils.h"
 namespace Engine
 {
@@ -206,6 +207,18 @@ namespace Engine
             static const std::vector<MetaField> fields = {
                 MakeField<ResourceRef<T>, std::string, &ResourceRef<T>::path>("path")};
             static const MetaType t{"ResourceRef", MetaKind::ResourceRef, sizeof(ResourceRef<T>), &fields, nullptr, nullptr, nullptr, &SerializeYaml, &DeserializeYaml};
+            return t;
+        }
+    };
+
+    template <>
+    struct MetaResolver<Engine::EntityRef>
+    {
+        static const MetaType &Get()
+        {
+            static const std::vector<MetaField> fields = {
+                MakeField<Engine::EntityRef, Engine::UUID, &Engine::EntityRef::uuid>("uuid")};
+            static const MetaType t{"EntityRef", MetaKind::EntityRef, sizeof(Engine::EntityRef), &fields, nullptr, nullptr, nullptr, nullptr, nullptr};
             return t;
         }
     };

@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include "Engine/Core/UUID.h"
 #include "Engine/Resource/ResourceRef.h"
+#include "Engine/Scene/EntityRef.h"
 namespace YAML
 {
     // Serialize to YAML
@@ -59,5 +60,13 @@ namespace YAML
             ref.instance = nullptr; // 反序列化时不加载资源，只设置路径，实际加载由资源管理器负责
             return true;
         }
+    };
+
+    template <>
+    struct convert<Engine::EntityRef>
+    {
+        static Node encode(const Engine::EntityRef &entityRef);
+
+        static bool decode(const Node &node, Engine::EntityRef &entityRef);
     };
 } // namespace YAML

@@ -256,7 +256,7 @@ namespace EngineEditor
         return false;
     }
 
-    bool UIUtils::DrawMetaType(const std::string &label, void *obj, const Engine::MetaType &type, Engine::UIKind uiKind)
+    bool UIUtils::DrawMetaType(const std::string &label, void *obj, const Engine::MetaType &type, Engine::UIKind uiKind, Engine::Ref<Engine::Scene> context)
     {
         switch (type.kind)
         {
@@ -274,6 +274,12 @@ namespace EngineEditor
         case Engine::MetaKind::UUID:
         case Engine::MetaKind::ResourceRef:
             return DrawValueEdit(label, obj, type, uiKind);
+        case Engine::MetaKind::EntityRef:
+        {
+            Engine::EntityRef *entityRef = (Engine::EntityRef *)obj;
+            DrawEntityRefField(label.c_str(), *entityRef, context);
+            break;
+        }
         case Engine::MetaKind::Struct:
         {
             if (!type.fields)
@@ -293,7 +299,7 @@ namespace EngineEditor
                     continue;
                 }
 
-                if (DrawMetaType(field.name, field.get(obj), *field.type, field.ui.uiKind))
+                if (DrawMetaType(field.name, field.get(obj), *field.type, field.ui.uiKind, context))
                 {
                     return true;
                 }
@@ -741,7 +747,7 @@ namespace EngineEditor
     }
 
     template <IsUIComponent T>
-    void UIUtils::DrawComponent(const std::string &name, Engine::Entity entity, bool removeable)
+    void UIUtils::DrawComponent(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context)
     {
         ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_SpanAvailWidth;
         if (!entity.HasComponent<T>())
@@ -775,7 +781,7 @@ namespace EngineEditor
         if (opened)
         {
             ImGui::Separator();
-            DrawMetaType(name, &component, Engine::Reflect<T>());
+            DrawMetaType(name, &component, Engine::Reflect<T>(), Engine::UIKind::UITYPE_Default, context);
             ImGui::TreePop();
         }
         ImGui::PopID();
@@ -787,12 +793,12 @@ namespace EngineEditor
     }
 
     // Explicit template instantiations
-    template void UIUtils::DrawComponent<Engine::TransformComponent>(const std::string &name, Engine::Entity entity, bool removeable);
-    template void UIUtils::DrawComponent<Engine::SpriteComponent>(const std::string &name, Engine::Entity entity, bool removeable);
-    template void UIUtils::DrawComponent<Engine::CameraComponent>(const std::string &name, Engine::Entity entity, bool removeable);
-    template void UIUtils::DrawComponent<Engine::Rigidbody2DComponent>(const std::string &name, Engine::Entity entity, bool removeable);
-    template void UIUtils::DrawComponent<Engine::BoxCollider2DComponent>(const std::string &name, Engine::Entity entity, bool removeable);
-    template void UIUtils::DrawComponent<Engine::CircleComponent>(const std::string &name, Engine::Entity entity, bool removeable);
-    template void UIUtils::DrawComponent<Engine::CircleCollider2DComponent>(const std::string &name, Engine::Entity entity, bool removeable);
+    template void UIUtils::DrawComponent<Engine::TransformComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
+    template void UIUtils::DrawComponent<Engine::SpriteComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
+    template void UIUtils::DrawComponent<Engine::CameraComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
+    template void UIUtils::DrawComponent<Engine::Rigidbody2DComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
+    template void UIUtils::DrawComponent<Engine::BoxCollider2DComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
+    template void UIUtils::DrawComponent<Engine::CircleComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
+    template void UIUtils::DrawComponent<Engine::CircleCollider2DComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
     template void UIUtils::DrawComponent<Engine::ScriptComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::ScriptComponent &)> &uiFunction, bool removeable);
 }

@@ -28,6 +28,7 @@ namespace Engine
         Enum,
         Struct,
         UUID,
+        EntityRef,
         ResourceRef
     };
 
@@ -77,7 +78,7 @@ namespace Engine
     enum class FieldCategory
     {
         Value,
-        ObjectReference,
+        EntityReference,
         AssetReference
     };
 

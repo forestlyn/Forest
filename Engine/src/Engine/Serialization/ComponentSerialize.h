@@ -137,6 +137,13 @@ namespace Engine::Serialization
             break;
         }
 
+        case MetaKind::EntityRef:
+        {
+            const EntityRef *entityRef = static_cast<const EntityRef *>(obj);
+            out << std::to_string((uint64_t)(entityRef->uuid));
+            break;
+        }
+
         case MetaKind::ResourceRef:
         {
             if (type.SerializeYaml)
@@ -153,7 +160,9 @@ namespace Engine::Serialization
     inline void DeserializeValue(void *obj, const MetaType &type, const YAML::Node &node)
     {
         if (!node)
+        {
             return;
+        }
 
         switch (type.kind)
         {
@@ -230,6 +239,20 @@ namespace Engine::Serialization
 
                 DeserializeValue(field.get(obj), *field.type, child);
             }
+            break;
+        }
+
+        case MetaKind::UUID:
+        {
+            uint64_t uuidValue = node.as<uint64_t>();
+            *static_cast<UUID *>(obj) = UUID(uuidValue);
+            break;
+        }
+
+        case MetaKind::EntityRef:
+        {
+            uint64_t uuidValue = node.as<uint64_t>();
+            *static_cast<EntityRef *>(obj) = EntityRef{UUID(uuidValue)};
             break;
         }
 
