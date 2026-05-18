@@ -91,13 +91,54 @@ namespace Engine::Serialization
 
         UUID entityID = entity.GetUUID();
         auto &fieldMap = Engine::ScriptEngine::GetScriptFieldMap(entityID);
+        auto scriptClass = Engine::ScriptEngine::GetEntityClass(scriptComp.ScriptClassName);
+        const auto *scriptFields = scriptClass ? &scriptClass->GetFields() : nullptr;
+
+        if (!scriptFields)
+        {
+            ENGINE_WARN("Cannot validate serialized fields for missing script class '{}'", scriptComp.ScriptClassName);
+        }
+
         for (auto &fieldNode : entityNode[fieldMapKey])
         {
             std::string fieldName = fieldNode.first.as<std::string>();
             auto &fieldDataNode = fieldNode.second;
             ScriptFieldInstance fieldInstance;
-            fieldInstance.Field.Name = fieldDataNode["Name"].as<std::string>();
-            fieldInstance.Field.FieldType = (ScriptFieldType)fieldDataNode["Type"].as<int>();
+
+            if (scriptFields)
+            {
+                auto currentFieldIt = scriptFields->find(fieldName);
+                if (currentFieldIt == scriptFields->end())
+                {
+                    ENGINE_WARN("Skipping serialized field '{}' because it no longer exists on script '{}'", fieldName, scriptComp.ScriptClassName);
+                    continue;
+                }
+
+                fieldInstance.Field = currentFieldIt->second;
+                fieldInstance.CopyValueToBuffer(fieldInstance.Field.DefaultValue, sizeof(fieldInstance.Field.DefaultValue));
+
+                if (fieldDataNode["Type"])
+                {
+                    auto serializedType = (ScriptFieldType)fieldDataNode["Type"].as<int>();
+                    if (serializedType != fieldInstance.Field.FieldType)
+                    {
+                        ENGINE_WARN("Skipping serialized field '{}' on script '{}' because its type changed", fieldName, scriptComp.ScriptClassName);
+                        continue;
+                    }
+                }
+            }
+            else
+            {
+                if (!fieldDataNode["Name"] || !fieldDataNode["Type"])
+                {
+                    ENGINE_WARN("Skipping malformed serialized field '{}' on missing script '{}'", fieldName, scriptComp.ScriptClassName);
+                    continue;
+                }
+
+                fieldInstance.Field.Name = fieldDataNode["Name"].as<std::string>();
+                fieldInstance.Field.FieldType = (ScriptFieldType)fieldDataNode["Type"].as<int>();
+            }
+
             switch (fieldInstance.Field.FieldType)
             {
                 DESERIALIZE_SCRIPT_FIELD(ScriptFieldType::Float, float);
