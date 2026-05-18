@@ -132,15 +132,13 @@ namespace Engine::Serialization
 
         case MetaKind::UUID:
         {
-            const UUID *uuidValue = static_cast<const UUID *>(obj);
-            out << std::to_string((uint64_t)(*uuidValue));
+            out << *static_cast<const UUID *>(obj);
             break;
         }
 
         case MetaKind::EntityRef:
         {
-            const EntityRef *entityRef = static_cast<const EntityRef *>(obj);
-            out << std::to_string((uint64_t)(entityRef->uuid));
+            out << *static_cast<const EntityRef *>(obj);
             break;
         }
 
@@ -244,15 +242,15 @@ namespace Engine::Serialization
 
         case MetaKind::UUID:
         {
-            uint64_t uuidValue = node.as<uint64_t>();
-            *static_cast<UUID *>(obj) = UUID(uuidValue);
+            UUID uuidValue = node.as<UUID>();
+            *static_cast<UUID *>(obj) = uuidValue;
             break;
         }
 
         case MetaKind::EntityRef:
         {
-            uint64_t uuidValue = node.as<uint64_t>();
-            *static_cast<EntityRef *>(obj) = EntityRef{UUID(uuidValue)};
+            EntityRef entityRefValue = node.as<EntityRef>();
+            *static_cast<EntityRef *>(obj) = entityRefValue;
             break;
         }
 

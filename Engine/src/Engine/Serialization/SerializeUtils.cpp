@@ -21,6 +21,12 @@ namespace YAML
         return out;
     }
 
+    Emitter &operator<<(Emitter &out, const Engine::EntityRef &entityRef)
+    {
+        out << static_cast<uint64_t>(entityRef.uuid);
+        return out;
+    }
+
 #pragma endregion
 
 #pragma region Deserialize from YAML
@@ -93,7 +99,7 @@ namespace YAML
     Node convert<Engine::UUID>::encode(const Engine::UUID &uuid)
     {
         Node node;
-        node.push_back((uint64_t)uuid);
+        node = static_cast<uint64_t>(uuid);
         return node;
     }
 
@@ -111,7 +117,7 @@ namespace YAML
     Node convert<Engine::EntityRef>::encode(const Engine::EntityRef &entityRef)
     {
         Node node;
-        node.push_back((uint64_t)entityRef.uuid);
+        node = static_cast<uint64_t>(entityRef.uuid);
         return node;
     }
 

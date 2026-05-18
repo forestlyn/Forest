@@ -69,6 +69,24 @@ namespace Engine
         return it->second;
     }
 
+    const char *GetMonoTypeStr(MonoType *type, MonoClass *entityClass, MonoClass *componentClass)
+    {
+        std::string typeName = mono_type_get_name(type);
+
+        auto it = s_ScriptFieldTypeMap.find(typeName);
+        if (it == s_ScriptFieldTypeMap.end())
+        {
+            if (IsSubtypeOfEntity(type, entityClass))
+                return "Entity";
+            if (IsSubtypeOfComponent(type, componentClass))
+            {
+                MonoClass *monoClass = mono_class_from_mono_type(type);
+                return mono_class_get_name(monoClass);
+            }
+        }
+        return typeName.c_str();
+    }
+
     uint64_t GetEntityIDFromEntityField(MonoObject *instance, MonoClassField *field)
     {
         uint64_t entityID = 0;
@@ -302,6 +320,8 @@ namespace Engine
             return "Vector4";
         case ScriptFieldType::Entity:
             return "Entity";
+        case ScriptFieldType::Component:
+            return "Component";
         }
         return "<Invalid>";
     }

@@ -10,6 +10,7 @@ namespace YAML
     Emitter &operator<<(Emitter &out, const glm::vec2 &vec);
     Emitter &operator<<(Emitter &out, const glm::vec3 &vec);
     Emitter &operator<<(Emitter &out, const glm::vec4 &vec);
+    Emitter &operator<<(Emitter &out, const Engine::EntityRef &entityRef);
 
     // Deserialize from YAML
     template <>
