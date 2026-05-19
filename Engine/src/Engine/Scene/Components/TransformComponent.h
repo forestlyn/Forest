@@ -77,6 +77,7 @@ namespace Engine
     REFLECT_FIELD(Position);
     REFLECT_FIELD(Rotation);
     REFLECT_FIELD(Scale);
+    REFLECT_FIELD(dirty).UI().UIPROPERTY(Engine::UIProperty::ReadOnly);
     REFLECT_TYPE_END(TransformComponent)
 
 }

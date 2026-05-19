@@ -42,6 +42,9 @@ namespace Engine
         MonoClassField *MonoField;
         uint8_t DefaultValue[MaxScriptFieldBufferSize];
 
+        // For component fields, this is the name of the component type (e.g. "TransformComponent"), for entity fields this is always "Entity"
+        std::string TypeName;
+
         template <typename T>
         T GetDefaultValue() const
         {
@@ -64,7 +67,22 @@ namespace Engine
         {
             return FieldType == ScriptFieldType::Component || FieldType == ScriptFieldType::Entity;
         }
+
+        bool IsComponent() const
+        {
+            return FieldType == ScriptFieldType::Component;
+        }
+
+        std::string GetComponentTypeName() const
+        {
+            if (FieldType != ScriptFieldType::Component)
+            {
+                return "";
+            }
+            return TypeName;
+        }
     };
+
     class ScriptInstance;
     class ScriptClass;
     struct ScriptFieldInstance;
@@ -93,8 +111,11 @@ namespace Engine
         static void OnUpdateEntity(Entity entity, Core::Timestep ts);
         static bool EntityClassExists(const std::string &className);
 
+        static bool CanAssignObjectReference(const ScriptField &field, UUID entityID);
+
     private:
-        static void InitMono();
+        static void
+        InitMono();
         static void ShutdownMono();
 
         static void CreateDomainAndLoadAssembly();
@@ -192,9 +213,9 @@ namespace Engine
         }
 
         template <typename T>
-        void SetFieldValue(const std::string &fieldName, const T &value)
+        bool SetFieldValue(const std::string &fieldName, const T &value)
         {
-            SetFieldValueInternal(fieldName, &value);
+            return SetFieldValueInternal(fieldName, &value);
         }
 
         MonoObject *GetManagedObject() const;

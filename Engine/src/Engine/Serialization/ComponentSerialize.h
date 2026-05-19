@@ -118,7 +118,7 @@ namespace Engine::Serialization
             {
                 for (const MetaField &field : *type.fields)
                 {
-                    if (!HasPropertyFlag(field.flags, PropertyFlags::Property_Serializable))
+                    if (!HasPropertyFlag(field.flags, PropertyFlags::Property_Serializable) || HasPropertyFlag(field.flags, PropertyFlags::Property_Transient))
                         continue; // 不参与序列化
                     out << YAML::Key << field.name;
                     out << YAML::Value;

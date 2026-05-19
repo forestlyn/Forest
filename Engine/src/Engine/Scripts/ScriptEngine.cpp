@@ -390,6 +390,44 @@ namespace Engine
         return m_ScriptEngineData->EntityClasses.find(className) != m_ScriptEngineData->EntityClasses.end();
     }
 
+    bool ScriptEngine::CanAssignObjectReference(const ScriptField &field, UUID entityID)
+    {
+        if (!entityID.Valid())
+            return true; // Allow null reference
+
+        MonoType *fieldType = mono_field_get_type(field.MonoField);
+        MonoClass *fieldClass = mono_class_from_mono_type(fieldType);
+
+        if (field.IsEntity())
+        {
+            MonoClass *entityClass = m_ScriptEngineData->EntityClass->GetMonoClass();
+            if (fieldClass == entityClass)
+            {
+                return true; // Any entity can be assigned to a field of type Entity
+            }
+
+            // For fields that are subclasses of Entity,
+            // we need to check if the referenced entity's script class is compatible with the field type
+            MonoObject *managedEntity = GetManagedInstance(entityID);
+            if (!managedEntity)
+            {
+                // ENGINE_INFO("Entity with ID {} does not have a managed instance, cannot assign to field '{}'", (uint64_t)entityID, field.Name);
+                return false;
+            }
+
+            MonoClass *instanceClass = mono_object_get_class(managedEntity);
+            bool isAssignable =
+                instanceClass == fieldClass || mono_class_is_subclass_of(instanceClass, fieldClass, false);
+            // ENGINE_INFO("Entity with ID {} has managed instance of class '{}', field '{}' requires class '{}', assignable: {}", (uint64_t)entityID, mono_class_get_name(instanceClass), field.Name, mono_class_get_name(fieldClass), isAssignable);
+            return isAssignable;
+        }
+        else if (field.IsComponent())
+        {
+            return ScriptGlue::EntityHasComponent(entityID, fieldType);
+        }
+        return false;
+    }
+
     void ScriptEngine::InitMono()
     {
 #ifdef _WIN32
@@ -520,6 +558,7 @@ namespace Engine
                         scriptField.MonoField = field;
                         MonoType *fieldType = mono_field_get_type(field);
                         scriptField.FieldType = MonoTypeToScriptFieldType(fieldType, m_ScriptEngineData->EntityClass->GetMonoClass(), m_ScriptEngineData->ComponentClass->GetMonoClass());
+                        scriptField.TypeName = GetMonoTypeStr(fieldType, m_ScriptEngineData->EntityClass->GetMonoClass(), m_ScriptEngineData->ComponentClass->GetMonoClass());
                         memset(defaultValueBuffer, 0, sizeof(defaultValueBuffer));
                         GetFieldDefaultValue(currentClassInstance, field, scriptField.FieldType, defaultValueBuffer);
                         memcpy(scriptField.DefaultValue, defaultValueBuffer, MaxScriptFieldBufferSize);
@@ -649,6 +688,12 @@ namespace Engine
             memcpy(value, &entityID, sizeof(uint64_t));
             return true;
         }
+        if (it->second.IsComponent())
+        {
+            uint64_t entityID = GetEntityIDFromComponentField(instance, it->second.MonoField);
+            memcpy(value, &entityID, sizeof(uint64_t));
+            return true;
+        }
         const ScriptField &scriptField = it->second;
         mono_field_get_value(instance, scriptField.MonoField, value);
         return true;
@@ -685,6 +730,12 @@ namespace Engine
                 {
                     managedObject = CreateManagedComponentObject(fieldClass, entityID);
                 }
+            }
+            if (!managedObject)
+            {
+                // If the entity ID is 0 or if we failed to create the managed object reference, we should set null to the field
+                mono_field_set_value(instance, scriptField.MonoField, nullptr);
+                return false;
             }
             mono_field_set_value(instance, scriptField.MonoField, managedObject);
             return true;

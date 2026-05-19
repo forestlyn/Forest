@@ -81,13 +81,18 @@ namespace EngineEditor
         return changed;
     }
 
-    bool UIUtils::DrawValueEdit(const std::string &label, void *value, const Engine::MetaType &type, Engine::UIKind uiKind)
+    bool UIUtils::DrawValueEdit(const std::string &label, void *value, const Engine::MetaType &type, Engine::MetaUIHint uiHint)
     {
         switch (type.kind)
         {
         case Engine::MetaKind::Bool:
         {
             bool *boolValue = (bool *)value;
+            if (uiHint.uiProperty == Engine::UIProperty::ReadOnly)
+            {
+                ImGui::Text("%s: %s", label.c_str(), *boolValue ? "True" : "False");
+                break;
+            }
             if (ImGui::Checkbox(label.c_str(), boolValue))
             {
                 return true;
@@ -97,7 +102,14 @@ namespace EngineEditor
         case Engine::MetaKind::Int:
         {
             int *intValue = (int *)value;
-            if (ImGui::DragInt(label.c_str(), intValue))
+            if (uiHint.uiProperty == Engine::UIProperty::ReadOnly)
+            {
+                ImGui::Text("%s: %d", label.c_str(), *intValue);
+                break;
+            }
+            int min = uiHint.hasMin ? static_cast<int>(uiHint.minValue) : std::numeric_limits<int>::min();
+            int max = uiHint.hasMax ? static_cast<int>(uiHint.maxValue) : std::numeric_limits<int>::max();
+            if (ImGui::DragInt(label.c_str(), intValue, (int)uiHint.step == 0 ? 1.0f : (int)uiHint.step, min, max))
             {
                 return true;
             }
@@ -106,6 +118,11 @@ namespace EngineEditor
         case Engine::MetaKind::Int2:
         {
             glm::ivec2 *vec2Value = (glm::ivec2 *)value;
+            if (uiHint.uiProperty == Engine::UIProperty::ReadOnly)
+            {
+                ImGui::Text("%s: (%d, %d)", label.c_str(), vec2Value->x, vec2Value->y);
+                break;
+            }
             if (ImGui::DragInt2(label.c_str(), glm::value_ptr(*vec2Value)))
             {
                 return true;
@@ -115,6 +132,12 @@ namespace EngineEditor
         case Engine::MetaKind::Int3:
         {
             glm::ivec3 *vec3Value = (glm::ivec3 *)value;
+            if (uiHint.uiProperty == Engine::UIProperty::ReadOnly)
+            {
+                ImGui::Text("%s: (%d, %d, %d)", label.c_str(), vec3Value->x, vec3Value->y, vec3Value->z);
+                break;
+            }
+
             if (ImGui::DragInt3(label.c_str(), glm::value_ptr(*vec3Value)))
             {
                 return true;
@@ -124,6 +147,11 @@ namespace EngineEditor
         case Engine::MetaKind::Int4:
         {
             glm::ivec4 *vec4Value = (glm::ivec4 *)value;
+            if (uiHint.uiProperty == Engine::UIProperty::ReadOnly)
+            {
+                ImGui::Text("%s: (%d, %d, %d, %d)", label.c_str(), vec4Value->x, vec4Value->y, vec4Value->z, vec4Value->w);
+                break;
+            }
             if (ImGui::DragInt4(label.c_str(), glm::value_ptr(*vec4Value)))
             {
                 return true;
@@ -133,7 +161,14 @@ namespace EngineEditor
         case Engine::MetaKind::Float:
         {
             float *floatValue = (float *)value;
-            if (ImGui::DragFloat(label.c_str(), floatValue))
+            if (uiHint.uiProperty == Engine::UIProperty::ReadOnly)
+            {
+                ImGui::Text("%s: %.3f", label.c_str(), *floatValue);
+                break;
+            }
+            float min = uiHint.hasMin ? uiHint.minValue : std::numeric_limits<float>::lowest();
+            float max = uiHint.hasMax ? uiHint.maxValue : std::numeric_limits<float>::max();
+            if (ImGui::DragFloat(label.c_str(), floatValue, uiHint.step, min, max))
             {
                 return true;
             }
@@ -142,6 +177,11 @@ namespace EngineEditor
         case Engine::MetaKind::Float2:
         {
             glm::vec2 *vec2Value = (glm::vec2 *)value;
+            if (uiHint.uiProperty == Engine::UIProperty::ReadOnly)
+            {
+                ImGui::Text("%s: (%.3f, %.3f)", label.c_str(), vec2Value->x, vec2Value->y);
+                break;
+            }
             if (ImGui::DragFloat2(label.c_str(), glm::value_ptr(*vec2Value), 0.1f))
             {
                 return true;
@@ -151,14 +191,25 @@ namespace EngineEditor
         case Engine::MetaKind::Float3:
         {
             glm::vec3 *vec3Value = (glm::vec3 *)value;
+            if (uiHint.uiProperty == Engine::UIProperty::ReadOnly)
+            {
+                ImGui::Text("%s: (%.3f, %.3f, %.3f)", label.c_str(), vec3Value->x, vec3Value->y, vec3Value->z);
+                break;
+            }
             DrawVector3Control(label, *vec3Value);
             break;
         }
         case Engine::MetaKind::Float4:
         {
             glm::vec4 *vec4Value = (glm::vec4 *)value;
-            if (uiKind == Engine::UIKind::UITYPE_Color)
+            if (uiHint.uiProperty == Engine::UIProperty::ReadOnly)
             {
+                ImGui::Text("%s: (%.3f, %.3f, %.3f, %.3f)", label.c_str(), vec4Value->x, vec4Value->y, vec4Value->z, vec4Value->w);
+                break;
+            }
+            if (uiHint.uiKind == Engine::UIKind::UITYPE_Color)
+            {
+
                 if (ImGui::ColorEdit4(label.c_str(), glm::value_ptr(*vec4Value)))
                 {
                     return true;
@@ -175,6 +226,11 @@ namespace EngineEditor
             std::string *stringValue = (std::string *)value;
             char buffer[256];
             strncpy(buffer, stringValue->c_str(), sizeof(buffer));
+            if (uiHint.uiProperty == Engine::UIProperty::ReadOnly)
+            {
+                ImGui::Text("%s: %s", label.c_str(), buffer);
+                break;
+            }
             if (ImGui::InputText(label.c_str(), buffer, sizeof(buffer)))
             {
                 *stringValue = buffer;
@@ -199,6 +255,12 @@ namespace EngineEditor
                     currentName = enumValue.Name;
                     break;
                 }
+            }
+
+            if (uiHint.uiProperty == Engine::UIProperty::ReadOnly)
+            {
+                ImGui::Text("%s: %s", label.c_str(), currentName);
+                break;
             }
 
             bool changed = false;
@@ -228,12 +290,22 @@ namespace EngineEditor
         case Engine::MetaKind::UUID:
         {
             Engine::UUID *uuidValue = (Engine::UUID *)value;
+            if (uiHint.uiProperty == Engine::UIProperty::ReadOnly)
+            {
+                ImGui::Text("Draw Value Edit UUID: %s", std::to_string((uint64_t)(*uuidValue)).c_str());
+                break;
+            }
             ImGui::Text("Draw Value Edit UUID: %s", std::to_string((uint64_t)(*uuidValue)).c_str());
             break;
         }
         case Engine::MetaKind::ResourceRef:
         {
-            if (uiKind == Engine::UIKind::UITYPE_Texture2D)
+            if (uiHint.uiProperty == Engine::UIProperty::ReadOnly)
+            {
+                ImGui::Text("%s: %s", label.c_str(), ((Engine::ResourceRef<void> *)value)->IsValid() ? ((Engine::ResourceRef<void> *)value)->path.c_str() : "None");
+                break;
+            }
+            if (uiHint.uiKind == Engine::UIKind::UITYPE_Texture2D)
             {
                 DrawResourceRefField<Engine::Renderer::Texture2D>(label.c_str(), *(Engine::ResourceRef<Engine::Renderer::Texture2D> *)value);
 
@@ -256,7 +328,7 @@ namespace EngineEditor
         return false;
     }
 
-    bool UIUtils::DrawMetaType(const std::string &label, void *obj, const Engine::MetaType &type, Engine::UIKind uiKind, Engine::Ref<Engine::Scene> context)
+    bool UIUtils::DrawMetaType(const std::string &label, void *obj, const Engine::MetaType &type, Engine::MetaUIHint uiHint, Engine::Ref<Engine::Scene> context)
     {
         switch (type.kind)
         {
@@ -273,7 +345,7 @@ namespace EngineEditor
         case Engine::MetaKind::Enum:
         case Engine::MetaKind::UUID:
         case Engine::MetaKind::ResourceRef:
-            return DrawValueEdit(label, obj, type, uiKind);
+            return DrawValueEdit(label, obj, type, uiHint);
         case Engine::MetaKind::EntityRef:
         {
             Engine::EntityRef *entityRef = (Engine::EntityRef *)obj;
@@ -289,7 +361,7 @@ namespace EngineEditor
             }
             for (const auto &field : *type.fields)
             {
-                if (Engine::HasPropertyFlag(field.flags, Engine::Property_Hidden))
+                if (uiHint.uiProperty == Engine::UIProperty::Hidden)
                 {
                     continue;
                 }
@@ -299,7 +371,7 @@ namespace EngineEditor
                     continue;
                 }
 
-                if (DrawMetaType(field.name, field.get(obj), *field.type, field.ui.uiKind, context))
+                if (DrawMetaType(field.name, field.get(obj), *field.type, field.ui, context))
                 {
                     return true;
                 }
@@ -482,7 +554,10 @@ namespace EngineEditor
                 if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(ResourcePayloadTrait<Engine::Entity>::value))
                 {
                     Engine::UUID droppedEntityID = *(Engine::UUID *)payload->Data;
-                    scriptInstance->SetFieldValue(field.Name, droppedEntityID);
+                    if (Engine::ScriptEngine::CanAssignObjectReference(field, droppedEntityID))
+                    {
+                        scriptInstance->SetFieldValue(field.Name, droppedEntityID);
+                    }
                 }
                 ImGui::EndDragDropTarget();
             }
@@ -522,7 +597,10 @@ namespace EngineEditor
                 if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(ResourcePayloadTrait<Engine::Entity>::value))
                 {
                     Engine::UUID droppedEntityID = *(Engine::UUID *)payload->Data;
-                    scriptInstance->SetFieldValue(field.Name, droppedEntityID);
+                    if (Engine::ScriptEngine::CanAssignObjectReference(field, droppedEntityID))
+                    {
+                        scriptInstance->SetFieldValue(field.Name, droppedEntityID);
+                    }
                 }
                 ImGui::EndDragDropTarget();
             }
@@ -717,7 +795,10 @@ namespace EngineEditor
                 if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(ResourcePayloadTrait<Engine::Entity>::value))
                 {
                     Engine::UUID droppedEntityID = *(Engine::UUID *)payload->Data;
-                    scriptFieldInstance.SetValue(droppedEntityID);
+                    if (Engine::ScriptEngine::CanAssignObjectReference(field, droppedEntityID))
+                    {
+                        scriptFieldInstance.SetValue(droppedEntityID);
+                    }
                 }
                 ImGui::EndDragDropTarget();
             }
@@ -757,7 +838,10 @@ namespace EngineEditor
                 if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(ResourcePayloadTrait<Engine::Entity>::value))
                 {
                     Engine::UUID droppedEntityID = *(Engine::UUID *)payload->Data;
-                    scriptFieldInstance.SetValue(droppedEntityID);
+                    if (Engine::ScriptEngine::CanAssignObjectReference(field, droppedEntityID))
+                    {
+                        scriptFieldInstance.SetValue(droppedEntityID);
+                    }
                 }
                 ImGui::EndDragDropTarget();
             }
@@ -863,7 +947,7 @@ namespace EngineEditor
         if (opened)
         {
             ImGui::Separator();
-            DrawMetaType(name, &component, Engine::Reflect<T>(), Engine::UIKind::UITYPE_Default, context);
+            DrawMetaType(name, &component, Engine::Reflect<T>(), Engine::MetaUIHint{}, context);
             ImGui::TreePop();
         }
         ImGui::PopID();

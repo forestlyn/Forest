@@ -88,8 +88,8 @@ namespace Engine
     REFLECT_FIELD(PerspectiveFOV).VISIBLEIF<&IsPerspectiveCamera>().UI().TOOLTIP("Perspective field of view.");
     REFLECT_FIELD(PerspectiveNear).VISIBLEIF<&IsPerspectiveCamera>().UI().TOOLTIP("Perspective near clip plane.");
     REFLECT_FIELD(PerspectiveFar).VISIBLEIF<&IsPerspectiveCamera>().UI().TOOLTIP("Perspective far clip plane.");
-    REFLECT_FIELD(AspectRatio).UI(0, 100, 0.01f).TOOLTIP("Camera projection aspect ratio.");
+    REFLECT_FIELD(AspectRatio).UIRANGE(0.0f, 100.0f, 0.01f).TOOLTIP("Camera projection aspect ratio.");
     REFLECT_FIELD(FollowTarget).UI().TOOLTIP("Whether the camera should follow a target entity.");
-    REFLECT_FIELD(TargetEntity).VISIBLEIF<&HasFollowTarget>().UI().TOOLTIP("The target entity for the camera to follow.");
+    REFLECT_FIELD(TargetEntity).Category(FieldCategory::EntityReference).VISIBLEIF<&HasFollowTarget>().UI().TOOLTIP("The target entity for the camera to follow.");
     REFLECT_TYPE_END(CameraComponent)
 } // namespace Engine

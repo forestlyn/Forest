@@ -38,9 +38,32 @@ namespace Engine
             m_Field.category = category;
             return *this;
         }
-
-        FieldBuilder &UI(float minValue, float maxValue, float step)
+        FieldBuilder &UI(float step)
         {
+            m_Field.ui.step = step;
+            return *this;
+        }
+
+        FieldBuilder &UIMIN(float minValue, float step = 0.1f)
+        {
+            m_Field.ui.hasMin = true;
+            m_Field.ui.minValue = minValue;
+            m_Field.ui.step = step;
+            return *this;
+        }
+
+        FieldBuilder &UIMAX(float maxValue, float step = 0.1f)
+        {
+            m_Field.ui.hasMax = true;
+            m_Field.ui.maxValue = maxValue;
+            m_Field.ui.step = step;
+            return *this;
+        }
+
+        FieldBuilder &UIRANGE(float minValue, float maxValue, float step)
+        {
+            m_Field.ui.hasMin = true;
+            m_Field.ui.hasMax = true;
             m_Field.ui.minValue = minValue;
             m_Field.ui.maxValue = maxValue;
             m_Field.ui.step = step;
@@ -72,6 +95,12 @@ namespace Engine
         FieldBuilder &UIKIND(UIKind uiKind)
         {
             m_Field.ui.uiKind = uiKind;
+            return *this;
+        }
+
+        FieldBuilder &UIPROPERTY(UIProperty uiProperty)
+        {
+            m_Field.ui.uiProperty = uiProperty;
             return *this;
         }
 

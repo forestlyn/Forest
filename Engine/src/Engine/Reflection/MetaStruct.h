@@ -36,11 +36,6 @@ namespace Engine
     {
         Property_None = 0, // 默认属性，无特殊标记
 
-        // 编辑器相关
-        Property_Hidden = 1 << 0,   // 编辑器中隐藏
-        Property_ReadOnly = 1 << 1, // 编辑器中只读
-        Property_Editable = 1 << 2, // 编辑器中可编辑（默认）
-
         // 序列化相关
         Property_Serializable = 1 << 3, // 参与序列化（默认）
         Property_Transient = 1 << 4,    // 不参与序列化
@@ -52,6 +47,13 @@ namespace Engine
         UITYPE_Color,
         UITYPE_FilePath,
         UITYPE_Texture2D,
+    };
+
+    enum UIProperty
+    {
+        Editable,
+        ReadOnly,
+        Hidden,
     };
 
     inline PropertyFlags operator|(PropertyFlags a, PropertyFlags b)
@@ -68,11 +70,14 @@ namespace Engine
 
     struct MetaUIHint
     {
+        bool hasMin = false;
         float minValue = 0.0f;
+        bool hasMax = false;
         float maxValue = 0.0f;
         float step = 0.1f;
         const char *tooltip = nullptr;
         UIKind uiKind = UIKind::UITYPE_Default;
+        UIProperty uiProperty = UIProperty::Editable;
     };
 
     enum class FieldCategory
@@ -91,7 +96,7 @@ namespace Engine
         void *(*get)(void *) = nullptr;
         const void *(*getConst)(const void *) = nullptr;
 
-        PropertyFlags flags = PropertyFlags::Property_Serializable | PropertyFlags::Property_Editable;
+        PropertyFlags flags = PropertyFlags::Property_Serializable;
 
         // UI 提示信息
         MetaUIHint ui{};

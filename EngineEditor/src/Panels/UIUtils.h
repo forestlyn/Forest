@@ -31,8 +31,8 @@ namespace EngineEditor
     class UIUtils
     {
     public:
-        static bool DrawValueEdit(const std::string &label, void *value, const Engine::MetaType &type, Engine::UIKind uiKind = Engine::UIKind::UITYPE_Default);
-        static bool DrawMetaType(const std::string &label, void *obj, const Engine::MetaType &type, Engine::UIKind uiKind = Engine::UIKind::UITYPE_Default, Engine::Ref<Engine::Scene> context = nullptr);
+        static bool DrawValueEdit(const std::string &label, void *value, const Engine::MetaType &type, Engine::MetaUIHint uiHint);
+        static bool DrawMetaType(const std::string &label, void *obj, const Engine::MetaType &type, Engine::MetaUIHint uiHint, Engine::Ref<Engine::Scene> context = nullptr);
 
         static bool DrawVector3Control(const std::string &label, glm::vec3 &values, float resetValue = 0.0f, float columnWidth = 100.0f);
 
