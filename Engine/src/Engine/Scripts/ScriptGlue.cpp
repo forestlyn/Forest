@@ -19,6 +19,9 @@ namespace Engine
 
     void ScriptGlue::RegisterComponents()
     {
+        s_EntityHasComponentFuncs.clear();
+        s_EntityAddComponentFuncs.clear();
+        s_EntityRemoveComponentFuncs.clear();
         RegisterComponent(AllComponents{});
     }
 
@@ -55,7 +58,9 @@ namespace Engine
         ENGINE_ASSERT(scene);
         Entity entity = scene->GetEntityByUUID(entityID);
         ENGINE_ASSERT(entity);
-        ENGINE_ASSERT(s_EntityHasComponentFuncs.find(componentType) != s_EntityHasComponentFuncs.end());
-        return s_EntityHasComponentFuncs.at(componentType)(entity);
+        std::string componentTypeName = GetManagedTypeName(componentType);
+        ENGINE_INFO("Checking if entity {} has component of type {}", entity.GetName(), componentTypeName);
+        ENGINE_ASSERT(s_EntityHasComponentFuncs.find(componentTypeName) != s_EntityHasComponentFuncs.end());
+        return s_EntityHasComponentFuncs.at(componentTypeName)(entity);
     }
 }

@@ -92,9 +92,10 @@ namespace EngineEditor
         {
             ImGui::Text("%s", label);
             ImGui::SameLine();
+
+            std::string entityName = "None (Entity)";
             if (context)
             {
-                std::string entityName = "None (Entity)";
                 if (entityRef.uuid.Valid())
                 {
                     Engine::Entity targetEntity = context->GetEntityByUUID(entityRef.uuid);
@@ -103,12 +104,17 @@ namespace EngineEditor
                     else
                         entityName = "Missing Reference";
                 }
-                ImGui::Button(entityName.c_str(), ImVec2(-1, 0));
             }
             else
             {
-                ImGui::Button(entityRef.uuid.Valid() ? "Set" : "None", ImVec2(-1, 0));
+                if (entityRef.uuid.Valid())
+                {
+                    entityName = "Set (Entity)";
+                }
             }
+
+            ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - 25.0f);
+            ImGui::Button(entityName.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 25.0f, 0));
 
             if (ImGui::BeginDragDropTarget())
             {
@@ -120,6 +126,13 @@ namespace EngineEditor
                     entityRef.uuid = entity;
                 }
                 ImGui::EndDragDropTarget();
+            }
+            ImGui::PopItemWidth();
+
+            ImGui::SameLine();
+            if (ImGui::Button("X", ImVec2(20.0f, 0)))
+            {
+                entityRef.uuid = Engine::UUID(0);
             }
         }
 

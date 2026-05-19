@@ -103,7 +103,8 @@ namespace Engine
 
         static MonoObject *GetManagedInstance(UUID entityID);
 
-        static void OnRuntimeStart(Scene *scene);
+        static void SetActiveScene(Scene *scene);
+
         static void OnCreateEntity(Entity entity);
         static void ResolveScriptReferences(Entity entity);
         static void OnInvokeCreateEntity(Entity entity);

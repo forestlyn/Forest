@@ -626,6 +626,7 @@ namespace EngineEditor
         m_ActiveScene = Engine::Scene::Copy(m_EditorScene);
         m_RuntimeScene = m_ActiveScene;
         m_SceneHierarchyPanel->SetContext(m_ActiveScene);
+        m_ActiveScene->OnEditorStop();
         m_ActiveScene->OnRuntimeStart();
     }
 
@@ -644,6 +645,7 @@ namespace EngineEditor
         m_ActiveScene = Engine::Scene::Copy(m_EditorScene);
         m_RuntimeScene = m_ActiveScene;
         m_SceneHierarchyPanel->SetContext(m_ActiveScene);
+        m_ActiveScene->OnEditorStop();
         m_ActiveScene->OnSimulationStart();
     }
 
@@ -651,8 +653,9 @@ namespace EngineEditor
     {
         if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
         {
+            SceneState previousState = m_SceneState;
             m_SceneState = SceneState::Edit;
-            if (m_SceneState == SceneState::Play)
+            if (previousState == SceneState::Play)
             {
                 m_RuntimeScene->OnRuntimeStop();
             }
@@ -662,6 +665,7 @@ namespace EngineEditor
             }
 
             m_ActiveScene = m_EditorScene;
+            m_ActiveScene->OnEditorStart();
             m_SceneHierarchyPanel->SetContext(m_ActiveScene);
         }
     }
@@ -816,6 +820,7 @@ namespace EngineEditor
         m_EditorScene = Engine::CreateRef<Engine::Scene>();
         m_ActiveScene = m_EditorScene;
         m_EditorScenePath.clear();
+        m_ActiveScene->OnEditorStart();
         m_SceneHierarchyPanel->SetContext(m_ActiveScene);
         m_ActiveScene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
     }
@@ -849,6 +854,7 @@ namespace EngineEditor
                 ENGINE_ERROR("Failed to load scene from path: {}", path.string());
                 return;
             }
+            m_ActiveScene->OnEditorStart();
             m_SceneHierarchyPanel->SetContext(m_ActiveScene);
             m_ActiveScene->SetViewportSize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
         }

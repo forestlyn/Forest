@@ -576,7 +576,7 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::Component:
         {
-            std::string componentName = "None (Component)";
+            std::string componentName = "None (" + field.GetComponentTypeName() + ")";
             Engine::UUID value = scriptInstance->GetFieldValue<Engine::UUID>(field.Name);
             if (value.Valid())
             {
@@ -817,7 +817,7 @@ namespace EngineEditor
         }
         case Engine::ScriptFieldType::Component:
         {
-            std::string componentName = "None (Component)";
+            std::string componentName = "None (" + field.GetComponentTypeName() + ")";
             Engine::UUID value = scriptFieldInstance.GetValue<Engine::UUID>();
             if (value.Valid())
             {

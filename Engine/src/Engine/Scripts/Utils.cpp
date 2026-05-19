@@ -50,7 +50,9 @@ namespace Engine
 
     ScriptFieldType MonoTypeToScriptFieldType(MonoType *monoType, MonoClass *entityClass, MonoClass *componentClass)
     {
-        std::string typeName = mono_type_get_name(monoType);
+        char *typeNameCStr = mono_type_get_name(monoType);
+        std::string typeName = typeNameCStr ? typeNameCStr : "";
+        mono_free(typeNameCStr);
 
         auto it = s_ScriptFieldTypeMap.find(typeName);
         if (it == s_ScriptFieldTypeMap.end())
@@ -69,9 +71,11 @@ namespace Engine
         return it->second;
     }
 
-    const char *GetMonoTypeStr(MonoType *type, MonoClass *entityClass, MonoClass *componentClass)
+    std::string GetMonoTypeStr(MonoType *type, MonoClass *entityClass, MonoClass *componentClass)
     {
-        std::string typeName = mono_type_get_name(type);
+        char *typeNameCStr = mono_type_get_name(type);
+        std::string typeName = typeNameCStr ? typeNameCStr : "";
+        mono_free(typeNameCStr);
 
         auto it = s_ScriptFieldTypeMap.find(typeName);
         if (it == s_ScriptFieldTypeMap.end())
@@ -84,7 +88,7 @@ namespace Engine
                 return mono_class_get_name(monoClass);
             }
         }
-        return typeName.c_str();
+        return typeName;
     }
 
     uint64_t GetEntityIDFromEntityField(MonoObject *instance, MonoClassField *field)
@@ -115,6 +119,31 @@ namespace Engine
         return entityID;
     }
 
+    static uint64_t GetEntityIDFromManagedEntity(MonoObject *entityObject)
+    {
+        uint64_t entityID = 0;
+        if (!entityObject)
+            return entityID;
+
+        MonoClass *entityClass = mono_object_get_class(entityObject);
+        MonoClassField *idField = mono_class_get_field_from_name(entityClass, "ID");
+        if (idField)
+            mono_field_get_value(entityObject, idField, &entityID);
+
+        return entityID;
+    }
+
+    static MonoProperty *GetPropertyFromClassHierarchy(MonoClass *monoClass, const char *propertyName)
+    {
+        for (MonoClass *currentClass = monoClass; currentClass; currentClass = mono_class_get_parent(currentClass))
+        {
+            MonoProperty *property = mono_class_get_property_from_name(currentClass, propertyName);
+            if (property)
+                return property;
+        }
+        return nullptr;
+    }
+
     uint64_t GetEntityIDFromComponentField(MonoObject *instance, MonoClassField *field)
     {
         uint64_t entityID = 0;
@@ -128,32 +157,24 @@ namespace Engine
 
                 if (fieldValue)
                 {
-                    // 从 Component 对象中获取 Entity 字段
+                    // 从 Component 对象中获取 Entity property
                     MonoClass *componentClass = mono_object_get_class(fieldValue);
-                    MonoClassField *entityField = mono_class_get_field_from_name(componentClass, "Entity");
-
-                    if (entityField)
+                    MonoProperty *entityProperty = GetPropertyFromClassHierarchy(componentClass, "Entity");
+                    if (entityProperty)
                     {
-                        // 读取 Entity 字段的值（这是一个 Entity 对象）
-                        MonoObject *entityObject = nullptr;
-                        mono_field_get_value(fieldValue, entityField, &entityObject);
-
-                        if (entityObject)
+                        MonoMethod *entityGetter = mono_property_get_get_method(entityProperty);
+                        if (entityGetter)
                         {
-                            // 从 Entity 对象中获取 ID 字段
-                            MonoClass *entityClass = mono_object_get_class(entityObject);
-                            MonoClassField *idField = mono_class_get_field_from_name(entityClass, "ID");
-
-                            if (idField)
-                            {
-                                // 读取 ID 字段的值
-                                mono_field_get_value(entityObject, idField, &entityID);
-                            }
+                            MonoObject *exception = nullptr;
+                            MonoObject *entityObject = mono_runtime_invoke(entityGetter, fieldValue, nullptr, &exception);
+                            CheckException(exception);
+                            return GetEntityIDFromManagedEntity(entityObject);
                         }
                     }
                 }
             }
         }
+        ENGINE_WARN("Failed to get EntityID from component field. Returning 0.");
         return entityID;
     }
 

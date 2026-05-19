@@ -41,6 +41,9 @@ namespace Engine
         void OnSimulationStart();
         void OnSimulationStop();
 
+        void OnEditorStart();
+        void OnEditorStop();
+
         bool IsRunning() const
         {
             return m_Running;

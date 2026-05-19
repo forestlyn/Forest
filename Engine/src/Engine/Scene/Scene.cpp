@@ -210,7 +210,7 @@ namespace Engine
 
         // Script
         {
-            ScriptEngine::OnRuntimeStart(this);
+            ScriptEngine::SetActiveScene(this);
             ENGINE_INFO("Creating script instances for entities with ScriptComponent");
             auto view = m_Registry.view<ScriptComponent>();
 
@@ -247,11 +247,21 @@ namespace Engine
 
     void Scene::OnSimulationStart()
     {
+        ScriptEngine::SetActiveScene(this);
         SetupPhysicsWorld();
     }
     void Scene::OnSimulationStop()
     {
         DestroyPhysicsWorld();
+    }
+
+    void Scene::OnEditorStart()
+    {
+        ScriptEngine::SetActiveScene(this);
+    }
+
+    void Scene::OnEditorStop()
+    {
     }
 
     template <typename... T>

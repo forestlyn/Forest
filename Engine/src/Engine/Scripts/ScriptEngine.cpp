@@ -211,10 +211,11 @@ namespace Engine
         ScriptGlue::RegisterComponents();
     }
 
-    void ScriptEngine::OnRuntimeStart(Scene *scene)
+    void ScriptEngine::SetActiveScene(Scene *scene)
     {
         m_ScriptEngineData->SceneContext = scene;
     }
+
     Ref<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID entityID)
     {
         auto it = m_ScriptEngineData->EntityInstances.find(entityID);

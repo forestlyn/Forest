@@ -31,6 +31,6 @@ namespace Engine
     uint64_t GetEntityIDFromEntityField(MonoObject *instance, MonoClassField *field);
     uint64_t GetEntityIDFromComponentField(MonoObject *instance, MonoClassField *field);
     ScriptFieldType MonoTypeToScriptFieldType(MonoType *type, MonoClass *entityClass, MonoClass *componentClass);
-    const char *GetMonoTypeStr(MonoType *type, MonoClass *entityClass, MonoClass *componentClass);
+    std::string GetMonoTypeStr(MonoType *type, MonoClass *entityClass, MonoClass *componentClass);
     void GetFieldDefaultValue(MonoObject *instance, MonoClassField *field, ScriptFieldType fieldType, uint8_t *outBuffer);
 }
