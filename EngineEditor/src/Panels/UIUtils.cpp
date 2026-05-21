@@ -330,6 +330,10 @@ namespace EngineEditor
 
     bool UIUtils::DrawMetaType(const std::string &label, void *obj, const Engine::MetaType &type, Engine::MetaUIHint uiHint, Engine::Ref<Engine::Scene> context)
     {
+        if (uiHint.uiProperty == Engine::UIProperty::Hidden)
+        {
+            return false;
+        }
         switch (type.kind)
         {
         case Engine::MetaKind::Float:
@@ -361,11 +365,6 @@ namespace EngineEditor
             }
             for (const auto &field : *type.fields)
             {
-                if (uiHint.uiProperty == Engine::UIProperty::Hidden)
-                {
-                    continue;
-                }
-
                 if (!Engine::IsFieldVisible(field, obj))
                 {
                     continue;
