@@ -60,6 +60,7 @@ UUID, EntityRef, ResourceRef
 - `flags`：序列化标记。
 - `ui`：Inspector 提示，包括步进、范围、tooltip、UI kind、只读/隐藏等。
 - `visible`：条件显示谓词。
+- `onChanged`：字段在 Inspector 中被编辑后触发的回调。
 
 `category` 当前主要作为语义标记保存在元数据里；实际 UI 分发主要依赖 `MetaKind` 和 `MetaUIHint::uiKind`。
 
@@ -73,8 +74,35 @@ UUID, EntityRef, ResourceRef
 `PropertyFlags` 不负责 Inspector 只读/隐藏；只读显示由 `UIUtils::DrawValueEdit` 检查 `UIProperty::ReadOnly`。例如 `TransformComponent::dirty` 被注册为只读：
 
 ```cpp
-REFLECT_FIELD(dirty).UI().UIPROPERTY(Engine::UIProperty::ReadOnly);
+REFLECT_FIELD(dirty)
+    .UI()
+    .UIPROPERTY(Engine::UIProperty::ReadOnly)
+    .FLAGS(PropertyFlags::Property_Transient);
 ```
+
+`UIProperty::Hidden` 在 `DrawMetaType` 入口统一检查。如果字段被标记为 Hidden，会直接返回 `false`，表示没有发生编辑变化，同时父级 `Struct` 会继续绘制后续字段。
+
+### 1.4 `onChanged` 字段回调
+
+`MetaField::onChanged` 是当前新增的反射回调。它的目的不是序列化，而是让 Inspector 通过反射直接改字段后，宿主对象仍然有机会维护派生状态或缓存。
+
+注册方式由 `FieldBuilder::ONCHANGED` 提供：
+
+```cpp
+template <void (Class::*Callback)()>
+FieldBuilder& ONCHANGED()
+{
+    return OnChanged<Callback>();
+}
+```
+
+回调类型是宿主类型的无参成员函数：
+
+```cpp
+void (Class::*)()
+```
+
+因此它适合做“字段值变了以后通知对象本身”的轻量动作，例如标记 dirty、重算缓存、刷新依赖数据等。
 
 ## 2. 类型注册方式
 
@@ -139,6 +167,8 @@ REFLECT_FIELD(OrthographicSize)
     .VISIBLEIF<&IsOrthographicCamera>()
     .UI()
     .TOOLTIP("Orthographic camera size.");
+
+REFLECT_FIELD(Position).ONCHANGED<&Self::MarkDirty>();
 ```
 
 当前 `FieldBuilder` 支持：
@@ -153,6 +183,7 @@ REFLECT_FIELD(OrthographicSize)
 - `UIPROPERTY`
 - `Tooltip / TOOLTIP`
 - `VisibleIf / VISIBLEIF`
+- `OnChanged / ONCHANGED`
 
 ### 2.3 枚举注册
 
@@ -211,6 +242,27 @@ DrawMetaType(name, &component, Engine::Reflect<T>(), Engine::MetaUIHint{}, conte
 - 标量、向量、字符串、枚举、UUID、资源引用进入 `DrawValueEdit`。
 - `EntityRef` 进入 `DrawEntityRefField`。
 - `Struct` 遍历 `type.fields`，并递归绘制每个字段。
+
+`Struct` 分支现在会汇总子字段是否发生变化：
+
+```cpp
+bool changed = false;
+for (const auto& field : *type.fields)
+{
+    if (!Engine::IsFieldVisible(field, obj))
+        continue;
+
+    if (DrawMetaType(field.name, field.get(obj), *field.type, field.ui, context))
+    {
+        if (field.onChanged)
+            field.onChanged(obj);
+        changed = true;
+    }
+}
+return changed;
+```
+
+这里的 `obj` 是当前结构体实例，所以 `field.onChanged(obj)` 调用的是字段宿主对象上的回调，而不是字段值对象上的回调。回调只在 Inspector 绘制链路中触发；YAML 反序列化直接写字段值，目前不会触发 `onChanged`。
 
 `DrawValueEdit` 的主要映射：
 
@@ -286,10 +338,9 @@ TransformComponent:
   Position: [0, 0, 2]
   Rotation: [0, 0, 0]
   Scale: [1, 1, 1]
-  dirty: false
 ```
 
-注意：`dirty` 当前虽然在 Inspector 中只读，但仍然带默认 `Property_Serializable`，所以会参与序列化。若希望只作为运行期缓存，应显式标记为 `Property_Transient` 或从反射字段中移除。
+`TransformComponent::dirty` 当前被标记为 `Property_Transient`，因此不会写入 YAML。它由 `Position / Rotation / Scale` 的 `ONCHANGED<&Self::MarkDirty>()` 在 Inspector 编辑后重新置脏。
 
 `SpriteComponent::TextureRef` 会写成：
 
@@ -453,7 +504,8 @@ Sandbox.Player_Fields:
 1. 在组件结构体中新增字段。
 2. 在对应 `REFLECT_TYPE_BEGIN/END` 中加入 `REFLECT_FIELD(...)`。
 3. 需要特殊 UI 时追加 `UIKIND / UIRANGE / VISIBLEIF / UIPROPERTY` 等。
-4. 需要避免落盘时使用 `FLAGS(Property_Transient)`，或不要注册到反射字段。
+4. 如果直接编辑字段后需要刷新宿主对象状态，追加 `ONCHANGED<&Self::Callback>()`。
+5. 需要避免落盘时使用 `FLAGS(Property_Transient)`，或不要注册到反射字段。
 
 完成后，Inspector 和 YAML 会自动处理它，前提是该组件已经在对应 `ComponentGroup` 白名单中。
 
