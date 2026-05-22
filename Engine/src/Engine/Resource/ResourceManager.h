@@ -1,11 +1,13 @@
 #pragma once
 #include "Engine/Renderer/Shader/Texture.h"
+#include "Engine/Project/Project.h"
 #include "ResourceRef.h"
 #include <unordered_map>
 #include <unordered_set>
 #include <string>
 #include <memory>
 #include <algorithm>
+#include <filesystem>
 namespace Engine
 {
     class ResourceManager
@@ -26,6 +28,35 @@ namespace Engine
             return path;
         }
 
+        static bool IsEngineResourcePath(const std::string &path)
+        {
+            if (path.empty())
+                return false;
+
+            std::string normalized = NormalizePath(path);
+            return normalized.rfind("resources/", 0) == 0;
+        }
+
+        static std::string ResolvePathForLoad(const std::string &normalizedPath)
+        {
+            if (normalizedPath.empty())
+                return normalizedPath;
+
+            std::filesystem::path path(normalizedPath);
+            if (path.is_absolute() || IsEngineResourcePath(normalizedPath))
+            {
+                return normalizedPath;
+            }
+
+            if (Project::GetActiveProject())
+            {
+                auto absolutePath = Project::GetActiveProjectAssetPath(normalizedPath);
+                return NormalizePath(absolutePath.string());
+            }
+
+            return normalizedPath;
+        }
+
         // 核心接口
         template <typename T>
         Ref<T> GetOrLoad(const std::string &rawPath)
@@ -33,35 +64,36 @@ namespace Engine
             if (rawPath.empty())
                 return nullptr;
 
-            std::string path = NormalizePath(rawPath);
+            std::string cacheKey = NormalizePath(rawPath);
+            std::string loadPath = ResolvePathForLoad(cacheKey);
 
-            auto it = m_Cache.find(path);
+            auto it = m_Cache.find(cacheKey);
             if (it != m_Cache.end())
             {
                 return std::static_pointer_cast<T>(it->second.instance);
             }
 
-            auto lostIt = m_LostResources.find(path);
+            auto lostIt = m_LostResources.find(cacheKey);
             if (lostIt != m_LostResources.end())
             {
                 // ENGINE_WARN("Resource previously failed to load: {0}", path);
                 return nullptr;
             }
 
-            Ref<T> newResource = LoadAssetFromFile<T>(path);
+            Ref<T> newResource = LoadAssetFromFile<T>(loadPath);
 
             if (newResource)
             {
                 ResourceRef<void> cachedResource;
-                cachedResource.path = path;
+                cachedResource.path = cacheKey;
                 cachedResource.instance = newResource;
-                m_Cache[path] = cachedResource; // 存入缓存
+                m_Cache[cacheKey] = cachedResource; // 存入缓存
                 return newResource;
             }
             else
             {
-                ENGINE_ERROR("Failed to load resource: {0}", path);
-                m_LostResources.insert(path);
+                ENGINE_ERROR("Failed to load resource: {0}", cacheKey);
+                m_LostResources.insert(cacheKey);
             }
 
             return nullptr;

@@ -44,7 +44,8 @@ namespace Engine
         {
             if (ProjectionType == SceneCameraProjectionType::Perspective)
             {
-                ProjectionMatrix = glm::perspective(PerspectiveFOV, AspectRatio, PerspectiveNear, PerspectiveFar);
+                // glm::perspective expects radians
+                ProjectionMatrix = glm::perspective(glm::radians(PerspectiveFOV), AspectRatio, PerspectiveNear, PerspectiveFar);
             }
             else
             {

@@ -1,7 +1,9 @@
 #pragma once
 #include "yaml-cpp/yaml.h"
 #include <glm/glm.hpp>
+#include <filesystem>
 #include "Engine/Core/UUID.h"
+#include "Engine/Project/Project.h"
 #include "Engine/Resource/ResourceRef.h"
 #include "Engine/Scene/EntityRef.h"
 namespace YAML
@@ -48,7 +50,13 @@ namespace YAML
         static Node encode(const Engine::ResourceRef<T> &ref)
         {
             Node node;
-            node["path"] = ref.path;
+            std::string serializedPath = ref.path;
+            if (!serializedPath.empty() && Engine::Project::GetActiveProject())
+            {
+                std::filesystem::path relativePath = Engine::Project::GetPathRelativeToAssets(serializedPath);
+                serializedPath = relativePath.generic_string();
+            }
+            node["path"] = serializedPath;
             return node;
         }
 

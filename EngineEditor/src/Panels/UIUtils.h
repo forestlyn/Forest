@@ -81,7 +81,8 @@ namespace EngineEditor
                     std::filesystem::path filepath(path);
                     // ENGINE_INFO("Accepted payload of type '{}'", expectedPayload);
                     // ENGINE_INFO("Payload data: {}", filepath.string());
-                    std::string newPath = filepath.string();
+                    std::filesystem::path relativePath = Engine::Project::GetPathRelativeToAssets(filepath);
+                    std::string newPath = relativePath.generic_string();
                     ref.SetPath(newPath);
                 }
                 ImGui::EndDragDropTarget();

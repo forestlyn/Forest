@@ -17,7 +17,9 @@ Entities:
       PerspectiveFOV: 45
       PerspectiveNear: 0.1
       PerspectiveFar: 1000
-      AspectRatio: 1.3928013
+      AspectRatio: 1.2582159
+      FollowTarget: false
+      TargetEntity: 0
   - EntityID: 5589837931712714978
     TagComponent:
       Tag: Square
@@ -29,7 +31,7 @@ Entities:
       Color: [0.8, 0.2, 0.3, 1]
       TilingFactor: 1
       TextureRef:
-        path: F:\code\C++\Forest\EngineEditor\Sandbox\Assets\Textures\Checkerboard.png
+        path: Textures/Checkerboard.png
     Rigidbody2DComponent:
       Type: Dynamic
       Velocity: [0, 9.8]
@@ -94,7 +96,7 @@ Entities:
     TagComponent:
       Tag: Player
     TransformComponent:
-      Position: [-0.8767047, 0, 0]
+      Position: [-0.8767047, 0, 0.1]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CircleComponent:
@@ -117,10 +119,6 @@ Entities:
     ScriptComponent:
       ScriptClassName: Sandbox.Player
     Sandbox.Player_Fields:
-      DoubleValue:
-        Name: DoubleValue
-        Type: 2
-        Value: 0
       IntValue:
         Name: IntValue
         Type: 9
@@ -133,14 +131,6 @@ Entities:
         Name: IsActive
         Type: 3
         Value: true
-      Vector2Value:
-        Name: Vector2Value
-        Type: 13
-        Value: [0, 0]
-      Vector3Value:
-        Name: Vector3Value
-        Type: 14
-        Value: [0, 0, 0]
       m_Rigidbody:
         Name: m_Rigidbody
         Type: 17
@@ -165,7 +155,7 @@ Entities:
     TagComponent:
       Tag: Main Camera
     TransformComponent:
-      Position: [0, 0, 10]
+      Position: [0, 0, 12.6]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
@@ -178,4 +168,6 @@ Entities:
       PerspectiveFOV: 45
       PerspectiveNear: 0.1
       PerspectiveFar: 1000
-      AspectRatio: 1.3928013
+      AspectRatio: 1.2582159
+      FollowTarget: false
+      TargetEntity: 0

@@ -4,6 +4,7 @@
 #include "Engine/Profile/Instrumentor.h"
 #include "Engine/Scene/ScriptEntity.h"
 #include "Engine/Scripts/ScriptEngine.h"
+#include <glm/gtx/string_cast.hpp>
 namespace Engine
 {
     void Scene::OnUpdateRuntime(Core::Timestep timestep)
@@ -65,15 +66,7 @@ namespace Engine
 
             // Calaculate camera view projection matrix
             glm::mat4 mainCameraViewProjection = glm::mat4(1.0f);
-            {
-                auto &cameraComponent = m_CameraEntity->GetComponent<CameraComponent>();
-                auto &transformComponent = m_CameraEntity->GetComponent<TransformComponent>();
-
-                glm::mat4 transform = transformComponent.GetTransform();
-                glm::mat4 viewMatrix = glm::inverse(transform);
-                cameraComponent.RecalculateProjection();
-                mainCameraViewProjection = cameraComponent.ProjectionMatrix * viewMatrix;
-            }
+            mainCameraViewProjection = GetPrimaryCameraViewProjectionMatrix();
 
             RenderScene2D(mainCameraViewProjection);
         }
@@ -172,7 +165,9 @@ namespace Engine
 
         glm::mat4 transform = transformComponent.GetTransform();
         glm::mat4 viewMatrix = glm::inverse(transform);
+        // ENGINE_INFO("Camera Transform: \n{}", glm::to_string(transform));
         cameraComponent.RecalculateProjection();
+        // ENGINE_INFO("Camera Projection Matrix: \n{}", glm::to_string(cameraComponent.ProjectionMatrix));
         glm::mat4 viewProjection = cameraComponent.ProjectionMatrix * viewMatrix;
 
         return viewProjection;

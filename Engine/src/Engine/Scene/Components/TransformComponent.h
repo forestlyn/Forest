@@ -49,24 +49,29 @@ namespace Engine
             return TransformMatrix;
         }
 
+        void MarkDirty()
+        {
+            dirty = true;
+        }
+
         void SetPosition(const glm::vec3 &position)
         {
             Position = position;
-            dirty = true;
+            MarkDirty();
         }
         glm::vec3 GetPosition() const { return Position; }
 
         void SetRotation(const glm::vec3 &rotation)
         {
             Rotation = rotation;
-            dirty = true;
+            MarkDirty();
         }
         glm::vec3 GetRotation() const { return Rotation; }
 
         void SetScale(const glm::vec3 &scale)
         {
             Scale = scale;
-            dirty = true;
+            MarkDirty();
         }
         glm::vec3 GetScale() const { return Scale; }
 
@@ -74,10 +79,10 @@ namespace Engine
     };
 
     REFLECT_TYPE_BEGIN(TransformComponent)
-    REFLECT_FIELD(Position);
-    REFLECT_FIELD(Rotation);
-    REFLECT_FIELD(Scale);
-    REFLECT_FIELD(dirty).UI().UIPROPERTY(Engine::UIProperty::ReadOnly);
+    REFLECT_FIELD(Position).ONCHANGED<&Self::MarkDirty>();
+    REFLECT_FIELD(Rotation).ONCHANGED<&Self::MarkDirty>();
+    REFLECT_FIELD(Scale).ONCHANGED<&Self::MarkDirty>();
+    REFLECT_FIELD(dirty).UI().UIPROPERTY(Engine::UIProperty::ReadOnly).FLAGS(PropertyFlags::Property_Transient);
     REFLECT_TYPE_END(TransformComponent)
 
 }

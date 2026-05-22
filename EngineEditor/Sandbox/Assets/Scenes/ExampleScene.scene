@@ -11,16 +11,16 @@ Entities:
       Color: [0.76567656, 0.6772321, 0.69197285, 1]
       TilingFactor: 1
       TextureRef:
-        path: ""
+        path: Textures/ForestLogo.png
   - EntityID: 11660386218841461092
     TagComponent:
       Tag: Main Camera
     TransformComponent:
-      Position: [0, 0, 10]
+      Position: [0, 0, 5]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
-      ProjectionType: Orthographic
+      ProjectionType: Perspective
       Primary: true
       FixedAspectRatio: false
       OrthographicSize: 10
@@ -29,7 +29,9 @@ Entities:
       PerspectiveFOV: 45
       PerspectiveNear: 0.1
       PerspectiveFar: 1000
-      AspectRatio: 1.5367762
+      AspectRatio: 1.2582159
+      FollowTarget: false
+      TargetEntity: 0
   - EntityID: 15847551308037025753
     TagComponent:
       Tag: Second Camera
@@ -47,4 +49,6 @@ Entities:
       PerspectiveFOV: 45
       PerspectiveNear: 0.1
       PerspectiveFar: 1000
-      AspectRatio: 1.5367762
+      AspectRatio: 1.2582159
+      FollowTarget: false
+      TargetEntity: 0
