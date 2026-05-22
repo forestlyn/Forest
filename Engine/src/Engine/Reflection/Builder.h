@@ -114,10 +114,26 @@ namespace Engine
             return *this;
         }
 
+        template <void (Class::*Callback)()>
+        FieldBuilder &OnChanged()
+        {
+            m_Field.onChanged = [](void *obj)
+            {
+                (static_cast<Class *>(obj)->*Callback)();
+            };
+            return *this;
+        }
+
         template <bool (*Predicate)(const Class &)>
         FieldBuilder &VISIBLEIF()
         {
             return VisibleIf<Predicate>();
+        }
+
+        template <void (Class::*Callback)()>
+        FieldBuilder &ONCHANGED()
+        {
+            return OnChanged<Callback>();
         }
 
         FieldBuilder &FLAGS(PropertyFlags flags)

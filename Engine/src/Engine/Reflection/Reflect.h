@@ -42,6 +42,7 @@ namespace Engine
             &MetaGetConst<Class, FieldT, Member>,
             flags,
             ui,
+            nullptr,
             nullptr};
     }
 

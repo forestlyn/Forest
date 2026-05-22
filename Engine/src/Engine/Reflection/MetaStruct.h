@@ -101,6 +101,7 @@ namespace Engine
         // UI 提示信息
         MetaUIHint ui{};
         bool (*visible)(const void *) = nullptr;
+        void (*onChanged)(void *) = nullptr;
     };
 
     inline bool IsFieldVisible(const MetaField &field, const void *obj)

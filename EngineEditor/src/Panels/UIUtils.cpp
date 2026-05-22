@@ -196,7 +196,10 @@ namespace EngineEditor
                 ImGui::Text("%s: (%.3f, %.3f, %.3f)", label.c_str(), vec3Value->x, vec3Value->y, vec3Value->z);
                 break;
             }
-            DrawVector3Control(label, *vec3Value);
+            if (DrawVector3Control(label, *vec3Value))
+            {
+                return true;
+            }
             break;
         }
         case Engine::MetaKind::Float4:
@@ -363,6 +366,7 @@ namespace EngineEditor
                 ImGui::Text("No fields");
                 return false;
             }
+            bool changed = false;
             for (const auto &field : *type.fields)
             {
                 if (!Engine::IsFieldVisible(field, obj))
@@ -372,16 +376,20 @@ namespace EngineEditor
 
                 if (DrawMetaType(field.name, field.get(obj), *field.type, field.ui, context))
                 {
-                    return true;
+                    if (field.onChanged)
+                    {
+                        field.onChanged(obj);
+                    }
+                    changed = true;
                 }
             }
-            break;
+            return changed;
         }
         default:
             ImGui::Text("Unsupported type: %s %d", label.c_str(), static_cast<int>(type.kind));
             break;
         }
-        return true;
+        return false;
     }
 
     void UIUtils::DrawScriptInstance(const Engine::ScriptField &field, Engine::Ref<Engine::ScriptInstance> scriptInstance, Engine::Ref<Engine::Scene> m_Context)
