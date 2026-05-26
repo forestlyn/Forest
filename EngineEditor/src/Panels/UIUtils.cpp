@@ -202,6 +202,20 @@ namespace EngineEditor
             }
             break;
         }
+        case Engine::MetaKind::UInt64:
+        {
+            uint64_t *uint64Value = (uint64_t *)value;
+            if (uiHint.uiProperty == Engine::UIProperty::ReadOnly)
+            {
+                ImGui::Text("%s: %llu", label.c_str(), static_cast<unsigned long long>(*uint64Value));
+                break;
+            }
+            if (ImGui::DragScalar(label.c_str(), ImGuiDataType_U64, uint64Value, 1.0f))
+            {
+                return true;
+            }
+            break;
+        }
         case Engine::MetaKind::Float4:
         {
             glm::vec4 *vec4Value = (glm::vec4 *)value;
@@ -344,6 +358,7 @@ namespace EngineEditor
         case Engine::MetaKind::Float3:
         case Engine::MetaKind::Float4:
         case Engine::MetaKind::Int:
+        case Engine::MetaKind::UInt64:
         case Engine::MetaKind::Int2:
         case Engine::MetaKind::Int3:
         case Engine::MetaKind::Int4:

@@ -4,6 +4,7 @@
 #include "Components/TagComponent.h"
 #include "Components/TransformComponent.h"
 #include "Components/SpriteComponent.h"
+#include "Components/SpriteAnimationComponent.h"
 #include "Components/CircleComponent.h"
 #include "Components/CircleCollider2DComponent.h"
 #include "Components/Rigidbody2DComponent.h"
@@ -44,11 +45,13 @@ namespace Engine
         BoxCollider2DComponent,
         CircleCollider2DComponent,
         ScriptComponent,
+        SpriteAnimationComponent,
         NativeScriptComponent>;
 
     using AddableComponents = ComponentGroup<
         CameraComponent,
         SpriteComponent,
+        SpriteAnimationComponent,
         CircleComponent,
         Rigidbody2DComponent,
         BoxCollider2DComponent,

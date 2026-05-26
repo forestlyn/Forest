@@ -24,6 +24,7 @@ namespace Engine::Serialization
         TransformComponent,
         CameraComponent,
         SpriteComponent,
+        SpriteAnimationComponent,
         CircleComponent,
         Rigidbody2DComponent,
         BoxCollider2DComponent,
@@ -76,6 +77,10 @@ namespace Engine::Serialization
 
         case MetaKind::Int:
             out << *static_cast<const int *>(obj);
+            break;
+
+        case MetaKind::UInt64:
+            out << static_cast<uint64_t>(*static_cast<const size_t *>(obj));
             break;
 
         case MetaKind::Float:
@@ -170,6 +175,10 @@ namespace Engine::Serialization
 
         case MetaKind::Int:
             *static_cast<int *>(obj) = node.as<int>();
+            break;
+
+        case MetaKind::UInt64:
+            *static_cast<size_t *>(obj) = static_cast<size_t>(node.as<uint64_t>());
             break;
 
         case MetaKind::Float:

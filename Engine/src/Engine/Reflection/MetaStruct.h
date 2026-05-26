@@ -25,11 +25,13 @@ namespace Engine
         Int4,
         Bool,
         String,
+        UInt64,
         Enum,
         Struct,
         UUID,
         EntityRef,
-        ResourceRef
+        ResourceRef,
+        Opaque
     };
 
     enum PropertyFlags : uint32_t

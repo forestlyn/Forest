@@ -3,6 +3,7 @@
 #include "Engine/Core/UUID.h"
 #include "Engine/Scene/EntityRef.h"
 #include "Engine/Serialization/SerializeUtils.h"
+#include <memory>
 namespace Engine
 {
 
@@ -109,6 +110,16 @@ namespace Engine
         static const MetaType &Get()
         {
             static const MetaType t{"int", MetaKind::Int, sizeof(int), nullptr};
+            return t;
+        }
+    };
+
+    template <>
+    struct MetaResolver<size_t>
+    {
+        static const MetaType &Get()
+        {
+            static const MetaType t{"size_t", MetaKind::UInt64, sizeof(size_t), nullptr};
             return t;
         }
     };

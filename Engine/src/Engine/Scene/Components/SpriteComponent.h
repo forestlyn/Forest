@@ -10,6 +10,8 @@ namespace Engine
     {
         glm::vec4 Color{1.0f};
         float TilingFactor = 1.0f;
+        glm::vec2 UVMin{0.0f, 0.0f};
+        glm::vec2 UVMax{1.0f, 1.0f};
         Engine::ResourceRef<Engine::Renderer::Texture2D> TextureRef;
 
         SpriteComponent() = default;
@@ -20,6 +22,8 @@ namespace Engine
     REFLECT_TYPE_BEGIN(SpriteComponent)
     REFLECT_FIELD(Color).UIKIND(UIKind::UITYPE_Color);
     REFLECT_FIELD(TilingFactor);
+    REFLECT_FIELD(UVMin);
+    REFLECT_FIELD(UVMax);
     REFLECT_FIELD(TextureRef).Category(FieldCategory::AssetReference).UIKIND(UIKind::UITYPE_Texture2D);
     REFLECT_TYPE_END(SpriteComponent)
 }
