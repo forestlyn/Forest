@@ -604,17 +604,23 @@ namespace Engine::Renderer
             src.TextureRef.instance = ResourceManager::Get()->GetOrLoad<Texture2D>(src.TextureRef.path);
         }
 
+        const glm::vec2 texCoords[4] = {
+            {src.UVMin.x, src.UVMin.y},
+            {src.UVMax.x, src.UVMin.y},
+            {src.UVMax.x, src.UVMax.y},
+            {src.UVMin.x, src.UVMax.y}};
+
         if (src.TextureRef.IsValid() && src.TextureRef.IsLoaded())
         {
             float TextureIndex = GetTextureIndex(src.TextureRef.instance);
             // ENGINE_INFO("Texture Index for SpriteComponent: {}", TextureIndex);
-            DrawQuadInternal(transform, color, TextureIndex, TilingFactor, entityID);
+            DrawQuadInternal(transform, color, TextureIndex, TilingFactor, entityID, texCoords);
             return;
         }
         else
         {
             float TextureIndex = 0.0f; // White Texture
-            DrawQuadInternal(transform, color, TextureIndex, TilingFactor, entityID);
+            DrawQuadInternal(transform, color, TextureIndex, TilingFactor, entityID, texCoords);
         }
     }
 

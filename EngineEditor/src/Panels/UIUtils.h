@@ -19,6 +19,7 @@ namespace EngineEditor
         Engine::TransformComponent,
         Engine::CameraComponent,
         Engine::SpriteComponent,
+        Engine::SpriteAnimationComponent,
         Engine::CircleComponent,
         Engine::Rigidbody2DComponent,
         Engine::BoxCollider2DComponent,

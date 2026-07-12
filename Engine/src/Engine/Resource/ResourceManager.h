@@ -1,5 +1,8 @@
 #pragma once
+#include "Engine/Core/FileSystem.h"
 #include "Engine/Renderer/Shader/Texture.h"
+#include "Engine/Animation/TextureAtlas.h"
+#include "Engine/Animation/AnimationClip2D.h"
 #include "Engine/Project/Project.h"
 #include "ResourceRef.h"
 #include <unordered_map>
@@ -7,7 +10,6 @@
 #include <string>
 #include <memory>
 #include <algorithm>
-#include <filesystem>
 namespace Engine
 {
     class ResourceManager
@@ -109,5 +111,78 @@ namespace Engine
     {
         auto texture = Renderer::Texture2D::Create(path);
         return texture;
+    }
+
+    template <>
+    inline Ref<TextureAtlas> ResourceManager::LoadAssetFromFile<TextureAtlas>(const std::string &path)
+    {
+        auto textureAtlas = TextureAtlas::Create(path);
+        return textureAtlas;
+    }
+
+    template <>
+    inline Ref<SpriteFrame> ResourceManager::LoadAssetFromFile<SpriteFrame>(const std::string &path)
+    {
+        ENGINE_ERROR("Unsupported resource type for path: {0}", path);
+        return nullptr;
+    }
+
+    template <>
+    inline Ref<AnimationClip2D> ResourceManager::LoadAssetFromFile<AnimationClip2D>(const std::string &path)
+    {
+        if (path.empty())
+        {
+            ENGINE_ERROR("AnimationClip2D path is empty.");
+            return nullptr;
+        }
+        Ref<AnimationClip2D> clip = CreateRef<AnimationClip2D>();
+
+        YAML::Node yamlData = Core::FileSystem::ReadYamlFile(path);
+        if (!yamlData || !yamlData.IsMap())
+        {
+            ENGINE_ERROR("Failed to load AnimationClip2D from '{}': Invalid YAML format.", path);
+            return nullptr;
+        }
+
+        clip->name = yamlData["name"].as<std::string>("");
+        clip->loop = yamlData["loop"].as<bool>(true);
+
+        std::string atlasRelativePath = yamlData["atlas"].as<std::string>();
+        auto atlas = ResourceManager::Get()->GetOrLoad<TextureAtlas>(atlasRelativePath);
+        if (!atlas)
+        {
+            ENGINE_ERROR("Failed to load atlas {0} for animation {1}", atlasRelativePath, path);
+            return nullptr;
+        }
+
+        const YAML::Node framesNode = yamlData["frames"];
+        if (!framesNode || !framesNode.IsSequence())
+        {
+            ENGINE_ERROR("AnimationClip2D '{}' has no valid 'frames' sequence.", path);
+            return nullptr;
+        }
+        for (const auto &frameNode : framesNode)
+        {
+            if (!frameNode || !frameNode.IsMap())
+            {
+                ENGINE_WARN("Skipping invalid frame in AnimationClip2D '{}'.", path);
+                continue;
+            }
+
+            AnimFrame animFrame;
+            std::string frameName = frameNode["frame"].as<std::string>("");
+            animFrame.Duration = frameNode["duration"].as<float>(0.1f); // 默认持续时间为 0.1 秒
+
+            if (frameName.empty())
+            {
+                ENGINE_WARN("Skipping frame with empty name in AnimationClip2D '{}'.", path);
+                continue;
+            }
+
+            // Load the SpriteFrame using ResourceManager
+            animFrame.Frame = atlas->GetFrame(frameName) ? *atlas->GetFrame(frameName) : SpriteFrame();
+            clip->frames.push_back(animFrame);
+        }
+        return clip;
     }
 }

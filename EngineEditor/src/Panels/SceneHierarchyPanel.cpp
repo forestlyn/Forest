@@ -152,6 +152,8 @@ namespace EngineEditor
 
         UIUtils::DrawComponent<Engine::SpriteComponent>("Sprite Renderer", entity, true, m_Context);
 
+        UIUtils::DrawComponent<Engine::SpriteAnimationComponent>("Sprite Animation", entity, true, m_Context);
+
         UIUtils::DrawComponent<Engine::CameraComponent>("Camera", entity, true, m_Context);
 
         UIUtils::DrawComponent<Engine::CircleComponent>("Circle", entity, true, m_Context);

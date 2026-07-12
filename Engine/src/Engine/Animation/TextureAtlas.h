@@ -8,7 +8,7 @@ namespace Engine
     {
     public:
         // Load frame data from a JSON config file and associate it with the given texture
-        static Ref<TextureAtlas> Create(const std::string &configPath, const Ref<Renderer::Texture2D> &texture);
+        static Ref<TextureAtlas> Create(const std::string &configPath);
 
         const SpriteFrame *GetFrame(const std::string &name) const
         {

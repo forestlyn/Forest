@@ -1,0 +1,12 @@
+name: hero_run
+atlas: Anim/spritesheet.yaml
+loop: true
+frames:
+  - name: hero_run_0.png
+    duration: 0.1
+  - name: hero_run_1.png
+    duration: 0.1
+  - name: hero_run_2.png
+    duration: 0.1
+  - name: hero_run_3.png
+    duration: 0.1

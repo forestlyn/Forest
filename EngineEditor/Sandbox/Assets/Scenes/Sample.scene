@@ -30,5 +30,29 @@ Entities:
     SpriteComponent:
       Color: [0.9570957, 0.7454606, 0.7807332, 1]
       TilingFactor: 1
+      UVMin: [0, 0]
+      UVMax: [1, 1]
       TextureRef:
         path: Textures/Checkerboard.png
+    SpriteAnimationComponent:
+      FrameDuration: 0.1
+      IsLooping: true
+      IsPlaying: true
+  - EntityID: 12915768197251420913
+    TagComponent:
+      Tag: AnimTest
+    TransformComponent:
+      Position: [2, 2, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [1, 0.18811882, 0.18811882, 1]
+      TilingFactor: 1
+      UVMin: [0, 0]
+      UVMax: [1, 1]
+      TextureRef:
+        path: ""
+    SpriteAnimationComponent:
+      FrameDuration: 0.1
+      IsLooping: true
+      IsPlaying: true

@@ -1,0 +1,103 @@
+frames:
+  hero_run_0.png:
+    frame:
+      x: 0
+      y: 0
+      w: 64
+      h: 64
+    rotated: false
+    trimmed: false
+    spriteSourceSize:
+      x: 0
+      y: 0
+      w: 64
+      h: 64
+    sourceSize:
+      w: 64
+      h: 64
+    pivot:
+      x: 0.5
+      y: 0.5
+  hero_run_1.png:
+    frame:
+      x: 64
+      y: 0
+      w: 64
+      h: 64
+    rotated: false
+    trimmed: false
+    spriteSourceSize:
+      x: 0
+      y: 0
+      w: 64
+      h: 64
+    sourceSize:
+      w: 64
+      h: 64
+    pivot:
+      x: 0.5
+      y: 0.5
+  hero_run_2.png:
+    frame:
+      x: 128
+      y: 0
+      w: 64
+      h: 64
+    rotated: false
+    trimmed: false
+    spriteSourceSize:
+      x: 0
+      y: 0
+      w: 64
+      h: 64
+    sourceSize:
+      w: 64
+      h: 64
+    pivot:
+      x: 0.5
+      y: 0.5
+  hero_run_3.png:
+    frame:
+      x: 192
+      y: 0
+      w: 64
+      h: 64
+    rotated: false
+    trimmed: false
+    spriteSourceSize:
+      x: 0
+      y: 0
+      w: 64
+      h: 64
+    sourceSize:
+      w: 64
+      h: 64
+    pivot:
+      x: 0.5
+      y: 0.5
+  hero_jump.png:
+    frame:
+      x: 0
+      y: 64
+      w: 48
+      h: 50
+    rotated: false
+    trimmed: true
+    spriteSourceSize:
+      x: 8
+      y: 7
+      w: 48
+      h: 50
+    sourceSize:
+      w: 64
+      h: 64
+    pivot:
+      x: 0.5
+      y: 0.5
+meta:
+  image: Textures/spritesheet.png
+  format: RGBA8888
+  size:
+    w: 256
+    h: 256
+  scale: 1

@@ -983,6 +983,7 @@ namespace EngineEditor
     // Explicit template instantiations
     template void UIUtils::DrawComponent<Engine::TransformComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
     template void UIUtils::DrawComponent<Engine::SpriteComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
+    template void UIUtils::DrawComponent<Engine::SpriteAnimationComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
     template void UIUtils::DrawComponent<Engine::CameraComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
     template void UIUtils::DrawComponent<Engine::Rigidbody2DComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
     template void UIUtils::DrawComponent<Engine::BoxCollider2DComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
