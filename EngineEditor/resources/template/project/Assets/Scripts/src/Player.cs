@@ -1,4 +1,4 @@
-using System.Numerics;
+using Vector3 = Engine.Vector3;
 using Engine;
 namespace Sandbox
 {

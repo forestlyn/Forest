@@ -7,6 +7,9 @@
 #include "Panels/ContentBrowserPanel.h"
 #include "Engine/Renderer/Shader/Texture.h"
 #include <cstdint>
+#include <FileWatch.hpp>
+#include <atomic>
+#include <chrono>
 namespace EngineEditor
 {
 
@@ -30,6 +33,9 @@ namespace EngineEditor
         void NewProject();
         void SaveProject(std::filesystem::path path);
         void SaveProjectAs();
+        bool BuildProjectScripts(bool projectChanged = false);
+        void WatchProjectScripts();
+        void UpdateProjectScripts();
 
         void NewScene();
         void SaveSceneAs();
@@ -58,6 +64,11 @@ namespace EngineEditor
         void StepScene();
 
     private:
+        Engine::Scope<filewatch::FileWatch<std::string>> m_ScriptSourceWatcher;
+        std::atomic_bool m_ScriptSourcesChanged = false;
+        bool m_ScriptBuildPending = false;
+        std::chrono::steady_clock::time_point m_LastScriptEdit;
+        std::string m_ScriptBuildError;
         Engine::Ref<Engine::Renderer::FrameBuffer> m_FrameBuffer;
 
         Engine::Ref<Engine::Renderer::Texture2D> m_PlayIcon;

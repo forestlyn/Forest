@@ -11,7 +11,7 @@ import tempfile
 root = Path(__file__).resolve().parents[2]
 exe = Path(sys.argv[1]).resolve()
 assets = root / "EngineEditor/Sandbox/Assets"
-assembly = root / "EngineEditor/resources/scripts/bin/Sandbox.dll"
+assembly = root / "EngineEditor/Sandbox/Assets/Scripts/bin/Debug/Game.dll"
 
 
 def run(args, expected, marker, cwd):
@@ -39,7 +39,7 @@ with tempfile.TemporaryDirectory(prefix="forest runtime ") as temporary:
     write_project("Scenes/Sample.scene")
     run([project.name, "--frames", "3"], 0, "Runtime stopped after 3 frames", directory)
     run([project, "--frames", "zero"], 1, "positive integer", directory)
-    run([project, "--script-assembly", "missing.dll"], 1, "Required file not found", directory)
+    run([project, "--script-assembly", "missing.dll"], 1, "Script assembly missing", directory)
     write_project("Scenes/Physics2D.scene")
     run([project, "--frames", "3"], 1, "Missing script class: Sandbox.Player", directory)
     # Absolute paths are also permitted in development project descriptors.

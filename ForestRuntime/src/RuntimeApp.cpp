@@ -2,6 +2,7 @@
 #include "Engine/Core/Application.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Project/Project.h"
+#include "Engine/Project/ProjectScripts.h"
 #include <charconv>
 #include <iostream>
 #include <stdexcept>
@@ -41,7 +42,7 @@ int main(int argc, char **argv)
     {
         if (argc < 2 || std::string(argv[1]) == "--help")
         {
-            std::cout << "Usage: ForestRuntime <project.forestproj> [--script-assembly <dll>] [--frames <count>]\n"
+            std::cout << "Usage: ForestRuntime <project.forestproj> [--script-assembly <dll>] [--frames <count>] [--build-scripts | --build-only]\n"
                          "ScriptAssembly in the project is relative to Assets; the CLI DLL path is relative to the launch directory.\n";
             return argc < 2 ? 1 : 0;
         }
@@ -49,9 +50,16 @@ int main(int argc, char **argv)
         const fs::path projectPath = fs::absolute(argv[1]).lexically_normal();
         fs::path assemblyOverride;
         uint32_t frameLimit = 0;
+        bool buildScripts = false, buildOnly = false;
         for (int i = 2; i < argc; ++i)
         {
             const std::string option = argv[i];
+            if (option == "--build-scripts" || option == "--build-only")
+            {
+                buildScripts = true;
+                buildOnly |= option == "--build-only";
+                continue;
+            }
             if (i + 1 >= argc)
                 throw std::runtime_error("Missing value for " + option);
             const std::string value = argv[++i];
@@ -75,7 +83,7 @@ int main(int argc, char **argv)
             throw std::runtime_error("Failed to load project");
         const auto &settings = project->GetProjectSettings();
         const auto scenePath = Engine::Project::GetActiveProjectStartScene();
-        ForestRuntime::RequireFile(scenePath);
+        if (!buildOnly) ForestRuntime::RequireFile(scenePath);
 
         const fs::path sourceRoot(FOREST_SOURCE_ROOT);
         Engine::Core::ApplicationSpecification spec;
@@ -87,9 +95,20 @@ int main(int argc, char **argv)
         spec.AppAssemblyPath.clear();
         if (!assemblyOverride.empty())
             spec.AppAssemblyPath = assemblyOverride.string();
-        else if (!settings.ScriptAssembly.empty())
-            spec.AppAssemblyPath = Engine::Project::GetActiveProjectAssetPath(settings.ScriptAssembly).string();
+        else
+            spec.AppAssemblyPath = Engine::ProjectScripts::AssemblyPath().string();
         ForestRuntime::RequireFile(spec.CoreAssemblyPath);
+        std::string scriptError;
+        if (buildScripts)
+        {
+            if (!assemblyOverride.empty())
+                throw std::runtime_error("Build uses project configuration; do not combine with --script-assembly");
+            if (!Engine::ProjectScripts::Build(spec.CoreAssemblyPath, scriptError))
+                throw std::runtime_error(scriptError);
+        }
+        if (buildOnly) return 0;
+        if (!Engine::ProjectScripts::CanLoad(spec.AppAssemblyPath, scriptError))
+            throw std::runtime_error(scriptError);
         ForestRuntime::RequireFile(fs::path(spec.MonoAssemblyPath) / "mscorlib.dll");
         if (!spec.AppAssemblyPath.empty())
             ForestRuntime::RequireFile(spec.AppAssemblyPath);

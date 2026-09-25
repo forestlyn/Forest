@@ -96,6 +96,8 @@ namespace Engine
         static Scene *GetSceneContext();
         static MonoImage *GetCoreAssemblyImage();
         static void ReloadAssembly();
+        static void LoadProjectAssembly(const std::filesystem::path &path, bool clearFields = false);
+        static void RefreshSceneFields(Scene *scene);
 
         static Ref<ScriptInstance> GetEntityScriptInstance(UUID entityID);
         static Ref<ScriptClass> GetEntityClass(std::string className);

@@ -11,6 +11,8 @@ namespace Engine
         std::string ScriptDLLDirectory;
         // Relative to AssetDirectory; empty means no game assembly configured.
         std::string ScriptAssembly;
+        std::string ScriptSourceDirectory = "Scripts/src";
+        std::string ScriptBuildConfiguration = "Debug";
     };
     class Project
     {

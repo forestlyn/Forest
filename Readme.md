@@ -61,7 +61,7 @@ Engine 核心层提供应用生命周期、窗口与事件、渲染抽象、场�
 - 宿主入口：Engine/src/Engine/Scripts/ScriptEngine.h 与 ScriptEngine.cpp。
 - 主要职责：
   - 初始化 Mono Runtime
-  - 加载 Engine-ScriptCore.dll 与 Sandbox.dll
+  - 加载 Engine-ScriptCore.dll，以及当前项目 ScriptAssembly 指定的程序集
   - 反射托管类型，构建脚本类与字段缓存
   - 驱动实体脚本 OnCreate / OnUpdate
   - 监听程序集变化并执行热重载
@@ -140,9 +140,9 @@ EngineEditor 是基于 Engine 运行时的编辑器应用，负责内容编辑�
 
 ### 4) 编辑器中的脚本编译与热更新
 
-- EngineEditorApp 监听脚本源码目录变更（filewatch）。
-- 变更后会触发 CMake 构建 Sandbox 目标。
-- ScriptEngine 侧会监听 DLL 变化并在主线程执行程序集重载。
+- 编辑器按当前项目的 ScriptSourceDirectory 监听源码变更（filewatch），在编辑态构建并重载。
+- 编辑器与 ForestRuntime 共用 ProjectScripts 构建服务，读取 ScriptAssembly / ScriptBuildConfiguration。
+- 构建失败阻止 Play 和 Runtime 使用旧 DLL；切换项目时重新绑定程序集与源码监听。
 
 ## 三、ScriptCore 脚本支持层
 
@@ -161,9 +161,9 @@ ScriptCore 是 C# 层的基础 API 程序集，为业务脚本（Sandbox）提�
 
 ### 2) Sandbox（业务脚本层）
 
-- CMake 目标：Sandbox（EngineEditor/Sandbox/Assets/Scripts/CMakeLists.txt）。
+- 示例构建目标：Sandbox；通过 ForestRuntime --build-only 调用统一的 Scripts/ProjectScripts 构建驱动。
 - 脚本源码目录：EngineEditor/Sandbox/Assets/Scripts/src。
-- 通过 target_link_libraries(Sandbox PRIVATE ScriptCore) 依赖 ScriptCore。
+- 通过统一构建驱动引用 Engine-ScriptCore.dll；源码目录、程序集路径和配置来自 .forestproj。
 
 ### 3) 三层调用链（脚本方向）
 
@@ -209,7 +209,10 @@ cmake --build . --config Debug
 - 启动编辑器：EngineEditor（输出名通常为 EngineEditor_debug.exe）
 - 示例运行：Forest（输出名通常为 Forest_debug.exe）
 - 脚本 API：ScriptCore（生成 Engine-ScriptCore.dll）
-- 业务脚本：Sandbox（生成 Sandbox.dll）
+- 业务脚本：Sandbox / TestProject（分别输出到项目的 Assets/Scripts/bin/Debug/Game.dll；配置见各自 .forestproj）
 
 默认可执行输出目录在 build/bin/<Config>/。
-脚本 DLL 默认输出在 EngineEditor/resources/scripts/bin/。
+ScriptCore 输出在 EngineEditor/resources/scripts/bin/；游戏脚本输出在各项目 ScriptAssembly 指定的位置。
+## 独立运行与项目脚本构建
+
+详见 [ForestRuntime 文档](ForestRuntime/README.md)。项目内填写 ScriptAssembly、ScriptSourceDirectory 和 ScriptBuildConfiguration 后，可使用 `ForestRuntime <项目.forestproj> --build-only` 构建脚本，或使用 `--build-scripts` 构建成功后运行。新建项目无需注册到引擎根 CMake。

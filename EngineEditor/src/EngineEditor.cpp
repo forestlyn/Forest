@@ -12,6 +12,7 @@
 #include "Engine/Utils/FilePlatformUtils.h"
 #include "Engine/Scripts/ScriptEngine.h"
 #include "Engine/Project/Project.h"
+#include "Engine/Project/ProjectScripts.h"
 #include "Utils.h"
 #include "Panels/Payload/DragDropPayload.h"
 namespace EngineEditor
@@ -60,11 +61,14 @@ namespace EngineEditor
 
     void EngineEditor::OnDetach()
     {
+        m_ScriptSourceWatcher.reset();
+        if (m_SceneState != SceneState::Edit) StopScene();
         LOG_INFO("EngineEditor Layer detached!");
     }
 
     void EngineEditor::OnUpdate(Engine::Core::Timestep timestep)
     {
+        UpdateProjectScripts();
         {
             ts = timestep.GetSeconds();
             ENGINE_PROFILING_FUNC();
@@ -143,6 +147,12 @@ namespace EngineEditor
     void EngineEditor::OnImGuiRender()
     {
         OpenDockSpace();
+        if (!m_ScriptBuildError.empty())
+        {
+            ImGui::Begin("Script Build Error");
+            ImGui::TextWrapped("%s", m_ScriptBuildError.c_str());
+            ImGui::End();
+        }
         ENGINE_PROFILING_FUNC();
         if (ImGui::BeginMainMenuBar())
         {
@@ -188,9 +198,9 @@ namespace EngineEditor
                 {
                     SaveSceneAs();
                 }
-                if (ImGui::MenuItem("Reload Assembly Ctrl+R"))
+                if (ImGui::MenuItem("Build Scripts Ctrl+R"))
                 {
-                    Engine::ScriptEngine::ReloadAssembly();
+                    BuildProjectScripts();
                 }
                 ImGui::EndMenu();
             }
@@ -350,7 +360,7 @@ namespace EngineEditor
             if (isCtrlPressed)
             {
                 ENGINE_INFO("ReloadAssembly");
-                Engine::ScriptEngine::ReloadAssembly();
+                BuildProjectScripts();
             }
         }
         }
@@ -622,6 +632,11 @@ namespace EngineEditor
         {
             StopScene();
         }
+        if (!BuildProjectScripts())
+        {
+            ENGINE_ERROR("Play blocked: project scripts did not build successfully");
+            return;
+        }
         m_SceneState = SceneState::Play;
         m_ActiveScene = Engine::Scene::Copy(m_EditorScene);
         m_RuntimeScene = m_ActiveScene;
@@ -751,30 +766,82 @@ namespace EngineEditor
         ImGui::End();
     }
 
+    bool EngineEditor::BuildProjectScripts(bool projectChanged)
+    {
+        if (!Engine::Project::GetActiveProject()) return true;
+        if (m_SceneState != SceneState::Edit) StopScene();
+        m_ScriptBuildPending = false;
+        const auto &spec = Engine::Core::Application::Get().GetSpecification();
+        bool success = Engine::ProjectScripts::Build(spec.CoreAssemblyPath, m_ScriptBuildError);
+        Engine::ScriptEngine::LoadProjectAssembly(success ? Engine::ProjectScripts::AssemblyPath() : std::filesystem::path{}, projectChanged);
+        if (!projectChanged && success)
+            Engine::ScriptEngine::RefreshSceneFields(m_EditorScene.get());
+        return success;
+    }
+
+    void EngineEditor::WatchProjectScripts()
+    {
+        m_ScriptSourcesChanged = false;
+        m_ScriptBuildPending = false;
+        if (Engine::ProjectScripts::AssemblyPath().empty()) return;
+        const auto source = Engine::ProjectScripts::SourceDirectory();
+        if (!std::filesystem::is_directory(source)) return;
+        m_ScriptSourceWatcher = Engine::CreateScope<filewatch::FileWatch<std::string>>(
+            source.string(), [this](const std::string &path, filewatch::Event)
+            {
+                if (std::filesystem::path(path).extension() == ".cs") m_ScriptSourcesChanged = true;
+            });
+    }
+
+    void EngineEditor::UpdateProjectScripts()
+    {
+        if (m_ScriptSourcesChanged.exchange(false))
+        {
+            m_ScriptBuildPending = true;
+            m_LastScriptEdit = std::chrono::steady_clock::now();
+        }
+        if (m_ScriptBuildPending && m_SceneState == SceneState::Edit &&
+            std::chrono::steady_clock::now() - m_LastScriptEdit > std::chrono::milliseconds(500))
+            BuildProjectScripts();
+    }
+
     void EngineEditor::NewProject()
     {
-        m_EditorProjectPath.clear();
-
         std::string workDir = std::filesystem::current_path().string();
         ENGINE_INFO("workDir:{}", workDir);
         std::string projectPathStr = Engine::FileDialog::OpenFolderDialog(workDir);
-        std::filesystem::path projectPath = projectPathStr;
+        if (projectPathStr.empty())
+        {
+            if (!m_EditorScene) NewScene();
+            return;
+        }
+        m_ScriptSourceWatcher.reset();
+        if (m_SceneState != SceneState::Edit) StopScene();
+        std::filesystem::path projectPath = std::filesystem::absolute(projectPathStr);
         std::string projectName = Utils::ExtraNameFromPath(projectPath);
         ENGINE_INFO("create project {} at {}", projectName, projectPath.string());
         Engine::Project::Create(projectName, projectPath);
+        BuildProjectScripts(true);
+        WatchProjectScripts();
 
         std::filesystem::path scenePath = Engine::Project::GetActiveProjectStartScene();
         LoadScene(scenePath);
 
-        m_EditorProjectPath = projectPath;
+        m_EditorProjectPath = projectPath / (projectName + ".forestproj");
 
         m_ContentBrowserPanel = Engine::CreateScope<ContentBrowserPanel>();
     }
 
     void EngineEditor::LoadProject(std::filesystem::path path)
     {
+        m_ScriptSourceWatcher.reset();
+        if (m_SceneState != SceneState::Edit) StopScene();
+        path = std::filesystem::absolute(path);
         if (Engine::Project::Load(path))
         {
+            m_EditorProjectPath = path;
+            BuildProjectScripts(true);
+            WatchProjectScripts();
             std::filesystem::path scenePath = Engine::Project::GetActiveProjectStartScene();
             if (!scenePath.empty())
             {
@@ -782,6 +849,7 @@ namespace EngineEditor
             }
             m_ContentBrowserPanel = Engine::CreateScope<ContentBrowserPanel>();
         }
+        if (!m_ActiveScene) NewScene();
     }
 
     void EngineEditor::LoadProject()

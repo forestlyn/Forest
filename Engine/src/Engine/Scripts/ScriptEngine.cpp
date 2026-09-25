@@ -195,8 +195,13 @@ namespace Engine
     void ScriptEngine::ReloadAssembly()
     {
         ENGINE_INFO("ReloadAssembly");
+        m_ScriptEngineData->AppAssemblyFileWatcher.reset();
         // Free managed handles before unloading the current app domain.
         m_ScriptEngineData->EntityInstances.clear();
+        m_ScriptEngineData->SceneContext = nullptr;
+        m_ScriptEngineData->EntityClasses.clear();
+        delete m_ScriptEngineData->EntityClass;
+        delete m_ScriptEngineData->ComponentClass;
         mono_domain_set(mono_get_root_domain(), false);
 
         mono_domain_unload(m_ScriptEngineData->AppDomain);
@@ -211,6 +216,37 @@ namespace Engine
         LoadAllAssemblyClasses();
 
         ScriptGlue::RegisterComponents();
+    }
+
+    void ScriptEngine::LoadProjectAssembly(const std::filesystem::path &path, bool clearFields)
+    {
+        if (clearFields) m_ScriptEngineData->EntityFieldMaps.clear();
+        m_ScriptEngineData->AppAssemblyPath = path;
+        // Do not retain pointers into the domain that ReloadAssembly unloads.
+        m_ScriptEngineData->AppAssembly = nullptr;
+        m_ScriptEngineData->AppAssemblyImage = nullptr;
+        ReloadAssembly();
+    }
+
+    void ScriptEngine::RefreshSceneFields(Scene *scene)
+    {
+        if (!scene) return;
+        auto &registry = scene->GetRegistry();
+        for (auto entity : registry.view<IDComponent, ScriptComponent>())
+        {
+            const auto scriptClass = GetEntityClass(registry.get<ScriptComponent>(entity).ScriptClassName);
+            if (!scriptClass) continue;
+            auto &values = GetScriptFieldMap(registry.get<IDComponent>(entity).ID);
+            for (auto it = values.begin(); it != values.end();)
+            {
+                auto field = scriptClass->GetFields().find(it->first);
+                if (field == scriptClass->GetFields().end()) { it = values.erase(it); continue; }
+                if (field->second.FieldType != it->second.Field.FieldType)
+                    it->second.CopyValueToBuffer(field->second.DefaultValue, sizeof(field->second.DefaultValue));
+                it->second.Field = field->second;
+                ++it;
+            }
+        }
     }
 
     void ScriptEngine::SetActiveScene(Scene *scene)

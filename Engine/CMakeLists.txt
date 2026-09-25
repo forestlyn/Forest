@@ -96,6 +96,8 @@ target_compile_features(Engine PUBLIC cxx_std_20)
 # 设置预处理器定义
 target_compile_definitions(Engine
     PRIVATE FOREST_BUILD_DLL
+        FOREST_CMAKE_EXECUTABLE="${CMAKE_COMMAND}"
+        FOREST_SCRIPT_BUILD_DRIVER="${CMAKE_SOURCE_DIR}/Scripts/ProjectScripts"
     PUBLIC FOREST_PLATFORM_WINDOWS
     FOREST_ENABLE_ASSERTS
     GLFW_INCLUDE_NONE

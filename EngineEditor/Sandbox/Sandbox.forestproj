@@ -1,4 +1,7 @@
 Name: Sandbox
 AssetDirectory: Assets
-StartScene: Scenes/Physics2D.scene
+StartScene: Scenes/Sample.scene
 ScriptDLLDirectory: ""
+ScriptAssembly: Scripts/bin/{config}/Game.dll
+ScriptSourceDirectory: Scripts/src
+ScriptBuildConfiguration: Debug

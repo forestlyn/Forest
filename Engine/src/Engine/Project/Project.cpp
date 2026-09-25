@@ -9,6 +9,7 @@ namespace Engine
     {
         Ref<Project> project = CreateRef<Project>();
         project->m_Settings.Name = projectname;
+        project->m_Settings.ScriptAssembly = "Scripts/bin/{config}/Game.dll";
         s_ActiveProject = project;
 
         if (!ProjectUtils::CreateProject(s_ActiveProject->m_Settings.Name, filepath))
@@ -37,7 +38,7 @@ namespace Engine
             return nullptr;
         }
         s_ActiveProject = project;
-        s_ActiveProject->m_ProjectDirectory = filepath.parent_path();
+        s_ActiveProject->m_ProjectDirectory = std::filesystem::absolute(filepath).parent_path();
         ENGINE_INFO("Loaded project: {0} {1}", project->GetActiveProjectName(), filepath.string());
         return project;
     }

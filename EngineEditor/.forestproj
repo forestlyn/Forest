@@ -2,3 +2,6 @@ Name: ""
 AssetDirectory: Assets
 StartScene: Scenes/Sample.scene
 ScriptDLLDirectory: ""
+ScriptAssembly: Scripts/bin/{config}/Game.dll
+ScriptSourceDirectory: Scripts/src
+ScriptBuildConfiguration: Debug

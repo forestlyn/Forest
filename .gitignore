@@ -5,3 +5,7 @@ rmbuild.bat
 /Scripts/__pycache__
 /Engine/ThirdParty/VulkanSDK
 EngineEditor/MonoDebugger.log
+
+**/Intermediate/
+**/Assets/Scripts/bin/
+**/assets/Scripts/bin/
