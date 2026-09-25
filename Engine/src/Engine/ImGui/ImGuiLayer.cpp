@@ -63,6 +63,8 @@ namespace Engine::MyImGui
         ImGui_ImplOpenGL3_Shutdown();
         ENQUEUE_RENDER_COMMAND_END()
 
+        Engine::Core::Application::Get().FlushRendererCommands();
+
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
     }

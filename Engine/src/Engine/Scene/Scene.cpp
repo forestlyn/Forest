@@ -236,7 +236,10 @@ namespace Engine
 
     void Scene::OnRuntimeStop()
     {
+        if (!m_Running)
+            return;
         m_Running = false;
+        ScriptEngine::ReleaseSceneInstances(this);
         DestroyPhysicsWorld();
     }
 

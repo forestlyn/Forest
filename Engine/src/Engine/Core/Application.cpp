@@ -63,13 +63,19 @@ namespace Engine::Core
 		ENGINE_INFO("Renderer initialized successfully! {0}", renderBootstrapReady.load(std::memory_order_acquire));
 
 		// imgui init needs to be after window creation and s_Instance assignment
-		m_ImGuiLayer = new MyImGui::ImGuiLayer();
-		PushOverlay(m_ImGuiLayer);
-		m_ImGuiLayer->SetDarkThemeColors();
+        if (m_Specification.EnableImGui)
+        {
+            m_ImGuiLayer = new MyImGui::ImGuiLayer();
+            PushOverlay(m_ImGuiLayer);
+            m_ImGuiLayer->SetDarkThemeColors();
+        }
 
 #if defined(ENGINE_ENABLE_PROFILELAYER)
-		m_ProfileLayer = new Engine::Profile::ProfileLayer();
-		PushOverlay(m_ProfileLayer);
+        if (m_Specification.EnableImGui && m_Specification.EnableProfileLayer)
+        {
+            m_ProfileLayer = new Engine::Profile::ProfileLayer();
+            PushOverlay(m_ProfileLayer);
+        }
 #endif
 		ScriptEngine::Init();
 	}
@@ -78,6 +84,10 @@ namespace Engine::Core
 	{
 		ENGINE_PROFILING_FUNC();
 		ENGINE_INFO("Shutting down application...");
+        FlushRendererCommands();
+        m_LayerStack.Clear();
+        m_ImGuiLayer = nullptr;
+        ScriptEngine::Shutdown();
 		Renderer::Renderer::Shutdown();
 		DispatchRendererCommands();
 
@@ -89,8 +99,7 @@ namespace Engine::Core
 		StopRenderThread();
 		ReleaseRendererMemoryPool();
 		ENGINE_INFO("Render thread stopped and memory pool released successfully!");
-		ScriptEngine::Shutdown();
-		ENGINE_INFO("Script engine shutdown successfully!");
+        s_Instance = nullptr;
 	}
 
 	void Application::Init()
@@ -100,6 +109,7 @@ namespace Engine::Core
 	void Application::Run()
 	{
 		ENGINE_PROFILING_FUNC();
+        m_LastFrameTime = static_cast<float>(glfwGetTime());
 		while (m_Running)
 		{
 			{
@@ -124,13 +134,14 @@ namespace Engine::Core
 
 				ExecuteMainThreadQueueBack();
 
-				if (!m_Minimized && m_Focused)
+				if (!m_Minimized && (m_Focused || m_Specification.RunInBackground))
 				{
 					ExecuteMainThreadQueueFront();
 					ENGINE_PROFILING_SCOPE("LayerStack OnUpdate");
 					for (auto layer : m_LayerStack)
 						layer->OnUpdate(deltaTime);
 				}
+                if (m_ImGuiLayer)
 				{
 					ENGINE_PROFILING_SCOPE("LayerStack OnImGuiRender");
 					{

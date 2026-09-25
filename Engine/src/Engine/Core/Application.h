@@ -33,6 +33,13 @@ namespace Engine::Core
 		uint32_t Height = 720;
 		bool Fullscreen = false;
 		bool VSync = true;
+        bool EnableImGui = true;
+        bool EnableProfileLayer = true;
+        bool EnableScriptDebugging = true;
+        bool EnableScriptHotReload = true;
+        bool RunInBackground = false;
+        std::string CoreAssemblyPath = "resources/scripts/bin/Engine-ScriptCore.dll";
+        std::string AppAssemblyPath = "resources/scripts/bin/Sandbox.dll";
 		std::string WorkingDirectory = "";
 		std::string MonoAssemblyPath = "";
 		std::string AppScriptPath = "";
@@ -100,7 +107,7 @@ namespace Engine::Core
 
 		float m_LastFrameTime = 0.0f;
 		Scope<Window> m_Window;
-		Engine::MyImGui::ImGuiLayer *m_ImGuiLayer;
+		Engine::MyImGui::ImGuiLayer *m_ImGuiLayer = nullptr;
 
 		LayerStack m_LayerStack;
 		static Application *s_Instance;

@@ -57,7 +57,7 @@ namespace Engine
     };
 
     REFLECT_TYPE_BEGIN(SpriteAnimationComponent)
-    REFLECT_FIELD(Animations);
+    // REFLECT_FIELD(Animations);
     REFLECT_FIELD(ElapsedTime).Flags(PropertyFlags::Property_Transient).UIPROPERTY(UIProperty::ReadOnly);
     REFLECT_FIELD(CurrentFrameIndex).Flags(PropertyFlags::Property_Transient).UIPROPERTY(UIProperty::ReadOnly);
     REFLECT_FIELD(SpeedMultiplier);

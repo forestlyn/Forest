@@ -152,8 +152,10 @@ namespace Engine
     {
         m_ScriptEngineData = new ScriptEngineData();
 
-        m_ScriptEngineData->CoreAssemblyPath = "resources/scripts/bin/Engine-ScriptCore.dll";
-        m_ScriptEngineData->AppAssemblyPath = "resources/scripts/bin/Sandbox.dll";
+        const auto &spec = Core::Application::Get().GetSpecification();
+        m_ScriptEngineData->CoreAssemblyPath = spec.CoreAssemblyPath;
+        m_ScriptEngineData->AppAssemblyPath = spec.AppAssemblyPath;
+        m_ScriptEngineData->EnableDebugging &= spec.EnableScriptDebugging;
 
         InitMono();
         CreateDomainAndLoadAssembly();
@@ -214,6 +216,15 @@ namespace Engine
     void ScriptEngine::SetActiveScene(Scene *scene)
     {
         m_ScriptEngineData->SceneContext = scene;
+    }
+
+    void ScriptEngine::ReleaseSceneInstances(Scene *scene)
+    {
+        if (m_ScriptEngineData && m_ScriptEngineData->SceneContext == scene)
+        {
+            m_ScriptEngineData->EntityInstances.clear();
+            m_ScriptEngineData->SceneContext = nullptr;
+        }
     }
 
     Ref<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID entityID)
@@ -497,9 +508,12 @@ namespace Engine
         m_ScriptEngineData->CoreAssemblyImage = mono_assembly_get_image(m_ScriptEngineData->CoreAssembly);
         ENGINE_ASSERT(m_ScriptEngineData->CoreAssemblyImage);
 
-        m_ScriptEngineData->AppAssembly = LoadCSharpAssembly(m_ScriptEngineData->AppAssemblyPath, m_ScriptEngineData->EnableDebugging);
-        m_ScriptEngineData->AppAssemblyImage = mono_assembly_get_image(m_ScriptEngineData->AppAssembly);
-        ENGINE_ASSERT(m_ScriptEngineData->AppAssemblyImage);
+        if (!m_ScriptEngineData->AppAssemblyPath.empty())
+        {
+            m_ScriptEngineData->AppAssembly = LoadCSharpAssembly(m_ScriptEngineData->AppAssemblyPath, m_ScriptEngineData->EnableDebugging);
+            m_ScriptEngineData->AppAssemblyImage = mono_assembly_get_image(m_ScriptEngineData->AppAssembly);
+            ENGINE_ASSERT(m_ScriptEngineData->AppAssemblyImage);
+        }
     }
 
     void ScriptEngine::LoadAssemblyClasses(MonoAssembly *assembly)
@@ -573,10 +587,13 @@ namespace Engine
     {
         m_ScriptEngineData->EntityClasses.clear();
         LoadAssemblyClasses(m_ScriptEngineData->CoreAssembly);
-        LoadAssemblyClasses(m_ScriptEngineData->AppAssembly);
+        if (m_ScriptEngineData->AppAssembly)
+            LoadAssemblyClasses(m_ScriptEngineData->AppAssembly);
 
-        m_ScriptEngineData->AppAssemblyFileWatcher = CreateScope<filewatch::FileWatch<std::string>>(
-            m_ScriptEngineData->AppAssemblyPath.string(), OnAppAssemblyFileSystemEvent);
+        if (Core::Application::Get().GetSpecification().EnableScriptHotReload &&
+            !m_ScriptEngineData->AppAssemblyPath.empty())
+            m_ScriptEngineData->AppAssemblyFileWatcher = CreateScope<filewatch::FileWatch<std::string>>(
+                m_ScriptEngineData->AppAssemblyPath.string(), OnAppAssemblyFileSystemEvent);
         m_ScriptEngineData->IsReloadingAssembly = false;
     }
 #pragma endregion

@@ -9,6 +9,8 @@ namespace Engine
         std::string AssetDirectory = "Assets";
         std::string StartScene = "Scenes/Sample.scene";
         std::string ScriptDLLDirectory;
+        // Relative to AssetDirectory; empty means no game assembly configured.
+        std::string ScriptAssembly;
     };
     class Project
     {

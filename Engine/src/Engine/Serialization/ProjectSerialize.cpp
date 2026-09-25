@@ -16,6 +16,7 @@ namespace Engine::Serialization
         out << YAML::Key << "AssetDirectory" << YAML::Value << settings.AssetDirectory;
         out << YAML::Key << "StartScene" << YAML::Value << settings.StartScene;
         out << YAML::Key << "ScriptDLLDirectory" << YAML::Value << settings.ScriptDLLDirectory;
+        out << YAML::Key << "ScriptAssembly" << YAML::Value << settings.ScriptAssembly;
         out << YAML::EndMap;
 
         std::ofstream fout(filepath);
@@ -41,6 +42,8 @@ namespace Engine::Serialization
             settings.StartScene = node["StartScene"].as<std::string>();
         if (node["ScriptDLLDirectory"])
             settings.ScriptDLLDirectory = node["ScriptDLLDirectory"].as<std::string>();
+        if (node["ScriptAssembly"])
+            settings.ScriptAssembly = node["ScriptAssembly"].as<std::string>();
         return true;
     }
 }
