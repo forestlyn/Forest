@@ -105,11 +105,11 @@ namespace EngineEditor
             ImGui::EndPopup();
         }
     }
-    const std::string templateScenePath = "resources/assets/scenes/New Scene.scene";
+
     void ContentBrowserPanel::CreateScene()
     {
         ENGINE_INFO("CreateScene");
         std::filesystem::path newScenePath = m_CurrentDirectory;
-        std::filesystem::copy(templateScenePath, newScenePath);
+        std::filesystem::copy(Engine::Core::RuntimePaths::EngineResource("assets/scenes/New Scene.scene"), newScenePath);
     }
 }

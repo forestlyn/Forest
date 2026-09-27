@@ -1,4 +1,5 @@
 #include "Utils.h"
+#include "Engine/Core/RuntimePaths.h"
 #include <filesystem>
 #include <fstream>
 #include <shaderc/shaderc.hpp>
@@ -183,7 +184,7 @@ namespace Platform::OpenGL::Utils
 
     std::string GetCacheDirectory()
     {
-        return "resources/assets/cache/shaders/opengl/";
+        return (Engine::Core::RuntimePaths::Cache() / "shaders/opengl").generic_string() + "/";
     }
     void CreateCacheDirIfNotExists(std::string cacheDir)
     {

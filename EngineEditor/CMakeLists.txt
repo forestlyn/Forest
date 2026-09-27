@@ -61,7 +61,7 @@ install(TARGETS EngineEditor
 )
 
 add_dependencies(EngineEditor ScriptCore)
-target_compile_definitions(EngineEditor PRIVATE FOREST_SOURCE_ROOT="${CMAKE_SOURCE_DIR}")
+forest_runtime_resources(EngineEditor TRUE)
 foreach(sample Sandbox TestProject)
     add_custom_target(${sample}
         COMMAND $<TARGET_FILE:ForestRuntime> "${CMAKE_CURRENT_SOURCE_DIR}/${sample}/${sample}.forestproj" --build-only

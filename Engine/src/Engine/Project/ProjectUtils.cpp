@@ -1,8 +1,9 @@
 #include "ProjectUtils.h"
+#include "Engine/Core/RuntimePaths.h"
 #include <fstream>
 namespace Engine
 {
-    const std::filesystem::path ProjectTemplatePath = "resources/template/project/";
+
 
     bool ProjectUtils::CreateProject(std::string projectName, std::filesystem::path path)
     {
@@ -21,7 +22,7 @@ namespace Engine
         if (std::filesystem::exists(projectDir) || std::filesystem::create_directory(projectDir))
         {
             std::filesystem::copy_options copyOptions = std::filesystem::copy_options::recursive | std::filesystem::copy_options::skip_existing;
-            std::filesystem::copy(ProjectTemplatePath, projectDir, copyOptions);
+            std::filesystem::copy(Core::RuntimePaths::EngineResource("template/project"), projectDir, copyOptions);
             return true;
         }
         else

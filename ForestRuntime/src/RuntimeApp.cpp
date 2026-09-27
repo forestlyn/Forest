@@ -1,11 +1,14 @@
 #include "RuntimeLayer.h"
+#include "Engine/Core/RuntimePaths.h"
 #include "Engine/Core/Application.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Project/Project.h"
 #include "Engine/Project/ProjectScripts.h"
+#include "Engine/Project/ProjectExporter.h"
 #include <charconv>
 #include <iostream>
 #include <stdexcept>
+#include <yaml-cpp/yaml.h>
 
 namespace fs = std::filesystem;
 
@@ -33,6 +36,28 @@ namespace ForestRuntime
         if (!fs::is_regular_file(path))
             throw std::runtime_error("Required file not found: " + path.string());
     }
+
+    fs::path ReadStartupProject()
+    {
+        const auto configPath = Engine::Core::RuntimePaths::ExecutableDirectory() / "runtime.yaml";
+        if (!fs::is_regular_file(configPath))
+            throw std::runtime_error("Startup config not found: " + configPath.string() +
+                                     "; provide a project argument or create runtime.yaml with a Project entry");
+        try
+        {
+            const auto config = YAML::LoadFile(configPath.string());
+            if (!config.IsMap() || !config["Project"] || !config["Project"].IsScalar())
+                throw std::runtime_error("Project must be a non-empty path string");
+            const auto value = config["Project"].as<std::string>();
+            if (value.empty() || value.find_first_not_of(" \t\r\n") == std::string::npos)
+                throw std::runtime_error("Project must be a non-empty path string");
+            return fs::absolute(configPath.parent_path() / fs::u8path(value)).lexically_normal();
+        }
+        catch (const std::exception &error)
+        {
+            throw std::runtime_error("Invalid startup config '" + configPath.string() + "': " + error.what());
+        }
+    }
 }
 
 int main(int argc, char **argv)
@@ -40,18 +65,24 @@ int main(int argc, char **argv)
     Engine::Core::Log::Init();
     try
     {
-        if (argc < 2 || std::string(argv[1]) == "--help")
+        if (argc > 1 && std::string(argv[1]) == "--help")
         {
-            std::cout << "Usage: ForestRuntime <project.forestproj> [--script-assembly <dll>] [--frames <count>] [--build-scripts | --build-only]\n"
+            std::cout << "Usage: ForestRuntime [project.forestproj] [--script-assembly <dll>] [--frames <count>] [--build-scripts | --build-only]\n"
+                         "Without a project argument, read Project from runtime.yaml next to the executable.\n"
+                         "Export: ForestRuntime <project.forestproj> --export <new-directory> [--runtime-directory <Release-runtime-directory>]\n"
                          "ScriptAssembly in the project is relative to Assets; the CLI DLL path is relative to the launch directory.\n";
-            return argc < 2 ? 1 : 0;
+            return 0;
         }
 
-        const fs::path projectPath = fs::absolute(argv[1]).lexically_normal();
+        const bool explicitProject = argc > 1 && std::string(argv[1]).rfind("--", 0) != 0;
+        fs::path projectPath;
+        if (explicitProject) projectPath = fs::absolute(argv[1]).lexically_normal();
         fs::path assemblyOverride;
+        fs::path exportDirectory, exportRuntime;
+        bool exportRequested = false;
         uint32_t frameLimit = 0;
         bool buildScripts = false, buildOnly = false;
-        for (int i = 2; i < argc; ++i)
+        for (int i = explicitProject ? 2 : 1; i < argc; ++i)
         {
             const std::string option = argv[i];
             if (option == "--build-scripts" || option == "--build-only")
@@ -60,10 +91,20 @@ int main(int argc, char **argv)
                 buildOnly |= option == "--build-only";
                 continue;
             }
+            if (option != "--script-assembly" && option != "--frames" && option != "--export" && option != "--runtime-directory")
+                throw std::runtime_error("Unknown option: " + option);
             if (i + 1 >= argc)
                 throw std::runtime_error("Missing value for " + option);
             const std::string value = argv[++i];
-            if (option == "--script-assembly")
+            if (value.empty()) throw std::runtime_error("Empty value for " + option);
+            if (option == "--export")
+            {
+                exportRequested = true;
+                exportDirectory = fs::absolute(value).lexically_normal();
+            }
+            else if (option == "--runtime-directory")
+                exportRuntime = fs::absolute(value).lexically_normal();
+            else if (option == "--script-assembly")
                 assemblyOverride = fs::absolute(value).lexically_normal();
             else if (option == "--frames")
             {
@@ -75,23 +116,38 @@ int main(int argc, char **argv)
                 throw std::runtime_error("Unknown option: " + option);
         }
 
+        if (exportRequested && (buildScripts || frameLimit || !assemblyOverride.empty()))
+            throw std::runtime_error("--export cannot be combined with build or run options");
+        if (!exportRequested && !exportRuntime.empty())
+            throw std::runtime_error("--runtime-directory requires --export");
+        if (!explicitProject) projectPath = ForestRuntime::ReadStartupProject();
         ForestRuntime::RequireFile(projectPath);
         if (projectPath.extension() != ".forestproj")
             throw std::runtime_error("Expected a .forestproj file");
         auto project = Engine::Project::Load(projectPath);
         if (!project)
             throw std::runtime_error("Failed to load project");
+        if (exportRequested)
+        {
+            std::string error;
+            if (!Engine::ProjectExporter::Export(exportDirectory, exportRuntime, error))
+                throw std::runtime_error("Export failed: " + error);
+            return 0;
+        }
         const auto &settings = project->GetProjectSettings();
         const auto scenePath = Engine::Project::GetActiveProjectStartScene();
         if (!buildOnly) ForestRuntime::RequireFile(scenePath);
 
-        const fs::path sourceRoot(FOREST_SOURCE_ROOT);
+        const auto runtimeRoot = Engine::Core::RuntimePaths::ExecutableDirectory();
         Engine::Core::ApplicationSpecification spec;
         spec.Name = settings.Name;
-        // Development-only resource location. Exporting a relocatable package is a separate step.
-        spec.WorkingDirectory = (sourceRoot / "EngineEditor").string();
-        spec.MonoAssemblyPath = (sourceRoot / "Engine/ThirdParty/mono/4.5").string();
-        spec.CoreAssemblyPath = (sourceRoot / "EngineEditor/resources/scripts/bin/Engine-ScriptCore.dll").string();
+        spec.EngineResourceDirectory = (runtimeRoot / "resources").string();
+        spec.MonoAssemblyPath = (runtimeRoot / "Mono/4.5").string();
+        spec.CoreAssemblyPath = (runtimeRoot / "Managed/Engine-ScriptCore.dll").string();
+        Engine::Core::RuntimePaths::Configure(spec.EngineResourceDirectory);
+        Engine::Core::Log::EnableFileLogging(Engine::Core::RuntimePaths::Logs() / "runtime.log");
+        ENGINE_INFO("Runtime resources: {}", spec.EngineResourceDirectory);
+        ENGINE_INFO("Runtime cache: {}", Engine::Core::RuntimePaths::Cache().string());
         spec.AppAssemblyPath.clear();
         if (!assemblyOverride.empty())
             spec.AppAssemblyPath = assemblyOverride.string();
@@ -113,7 +169,7 @@ int main(int argc, char **argv)
         if (!spec.AppAssemblyPath.empty())
             ForestRuntime::RequireFile(spec.AppAssemblyPath);
         for (const auto *shader : {"Renderer2D_QuadShader.glsl", "Renderer2D_CircleShader.glsl", "Renderer2D_LineShader.glsl"})
-            ForestRuntime::RequireFile(fs::path(spec.WorkingDirectory) / "resources/assets/shaders" / shader);
+            ForestRuntime::RequireFile(fs::path(spec.EngineResourceDirectory) / "assets/shaders" / shader);
         spec.EnableImGui = false;
         spec.EnableProfileLayer = false;
         spec.EnableScriptDebugging = false;

@@ -13,6 +13,7 @@
 #include "Engine/Scripts/ScriptEngine.h"
 #include "Engine/Project/Project.h"
 #include "Engine/Project/ProjectScripts.h"
+#include "Engine/Project/ProjectExporter.h"
 #include "Utils.h"
 #include "Panels/Payload/DragDropPayload.h"
 namespace EngineEditor
@@ -62,7 +63,8 @@ namespace EngineEditor
     void EngineEditor::OnDetach()
     {
         m_ScriptSourceWatcher.reset();
-        if (m_SceneState != SceneState::Edit) StopScene();
+        if (m_SceneState != SceneState::Edit)
+            StopScene();
         LOG_INFO("EngineEditor Layer detached!");
     }
 
@@ -202,6 +204,16 @@ namespace EngineEditor
                 {
                     BuildProjectScripts();
                 }
+                if (ImGui::MenuItem("Export Game...", nullptr, false,
+                                    Engine::Project::GetActiveProject() && m_SceneState == SceneState::Edit))
+                {
+                    m_ShowExportWindow = true;
+                    m_ExportMessage.clear();
+                    if (m_ExportParent.empty())
+                        m_ExportParent = Engine::Project::GetActiveProjectDirectory().parent_path().string();
+                    if (m_ExportRuntime.empty())
+                        m_ExportRuntime = Engine::ProjectExporter::DefaultRuntimeDirectory().string();
+                }
                 ImGui::EndMenu();
             }
 
@@ -228,6 +240,7 @@ namespace EngineEditor
             ImGui::EndMainMenuBar();
         }
 
+        RenderExportWindow();
         ImGui::Begin("Settings");
         ImGui::Checkbox("Show Physics Colliders", &ShowPhysicsColliders);
         ImGui::Separator();
@@ -427,7 +440,7 @@ namespace EngineEditor
 
     void EngineEditor::UIToolbar()
     {
-        ImGui::Begin("##UIToolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
+        ImGui::Begin("##UIToolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar);
 
         float windowWidth = ImGui::GetWindowWidth();
         float buttonSize = 25.0f;
@@ -768,8 +781,10 @@ namespace EngineEditor
 
     bool EngineEditor::BuildProjectScripts(bool projectChanged)
     {
-        if (!Engine::Project::GetActiveProject()) return true;
-        if (m_SceneState != SceneState::Edit) StopScene();
+        if (!Engine::Project::GetActiveProject())
+            return true;
+        if (m_SceneState != SceneState::Edit)
+            StopScene();
         m_ScriptBuildPending = false;
         const auto &spec = Engine::Core::Application::Get().GetSpecification();
         bool success = Engine::ProjectScripts::Build(spec.CoreAssemblyPath, m_ScriptBuildError);
@@ -783,14 +798,15 @@ namespace EngineEditor
     {
         m_ScriptSourcesChanged = false;
         m_ScriptBuildPending = false;
-        if (Engine::ProjectScripts::AssemblyPath().empty()) return;
+        if (Engine::ProjectScripts::AssemblyPath().empty())
+            return;
         const auto source = Engine::ProjectScripts::SourceDirectory();
-        if (!std::filesystem::is_directory(source)) return;
+        if (!std::filesystem::is_directory(source))
+            return;
         m_ScriptSourceWatcher = Engine::CreateScope<filewatch::FileWatch<std::string>>(
             source.string(), [this](const std::string &path, filewatch::Event)
             {
-                if (std::filesystem::path(path).extension() == ".cs") m_ScriptSourcesChanged = true;
-            });
+                if (std::filesystem::path(path).extension() == ".cs") m_ScriptSourcesChanged = true; });
     }
 
     void EngineEditor::UpdateProjectScripts()
@@ -805,6 +821,58 @@ namespace EngineEditor
             BuildProjectScripts();
     }
 
+    void EngineEditor::RenderExportWindow()
+    {
+        if (!m_ShowExportWindow) return;
+        ImGui::SetNextWindowSize(ImVec2(620, 400), ImGuiCond_FirstUseEver);
+        if (ImGui::Begin("Export Game", &m_ShowExportWindow))
+        {
+            const auto project = Engine::Project::GetActiveProject();
+            ImGui::TextWrapped("Project: %s", project ? Engine::Project::GetActiveProjectName().c_str() : "No project");
+            ImGui::TextWrapped("Exports saved scene files. Save your scene changes before exporting.");
+            ImGui::Separator();
+            ImGui::TextWrapped("Parent folder: %s", m_ExportParent.c_str());
+            if (ImGui::Button("Choose parent folder..."))
+            {
+                auto selected = Engine::FileDialog::OpenFolderDialog(m_ExportParent, L"选择导出游戏的父目录");
+                if (!selected.empty()) m_ExportParent = std::move(selected);
+            }
+            ImGui::InputText("New folder name", m_ExportFolder.data(), m_ExportFolder.size());
+            const std::string name(m_ExportFolder.data());
+            const bool validName = !name.empty() && name != "." && name != ".." &&
+                name.find_first_of("/\\:<>\"|?*") == std::string::npos && name.back() != '.' && name.back() != ' ';
+            if (validName && !m_ExportParent.empty())
+                ImGui::TextWrapped("Output: %s", (std::filesystem::u8path(m_ExportParent) / std::filesystem::u8path(name)).string().c_str());
+            else
+                ImGui::TextWrapped("Choose a parent folder and enter a valid new folder name.");
+            ImGui::TextWrapped("The output folder must not already exist. Exporting may take a moment.");
+            ImGui::Separator();
+            ImGui::TextWrapped("Release runtime: %s", m_ExportRuntime.c_str());
+            if (ImGui::Button("Choose Release runtime..."))
+            {
+                auto selected = Engine::FileDialog::OpenFolderDialog(m_ExportRuntime, L"选择已构建的 Release Runtime 目录");
+                if (!selected.empty()) m_ExportRuntime = std::move(selected);
+            }
+            ImGui::BeginDisabled(!project || m_SceneState != SceneState::Edit || !validName || m_ExportParent.empty());
+            if (ImGui::Button("Export"))
+            {
+                const auto output = std::filesystem::u8path(m_ExportParent) / std::filesystem::u8path(name);
+                std::string error;
+                if (Engine::ProjectExporter::Export(output, std::filesystem::u8path(m_ExportRuntime), error))
+                    m_ExportMessage = "Export complete. Run ForestGame.exe in:\n" + output.string();
+                else
+                    m_ExportMessage = "Export failed:\n" + error;
+            }
+            ImGui::EndDisabled();
+            if (!m_ExportMessage.empty())
+            {
+                ImGui::Separator();
+                ImGui::TextWrapped("%s", m_ExportMessage.c_str());
+            }
+        }
+        ImGui::End();
+    }
+
     void EngineEditor::NewProject()
     {
         std::string workDir = std::filesystem::current_path().string();
@@ -812,11 +880,13 @@ namespace EngineEditor
         std::string projectPathStr = Engine::FileDialog::OpenFolderDialog(workDir);
         if (projectPathStr.empty())
         {
-            if (!m_EditorScene) NewScene();
+            if (!m_EditorScene)
+                NewScene();
             return;
         }
         m_ScriptSourceWatcher.reset();
-        if (m_SceneState != SceneState::Edit) StopScene();
+        if (m_SceneState != SceneState::Edit)
+            StopScene();
         std::filesystem::path projectPath = std::filesystem::absolute(projectPathStr);
         std::string projectName = Utils::ExtraNameFromPath(projectPath);
         ENGINE_INFO("create project {} at {}", projectName, projectPath.string());
@@ -835,7 +905,8 @@ namespace EngineEditor
     void EngineEditor::LoadProject(std::filesystem::path path)
     {
         m_ScriptSourceWatcher.reset();
-        if (m_SceneState != SceneState::Edit) StopScene();
+        if (m_SceneState != SceneState::Edit)
+            StopScene();
         path = std::filesystem::absolute(path);
         if (Engine::Project::Load(path))
         {
@@ -849,7 +920,8 @@ namespace EngineEditor
             }
             m_ContentBrowserPanel = Engine::CreateScope<ContentBrowserPanel>();
         }
-        if (!m_ActiveScene) NewScene();
+        if (!m_ActiveScene)
+            NewScene();
     }
 
     void EngineEditor::LoadProject()

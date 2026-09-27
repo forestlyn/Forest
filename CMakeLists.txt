@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.21)
 project(Forest)
 if (MSVC)
     # 设置源码字符集为 UTF-8
@@ -23,9 +23,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BUILD_BIN_DIR})
 # 配置类型设置
 if(CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_CONFIGURATION_TYPES Debug Release)
-    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build" FORCE)
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+elseif(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build")
 endif()
+
+# Runtime resource staging shared by the editor and standalone runner
+include(Scripts/RuntimeResources.cmake)
 
 # 添加子目录
 add_subdirectory(Engine)

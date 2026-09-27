@@ -93,15 +93,22 @@ namespace Engine
 
     bool ProjectScripts::Build(const fs::path &coreAssembly, std::string &error)
     {
+        const auto &config = Project::GetActiveProject()->GetProjectSettings().ScriptBuildConfiguration;
+        return Build(SourceDirectory(), AssemblyPath(), config, coreAssembly,
+                     Project::GetActiveProjectDirectory() / "Intermediate/Scripts" / config, error);
+    }
+
+    bool ProjectScripts::Build(const fs::path &source, const fs::path &assembly,
+                              const std::string &config, const fs::path &coreAssembly,
+                              const fs::path &buildDirectory, std::string &error)
+    {
         error.clear();
         try
         {
-            const auto assembly = AssemblyPath();
             if (assembly.empty()) return true;
-            const auto &config = Project::GetActiveProject()->GetProjectSettings().ScriptBuildConfiguration;
             if (config != "Debug" && config != "Release")
                 throw std::runtime_error("ScriptBuildConfiguration must be Debug or Release");
-            const auto build = fs::absolute(Project::GetActiveProjectDirectory() / "Intermediate/Scripts" / config);
+            const auto build = fs::absolute(buildDirectory);
             fs::create_directories(build);
             Handle lock{CreateFileW((build / "build.lock").c_str(), GENERIC_WRITE, 0, nullptr,
                                     OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr)};
@@ -113,7 +120,7 @@ namespace Engine
             marker << "Build in progress or failed. See " << build.string();
             marker.close();
             if (!fs::is_regular_file(coreAssembly)) throw std::runtime_error("ScriptCore assembly is missing");
-            if (!fs::is_directory(SourceDirectory())) throw std::runtime_error("Script source directory is missing");
+            if (!fs::is_directory(source)) throw std::runtime_error("Script source directory is missing");
             const fs::path cmake(FOREST_CMAKE_EXECUTABLE);
             const fs::path driver(FOREST_SCRIPT_BUILD_DRIVER);
             const auto configureLog = build / "configure.log";
@@ -127,10 +134,10 @@ namespace Engine
                 ENGINE_ERROR("{}", error);
                 return false;
             };
-            ENGINE_INFO("Building project scripts: {} -> {}", SourceDirectory().string(), assembly.string());
+            ENGINE_INFO("Building project scripts: {} -> {}", source.string(), assembly.string());
             if (!Run({cmake.wstring(), L"-S", driver.wstring(), L"-B", build.wstring(),
                       L"-G", L"Visual Studio 17 2022", L"-A", L"x64",
-                      L"-DFOREST_SCRIPT_SOURCE=" + SourceDirectory().wstring(),
+                      L"-DFOREST_SCRIPT_SOURCE=" + fs::absolute(source).wstring(),
                       L"-DFOREST_SCRIPT_ASSEMBLY=" + assembly.wstring(),
                       L"-DFOREST_SCRIPT_CORE=" + fs::absolute(coreAssembly).wstring()}, configureLog))
                 return failure(configureLog);

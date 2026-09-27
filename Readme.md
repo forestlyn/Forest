@@ -151,7 +151,7 @@ ScriptCore 是 C# 层的基础 API 程序集，为业务脚本（Sandbox）提�
 ### 1) ScriptCore（Engine-ScriptCore.dll）
 
 - CMake 目标：ScriptCore（ScriptCore/CMakeLists.txt）。
-- 输出目录：EngineEditor/resources/scripts/bin。
+- 输出目录：build/managed/<Config>。
 - 关键 API：
   - Entity：ScriptCore/src/Engine/Scene/Entity.cs
   - Component 封装：ScriptCore/src/Engine/Scene/Components
@@ -183,7 +183,7 @@ ScriptCore 是 C# 层的基础 API 程序集，为业务脚本（Sandbox）提�
 ### 1) 前置依赖
 
 - Visual Studio 2022（建议包含 C++ 与 CMake 工作负载）
-- CMake >= 3.15
+- CMake >= 3.21
 - Python（用于执行 Scripts/Setup.py）
 - Vulkan SDK（仓库当前检查版本为 1.4.335.0，依赖环境变量 VULKAN_SDK）
 
@@ -211,8 +211,21 @@ cmake --build . --config Debug
 - 脚本 API：ScriptCore（生成 Engine-ScriptCore.dll）
 - 业务脚本：Sandbox / TestProject（分别输出到项目的 Assets/Scripts/bin/Debug/Game.dll；配置见各自 .forestproj）
 
-默认可执行输出目录在 build/bin/<Config>/。
-ScriptCore 输出在 EngineEditor/resources/scripts/bin/；游戏脚本输出在各项目 ScriptAssembly 指定的位置。
+编辑器和旧示例输出目录在 build/bin/<Config>/；ForestRuntime 输出在 build/runtime/<Config>/，构建时自动复制引擎资源、ScriptCore、Mono 和原生运行依赖。
+ScriptCore 输出在 build/managed/<Config>/；游戏脚本输出在各项目 ScriptAssembly 指定的位置。
 ## 独立运行与项目脚本构建
 
 详见 [ForestRuntime 文档](ForestRuntime/README.md)。项目内填写 ScriptAssembly、ScriptSourceDirectory 和 ScriptBuildConfiguration 后，可使用 `ForestRuntime <项目.forestproj> --build-only` 构建脚本，或使用 `--build-scripts` 构建成功后运行。新建项目无需注册到引擎根 CMake。
+
+### 完整重新编译
+
+关闭正在运行的编辑器和游戏，在仓库根目录执行其中一个入口：
+
+```powershell
+.\Rebuild_Debug.bat
+.\Rebuild_Release.bat
+```
+
+两个入口均重新配置 CMake、清理并构建全部默认目标、准备运行资源，最后构建两个示例项目的脚本。
+编辑器位于 `build/bin/<Config>/`，Runtime 位于 `build/runtime/<Config>/`。
+C# 游戏脚本配置独立，由 `.forestproj` 的 `ScriptBuildConfiguration` 决定；需要 Release 游戏脚本时将其设为 `Release`。

@@ -29,6 +29,8 @@ namespace Engine::MyImGui
         void SetDarkThemeColors();
 
     private:
+        void UpdateIniPath();
+        std::string m_IniPath;
         bool m_BlockEvents = true;
     };
 }

@@ -11,6 +11,9 @@ namespace Engine
         static std::filesystem::path AssemblyPath();
         static std::filesystem::path SourceDirectory();
         static bool Build(const std::filesystem::path &coreAssembly, std::string &error);
+        static bool Build(const std::filesystem::path &source, const std::filesystem::path &assembly,
+                          const std::string &configuration, const std::filesystem::path &coreAssembly,
+                          const std::filesystem::path &buildDirectory, std::string &error);
         static bool CanLoad(const std::filesystem::path &assembly, std::string &error);
     };
 }

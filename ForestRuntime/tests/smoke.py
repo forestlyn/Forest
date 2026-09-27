@@ -1,5 +1,5 @@
 """Integration checks using a built development runner and the existing sample assets.
-Run: python ForestRuntime/tests/smoke.py build/bin/Debug/ForestRuntime_debug.exe
+Run: python ForestRuntime/tests/smoke.py build/runtime/Debug/ForestRuntime_debug.exe
 Creates temporary project descriptors, never changes the source projects.
 """
 import json

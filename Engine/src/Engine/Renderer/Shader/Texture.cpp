@@ -1,4 +1,5 @@
 #include "Texture.h"
+#include "Engine/Core/RuntimePaths.h"
 #include "Engine/pcheader.h"
 #include "../Renderer.h"
 #include "Platform/OpenGL/OpenGLTexture.h"
@@ -29,8 +30,9 @@ namespace Engine::Renderer
         return nullptr;
     }
 
-    Ref<Texture2D> Texture2D::Create(const std::string &path)
+    Ref<Texture2D> Texture2D::Create(const std::string &requestedPath)
     {
+        const auto path = Core::RuntimePaths::ResolveAsset(requestedPath).string();
         switch (Renderer::Renderer::GetAPI())
         {
         case RendererAPI::API::None:

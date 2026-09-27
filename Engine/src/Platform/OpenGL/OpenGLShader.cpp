@@ -351,7 +351,7 @@ namespace Platform::OpenGL
         for (const auto &[type, sourceStr] : shaderSources)
         {
             std::filesystem::path shaderFilePath = m_FilePath;
-            std::filesystem::path cachedPath = cacheDir / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedVulkanFileExtension(type));
+            std::filesystem::path cachedPath = cacheDir / (Utils::CalculateHash(m_FilePath) + "_" + shaderFilePath.filename().string() + Utils::GLShaderStageCachedVulkanFileExtension(type));
 
             std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
             if (in.is_open() && !forceRecompile)
@@ -405,7 +405,7 @@ namespace Platform::OpenGL
         for (auto &&[type, spirv] : m_VulkanSPIRV)
         {
             std::filesystem::path shaderFilePath = m_FilePath;
-            std::filesystem::path cachedPath = cacheDir / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedOpenGLFileExtension(type));
+            std::filesystem::path cachedPath = cacheDir / (Utils::CalculateHash(m_FilePath) + "_" + shaderFilePath.filename().string() + Utils::GLShaderStageCachedOpenGLFileExtension(type));
 
             std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
             if (in.is_open() && !forceRecompile)

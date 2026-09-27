@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "RuntimePaths.h"
 #include "Engine/pcheader.h"
 #include "Engine/Events/Event.h"
 #include "Engine/Core/Input.h"
@@ -26,6 +27,7 @@ namespace Engine::Core
 		s_Instance = this;
 
 		m_Specification = spec;
+        RuntimePaths::Configure(spec.EngineResourceDirectory, spec.UserDataDirectory);
 
 		ENGINE_INFO("current path:{}", std::filesystem::current_path().string());
 

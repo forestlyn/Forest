@@ -10,6 +10,7 @@
 #include <FileWatch.hpp>
 #include <atomic>
 #include <chrono>
+#include <array>
 namespace EngineEditor
 {
 
@@ -36,6 +37,7 @@ namespace EngineEditor
         bool BuildProjectScripts(bool projectChanged = false);
         void WatchProjectScripts();
         void UpdateProjectScripts();
+        void RenderExportWindow();
 
         void NewScene();
         void SaveSceneAs();
@@ -69,6 +71,11 @@ namespace EngineEditor
         bool m_ScriptBuildPending = false;
         std::chrono::steady_clock::time_point m_LastScriptEdit;
         std::string m_ScriptBuildError;
+        bool m_ShowExportWindow = false;
+        std::string m_ExportParent;
+        std::string m_ExportRuntime;
+        std::array<char, 128> m_ExportFolder = {"GameExport"};
+        std::string m_ExportMessage;
         Engine::Ref<Engine::Renderer::FrameBuffer> m_FrameBuffer;
 
         Engine::Ref<Engine::Renderer::Texture2D> m_PlayIcon;

@@ -9,6 +9,16 @@
 #include "Engine/Core/Application.h"
 namespace Engine
 {
+    namespace
+    {
+        int CALLBACK InitializeFolderDialog(HWND window, UINT message, LPARAM, LPARAM initialPath)
+        {
+            if (message == BFFM_INITIALIZED && initialPath)
+                SendMessageW(window, BFFM_SETSELECTIONW, TRUE, initialPath);
+            return 0;
+        }
+    }
+
     std::string FileDialog::OpenFileDialog(const char *filter, const std::string &initialPath)
     {
         OPENFILENAMEA ofn;      // common dialog box structure
@@ -58,7 +68,7 @@ namespace Engine
         return std::string();
     }
 
-    std::string FileDialog::OpenFolderDialog(const std::string &initialPath)
+    std::string FileDialog::OpenFolderDialog(const std::string &initialPath, const wchar_t *title)
     {
         BROWSEINFOW bi = {0};
         wchar_t path[MAX_PATH] = {0};
@@ -67,33 +77,23 @@ namespace Engine
         // 获取窗口句柄
         bi.hwndOwner = glfwGetWin32Window((GLFWwindow *)Core::Application::Get().GetWindow().GetNativeWindow());
         bi.pszDisplayName = displayName;
-        bi.lpszTitle = L"选择项目目录";
+        bi.lpszTitle = title;
         bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE | BIF_EDITBOX;
+        bi.pidlRoot = nullptr; // Allow browsing outside the initial directory.
 
-        // 如果有初始路径，设置初始目录
+        // Keep the string alive until the modal dialog and its callbacks return.
+        std::wstring wInitialPath;
         if (!initialPath.empty())
         {
-            // 将 UTF-8 字符串转换为宽字符串
             int len = MultiByteToWideChar(CP_UTF8, 0, initialPath.c_str(), -1, NULL, 0);
-            std::wstring wInitialPath(len, 0);
-            MultiByteToWideChar(CP_UTF8, 0, initialPath.c_str(), -1, &wInitialPath[0], len);
-
-            // 创建 ITEMIDLIST 从路径
-            LPSHELLFOLDER pDesktop = NULL;
-            SHGetDesktopFolder(&pDesktop);
-
-            if (pDesktop)
+            if (len > 0)
             {
-                ULONG chEaten;
-                ULONG dwAttributes;
-                LPITEMIDLIST pidl = NULL;
-
-                HRESULT hr = pDesktop->ParseDisplayName(NULL, NULL, (LPWSTR)wInitialPath.c_str(), &chEaten, &pidl, &dwAttributes);
-                if (SUCCEEDED(hr))
+                wInitialPath.resize(len);
+                if (MultiByteToWideChar(CP_UTF8, 0, initialPath.c_str(), -1, wInitialPath.data(), len))
                 {
-                    bi.pidlRoot = pidl;
+                    bi.lpfn = InitializeFolderDialog;
+                    bi.lParam = reinterpret_cast<LPARAM>(wInitialPath.c_str());
                 }
-                pDesktop->Release();
             }
         }
 

@@ -1,4 +1,7 @@
 #include "ImGuiLayer.h"
+#include "Engine/Core/RuntimePaths.h"
+#include "Engine/Project/Project.h"
+#include "imgui_internal.h"
 #include "KeyMap.h"
 #include "Engine/Core/Application.h"
 #include "backends/imgui_impl_glfw.h"
@@ -20,14 +23,16 @@ namespace Engine::MyImGui
         ImGui::CreateContext();
 
         ImGuiIO &io = ImGui::GetIO();
+        // The editor chooses its initial project after this layer is attached.
+        io.IniFilename = nullptr;
         io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
         io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
         // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // Enable Multi-Viewport
 
-        io.Fonts->AddFontFromFileTTF("resources/assets/fonts/googlesans/static/GoogleSans-Bold.ttf", 22.0f);
-        io.FontDefault = io.Fonts->AddFontFromFileTTF("resources/assets/fonts/googlesans/static/GoogleSans-Regular.ttf", 22.0f);
+        io.Fonts->AddFontFromFileTTF(Engine::Core::RuntimePaths::EngineResource("assets/fonts/googlesans/static/GoogleSans-Bold.ttf").string().c_str(), 22.0f);
+        io.FontDefault = io.Fonts->AddFontFromFileTTF(Engine::Core::RuntimePaths::EngineResource("assets/fonts/googlesans/static/GoogleSans-Regular.ttf").string().c_str(), 22.0f);
 
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
@@ -79,6 +84,33 @@ namespace Engine::MyImGui
         return false;
     }
 
+    void ImGuiLayer::UpdateIniPath()
+    {
+        namespace fs = std::filesystem;
+        const auto directory = Engine::Project::GetActiveProject()
+            ? Engine::Project::GetActiveProjectDirectory()
+            : Engine::Core::RuntimePaths::ExecutableDirectory();
+        const auto path = fs::absolute(directory / "imgui.ini").lexically_normal();
+        if (path.string() == m_IniPath) return;
+
+        if (!m_IniPath.empty())
+            ImGui::SaveIniSettingsToDisk(m_IniPath.c_str());
+
+        // Seed older projects and the no-project layout without overwriting saved layouts.
+        std::error_code error;
+        if (!fs::exists(path, error))
+        {
+            fs::copy_file(Engine::Core::RuntimePaths::EngineResource("template/project/imgui.ini"),
+                          path, fs::copy_options::skip_existing, error);
+            if (error) ENGINE_WARN("Cannot initialize ImGui layout '{}': {}", path.string(), error.message());
+        }
+
+        ImGui::ClearIniSettings();
+        m_IniPath = path.string();
+        ImGui::GetIO().IniFilename = m_IniPath.c_str();
+        ImGui::LoadIniSettingsFromDisk(m_IniPath.c_str());
+    }
+
     void ImGuiLayer::Begin()
     {
         ENGINE_PROFILING_FUNC();
@@ -89,6 +121,8 @@ namespace Engine::MyImGui
 
         Engine::Core::Application::Get().FlushRendererCommands();
 
+        // Switch settings between frames, never while drawing the project menu.
+        UpdateIniPath();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         ImGuizmo::BeginFrame();

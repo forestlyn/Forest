@@ -1,4 +1,5 @@
 #pragma once
+#include <filesystem>
 #include "Core.h"
 #include "spdlog/spdlog.h"
 #include "Engine/pcheader.h"
@@ -9,6 +10,7 @@ namespace Engine::Core
 	{
 	public:
 		static void Init();
+        static void EnableFileLogging(const std::filesystem::path &path);
 		inline static Ref<spdlog::logger> &GetCoreLogger() { return s_CoreLogger; }
 		inline static Ref<spdlog::logger> &GetClientLogger() { return s_ClientLogger; }
 

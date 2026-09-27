@@ -38,6 +38,8 @@ namespace Engine::Core
         bool EnableScriptDebugging = true;
         bool EnableScriptHotReload = true;
         bool RunInBackground = false;
+        std::string EngineResourceDirectory;
+        std::string UserDataDirectory;
         std::string CoreAssemblyPath = "resources/scripts/bin/Engine-ScriptCore.dll";
         std::string AppAssemblyPath = "resources/scripts/bin/Sandbox.dll";
 		std::string WorkingDirectory = "";

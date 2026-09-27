@@ -5,6 +5,8 @@
 #include "Engine/Animation/AnimationClip2D.h"
 #include "Engine/Project/Project.h"
 #include "ResourceRef.h"
+#include "Engine/Core/RuntimePaths.h"
+#include <typeinfo>
 #include <unordered_map>
 #include <unordered_set>
 #include <string>
@@ -41,22 +43,7 @@ namespace Engine
 
         static std::string ResolvePathForLoad(const std::string &normalizedPath)
         {
-            if (normalizedPath.empty())
-                return normalizedPath;
-
-            std::filesystem::path path(normalizedPath);
-            if (path.is_absolute() || IsEngineResourcePath(normalizedPath))
-            {
-                return normalizedPath;
-            }
-
-            if (Project::GetActiveProject())
-            {
-                auto absolutePath = Project::GetActiveProjectAssetPath(normalizedPath);
-                return NormalizePath(absolutePath.string());
-            }
-
-            return normalizedPath;
+            return Core::RuntimePaths::ResolveAsset(normalizedPath).generic_string();
         }
 
         // 核心接口
@@ -66,8 +53,9 @@ namespace Engine
             if (rawPath.empty())
                 return nullptr;
 
-            std::string cacheKey = NormalizePath(rawPath);
-            std::string loadPath = ResolvePathForLoad(cacheKey);
+            std::string loadPath = ResolvePathForLoad(NormalizePath(rawPath));
+            // Both successful and failed loads are scoped to the resolved file and resource type.
+            std::string cacheKey = std::string(typeid(T).name()) + ":" + loadPath;
 
             auto it = m_Cache.find(cacheKey);
             if (it != m_Cache.end())
@@ -87,7 +75,7 @@ namespace Engine
             if (newResource)
             {
                 ResourceRef<void> cachedResource;
-                cachedResource.path = cacheKey;
+                cachedResource.path = loadPath;
                 cachedResource.instance = newResource;
                 m_Cache[cacheKey] = cachedResource; // 存入缓存
                 return newResource;

@@ -1,4 +1,5 @@
 #include "Engine/Core/Application.h"
+#include "Engine/Core/RuntimePaths.h"
 #include "Engine/Project/Project.h"
 #include "Engine/Project/ProjectScripts.h"
 #include "Engine/Scripts/ScriptEngine.h"
@@ -13,11 +14,11 @@ int main(int argc, char **argv)
     {
         if (argc != 3) throw std::runtime_error("Expected two project paths");
         const fs::path first = fs::absolute(argv[1]), second = fs::absolute(argv[2]);
-        const fs::path root(FOREST_SOURCE_ROOT);
+        const auto root = Engine::Core::RuntimePaths::ExecutableDirectory();
         Engine::Core::ApplicationSpecification spec;
-        spec.WorkingDirectory = (root / "EngineEditor").string();
-        spec.MonoAssemblyPath = (root / "Engine/ThirdParty/mono/4.5").string();
-        spec.CoreAssemblyPath = (root / "EngineEditor/resources/scripts/bin/Engine-ScriptCore.dll").string();
+        spec.EngineResourceDirectory = (root / "resources").string();
+        spec.MonoAssemblyPath = (root / "Mono/4.5").string();
+        spec.CoreAssemblyPath = (root / "Managed/Engine-ScriptCore.dll").string();
         spec.AppAssemblyPath.clear();
         spec.EnableImGui = spec.EnableProfileLayer = spec.EnableScriptDebugging = spec.EnableScriptHotReload = false;
         Engine::Core::Application app(spec);

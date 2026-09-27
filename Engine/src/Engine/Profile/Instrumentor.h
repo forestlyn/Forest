@@ -1,6 +1,7 @@
 #pragma once
 #include "Engine/Profile/ProfileMacros.h"
 #include "Engine/Core/Log.h"
+#include "Engine/Core/RuntimePaths.h"
 #include <algorithm>
 #include <chrono>
 #include <fstream>
@@ -49,7 +50,7 @@ namespace Engine::Profile
                 }
                 InternalEndSession();
             }
-            m_OutputStream.open(filepath);
+            m_OutputStream.open(Engine::Core::RuntimePaths::Logs() / std::filesystem::path(filepath).filename());
 
             if (m_OutputStream.is_open())
             {

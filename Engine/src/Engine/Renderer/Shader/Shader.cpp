@@ -1,4 +1,5 @@
 #include "Shader.h"
+#include "Engine/Core/RuntimePaths.h"
 #include "Engine/pcheader.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "../Renderer.h"
@@ -26,7 +27,7 @@ namespace Engine::Renderer
             ENGINE_ASSERT(false, "RendererAPI::None is currently not supported!");
             return nullptr;
         case RendererAPI::API::OpenGL:
-            return Ref<Platform::OpenGL::OpenGLShader>(new Platform::OpenGL::OpenGLShader(filepath));
+            return Ref<Platform::OpenGL::OpenGLShader>(new Platform::OpenGL::OpenGLShader(Core::RuntimePaths::ResolveAsset(filepath).string()));
         }
         ENGINE_ASSERT(false, "Unknown RendererAPI!");
         return nullptr;

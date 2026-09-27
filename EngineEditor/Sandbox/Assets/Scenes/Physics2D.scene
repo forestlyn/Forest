@@ -17,19 +17,21 @@ Entities:
       PerspectiveFOV: 45
       PerspectiveNear: 0.1
       PerspectiveFar: 1000
-      AspectRatio: 1.2582159
+      AspectRatio: 1.7496318
       FollowTarget: false
       TargetEntity: 0
   - EntityID: 5589837931712714978
     TagComponent:
       Tag: Square
     TransformComponent:
-      Position: [1.2640316, 5.3411304e-07, 0]
+      Position: [1.7635281, 1.0532537, 0]
       Rotation: [0, 0, 0]
       Scale: [3.7, 4.6, 1]
     SpriteComponent:
       Color: [0.8, 0.2, 0.3, 1]
       TilingFactor: 1
+      UVMin: [0, 0]
+      UVMax: [1, 1]
       TextureRef:
         path: Textures/Checkerboard.png
     Rigidbody2DComponent:
@@ -78,6 +80,8 @@ Entities:
     SpriteComponent:
       Color: [0.4283616, 0.76567656, 0.22490169, 1]
       TilingFactor: 1
+      UVMin: [0, 0]
+      UVMax: [1, 1]
       TextureRef:
         path: ""
     Rigidbody2DComponent:
@@ -168,6 +172,6 @@ Entities:
       PerspectiveFOV: 45
       PerspectiveNear: 0.1
       PerspectiveFar: 1000
-      AspectRatio: 1.2582159
+      AspectRatio: 1.7496318
       FollowTarget: false
       TargetEntity: 0

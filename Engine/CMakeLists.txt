@@ -29,34 +29,18 @@ message("SHADERC_INCLUDE_DIR set to: ${SHADERC_INCLUDE_DIR}")
 set(SHADERC_LIB_DIR "${SHADERC_ROOT}/Lib")
 message("SHADERC_LIB_DIR set to: ${SHADERC_LIB_DIR}")
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(SHADER_COMBINED_LIB "${SHADERC_LIB_DIR}/shaderc_combinedd.lib")
-    set(SHADERC_LIB "${SHADERC_LIB_DIR}/shaderc_sharedd.lib")
-    set(SPIRV_CROSS_CORE_LIB "${SHADERC_LIB_DIR}/spirv-cross-cored.lib")
-    set(SPIRV_CROSS_GLSL_LIB "${SHADERC_LIB_DIR}/spirv-cross-glsld.lib")
-    set(SPIRV_TOOLS_LIB "${SHADERC_LIB_DIR}/SPIRV-Toolsd.lib")
-else()
-    set(SHADER_COMBINED_LIB "${SHADERC_LIB_DIR}/shaderc_combined.lib")
-    set(SHADERC_LIB "${SHADERC_LIB_DIR}/shaderc_shared.lib")
-    set(SPIRV_CROSS_CORE_LIB "${SHADERC_LIB_DIR}/spirv-cross-core.lib")
-    set(SPIRV_CROSS_GLSL_LIB "${SHADERC_LIB_DIR}/spirv-cross-glsl.lib")
-    set(SPIRV_TOOLS_LIB "${SHADERC_LIB_DIR}/SPIRV-Tools.lib")
-endif()
+# Select prebuilt libraries at build time for multi-config generators.
+set(SHADERC_LIBRARYS)
+foreach(library shaderc_combined shaderc_shared spirv-cross-core spirv-cross-glsl SPIRV-Tools)
+    list(APPEND SHADERC_LIBRARYS "${SHADERC_LIB_DIR}/${library}$<$<CONFIG:Debug>:d>.lib")
+endforeach()
 
-set(SHADERC_LIBRARYS "${SHADER_COMBINED_LIB};${SHADERC_LIB};${SPIRV_CROSS_CORE_LIB};${SPIRV_CROSS_GLSL_LIB};${SPIRV_TOOLS_LIB}")
-message("Shaderc Libraries: ${SHADERC_LIBRARYS}")
-
-# find mono lib
-set(MONO_LIB_DIR "ThirdParty/mono/lib")
-message("Current mono dir:${MONO_LIB_DIR}")
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(MONO_CURRENT_LIB_DIR "${MONO_LIB_DIR}/Debug")
-else()
-    set(MONO_CURRENT_LIB_DIR "${MONO_LIB_DIR}/Release")
-endif()
-
-file(GLOB MONO_LIBRARIES "${MONO_CURRENT_LIB_DIR}/*.lib")
-message("Mono Libraries: ${MONO_LIBRARIES}")
+set(MONO_LIBRARIES)
+file(GLOB mono_library_names RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/mono/lib/Debug"
+    "${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/mono/lib/Debug/*.lib")
+foreach(library IN LISTS mono_library_names)
+    list(APPEND MONO_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/mono/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/${library}")
+endforeach()
 
 # mono dependency
 set(MONO_DEPENDENCIES Ws2_32 Winmm Version Bcrypt)
@@ -98,6 +82,7 @@ target_compile_definitions(Engine
     PRIVATE FOREST_BUILD_DLL
         FOREST_CMAKE_EXECUTABLE="${CMAKE_COMMAND}"
         FOREST_SCRIPT_BUILD_DRIVER="${CMAKE_SOURCE_DIR}/Scripts/ProjectScripts"
+        FOREST_RUNTIME_RELEASE_DIR="${CMAKE_BINARY_DIR}/runtime/Release"
     PUBLIC FOREST_PLATFORM_WINDOWS
     FOREST_ENABLE_ASSERTS
     GLFW_INCLUDE_NONE

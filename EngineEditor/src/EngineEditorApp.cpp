@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "Engine/Core/RuntimePaths.h"
 #include "EngineEditor.h"
 #include "Engine/Core/EntryPoint.h"
 
@@ -15,8 +16,8 @@ namespace EngineEditor
 Engine::Core::Application *Engine::Core::CreateApplication(ApplicationCommandLineArgs args)
 {
     ApplicationSpecification spec;
-    const std::filesystem::path root(FOREST_SOURCE_ROOT);
-    // Resolve CLI paths before Application switches its working directory.
+    const auto root = RuntimePaths::ExecutableDirectory();
+    // Interpret CLI paths relative to the caller's working directory.
     static std::string projectPath;
     if (args.Count > 1)
     {
@@ -26,9 +27,9 @@ Engine::Core::Application *Engine::Core::CreateApplication(ApplicationCommandLin
     spec.Name = "Engine Editor";
     spec.Width = 1920;
     spec.Height = 1080;
-    spec.WorkingDirectory = (root / "EngineEditor").string();
-    spec.MonoAssemblyPath = (root / "Engine/ThirdParty/mono/4.5").string();
-    spec.CoreAssemblyPath = (root / "EngineEditor/resources/scripts/bin/Engine-ScriptCore.dll").string();
+    spec.EngineResourceDirectory = (root / "resources").string();
+    spec.MonoAssemblyPath = (root / "Mono/4.5").string();
+    spec.CoreAssemblyPath = (root / "Managed/Engine-ScriptCore.dll").string();
     spec.AppAssemblyPath.clear();
     spec.EnableScriptDebugging = false;
     spec.EnableScriptHotReload = false; // Source build and reload are coordinated by the editor layer.
