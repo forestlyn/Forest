@@ -1,5 +1,6 @@
 #include "SceneSerialize.h"
 #include "EntitySerialize.h"
+#include "Engine/UI/UILayout.h"
 #include <yaml-cpp/yaml.h>
 #include <algorithm>
 #include <fstream>
@@ -123,6 +124,11 @@ namespace Engine::Serialization
                 }
             }
         }
+        // Resolve only after all UUIDs exist; YAML order is intentionally unrelated to hierarchy.
+        // Bad UI subtrees remain editable in the scene but are excluded by BuildHierarchy/layout.
+        const auto hierarchy = UI::BuildHierarchy(m_Scene->GetRegistry());
+        for (const auto &diagnostic : hierarchy.Diagnostics)
+            ENGINE_WARN("UI entity {}: {}", uint64_t(diagnostic.EntityID), diagnostic.Message);
         return true;
     }
 } // namespace Engine::Serialization

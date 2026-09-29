@@ -5,6 +5,48 @@
 
 namespace Engine::Platform::OpenGL
 {
+    void OpenGLRendererAPI::BeginOverlay()
+    {
+        OverlayState state{};
+        state.DepthTest = glIsEnabled(GL_DEPTH_TEST);
+        GLboolean depthWrite;
+        glGetBooleanv(GL_DEPTH_WRITEMASK, &depthWrite);
+        state.DepthWrite = depthWrite;
+        state.Blend = glIsEnabled(GL_BLEND);
+        state.Cull = glIsEnabled(GL_CULL_FACE);
+        state.Scissor = glIsEnabled(GL_SCISSOR_TEST);
+        glGetIntegerv(GL_BLEND_SRC_RGB, &state.SrcRGB);
+        glGetIntegerv(GL_BLEND_DST_RGB, &state.DstRGB);
+        glGetIntegerv(GL_BLEND_SRC_ALPHA, &state.SrcAlpha);
+        glGetIntegerv(GL_BLEND_DST_ALPHA, &state.DstAlpha);
+        glGetIntegerv(GL_BLEND_EQUATION_RGB, &state.EquationRGB);
+        glGetIntegerv(GL_BLEND_EQUATION_ALPHA, &state.EquationAlpha);
+        m_OverlayStates.push_back(state);
+        glDisable(GL_DEPTH_TEST);
+        glDepthMask(GL_FALSE);
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_SCISSOR_TEST);
+        glEnable(GL_BLEND);
+        glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    }
+
+    void OpenGLRendererAPI::EndOverlay()
+    {
+        ENGINE_ASSERT(!m_OverlayStates.empty(), "Unbalanced overlay render pass");
+        if (m_OverlayStates.empty()) return;
+        const auto state = m_OverlayStates.back();
+        m_OverlayStates.pop_back();
+        const auto restore = [](GLenum cap, bool enabled) { if (enabled) glEnable(cap); else glDisable(cap); };
+        restore(GL_DEPTH_TEST, state.DepthTest);
+        glDepthMask(state.DepthWrite ? GL_TRUE : GL_FALSE);
+        restore(GL_BLEND, state.Blend);
+        restore(GL_CULL_FACE, state.Cull);
+        restore(GL_SCISSOR_TEST, state.Scissor);
+        glBlendEquationSeparate(state.EquationRGB, state.EquationAlpha);
+        glBlendFuncSeparate(state.SrcRGB, state.DstRGB, state.SrcAlpha, state.DstAlpha);
+    }
+
     void OpenGLRendererAPI::Init()
     {
         ENGINE_PROFILING_FUNC();

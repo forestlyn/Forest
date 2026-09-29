@@ -5,6 +5,7 @@ namespace Engine
 {
     struct BaseComponent
     {
+        template <typename T> friend struct MetaResolver;
     protected:
         bool m_Remove = false;
         bool m_Enabled = true;

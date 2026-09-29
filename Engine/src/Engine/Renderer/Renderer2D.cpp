@@ -646,9 +646,19 @@ namespace Engine::Renderer
     /// if exceed max slots, flush and reset
     float Renderer2D::GetTextureIndex(const Ref<Texture2D> &texture)
     {
+        // Flush BEFORE assigning an index: DrawQuadInternal must not reset the slots
+        // after a textured quad has already obtained its index for this batch.
+        if (m_SceneData.QuadIndexCount >= m_SceneData.MaxIndices)
+        {
+            UploadQuadData();
+            FlushQuad();
+            ResetQuad();
+        }
         for (uint32_t i = 1; i < m_SceneData.TextureSlotIndex; i++)
         {
-            if (Texture::IsEqual(*m_SceneData.TextureSlots[i], *texture))
+            // Compare shared resource identity without reading a GPU ID that may still
+            // be initialized on the render thread. ResourceManager already deduplicates paths.
+            if (m_SceneData.TextureSlots[i] == texture)
             {
                 // ENGINE_INFO("Existing Texture Slot: {}", i);
                 return (float)i;

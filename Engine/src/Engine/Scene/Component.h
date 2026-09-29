@@ -11,6 +11,9 @@
 #include "Components/BoxCollider2DComponent.h"
 #include "Components/ScriptComponent.h"
 #include "NativeScriptComponent.h"
+#include "Components/CanvasComponent.h"
+#include "Components/RectTransformComponent.h"
+#include "Components/UIImageComponent.h"
 
 namespace Engine
 {
@@ -37,6 +40,9 @@ namespace Engine
     concept IsInComponentGroup = IsInComponentGroupHelper<T, Group>::value;
 
     using AllComponents = ComponentGroup<
+        UIImageComponent,
+        CanvasComponent,
+        RectTransformComponent,
         TransformComponent,
         CameraComponent,
         SpriteComponent,
@@ -48,6 +54,10 @@ namespace Engine
         SpriteAnimationComponent,
         NativeScriptComponent>;
 
+    // Only types that have a ScriptCore managed wrapper belong here.
+    using ScriptableComponents = ComponentGroup<TransformComponent, Rigidbody2DComponent>;
+
+    // UI creation needs a valid parent/root and will use dedicated editor commands in P5.
     using AddableComponents = ComponentGroup<
         CameraComponent,
         SpriteComponent,

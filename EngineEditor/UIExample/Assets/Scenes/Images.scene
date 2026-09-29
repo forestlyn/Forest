@@ -1,0 +1,99 @@
+Scene: UI Image Preview
+Entities:
+  - EntityID: 100
+    TagComponent: {Tag: Screen Canvas}
+    TransformComponent: {}
+    CanvasComponent:
+      ReferenceResolution: [1280, 720]
+      ScaleMode: ScaleWithScreenSize
+      MatchWidthOrHeight: 0.5
+      SortOrder: 0
+    RectTransformComponent: {}
+    UIImageComponent:
+      Color: [0.035, 0.055, 0.08, 1]
+      RaycastTarget: false
+  - EntityID: 200
+    TagComponent: {Tag: Center Panel}
+    TransformComponent: {}
+    RectTransformComponent:
+      Parent: 100
+      SiblingOrder: 0
+      SizeDelta: [640, 400]
+    UIImageComponent:
+      Color: [0.09, 0.14, 0.19, 1]
+  - EntityID: 210
+    TagComponent: {Tag: Top Accent}
+    TransformComponent: {}
+    RectTransformComponent:
+      Parent: 200
+      AnchorMin: [0, 0]
+      AnchorMax: [1, 0]
+      Pivot: [0.5, 0]
+      SizeDelta: [0, 4]
+    UIImageComponent:
+      Color: [0.22, 0.82, 0.65, 1]
+  - EntityID: 220
+    TagComponent: {Tag: Texture Image}
+    TransformComponent: {}
+    RectTransformComponent:
+      Parent: 200
+      SiblingOrder: 1
+      AnchorMin: [0, 0]
+      AnchorMax: [0, 0]
+      Pivot: [0, 0]
+      AnchoredPosition: [40, 44]
+      SizeDelta: [104, 104]
+    UIImageComponent:
+      TextureRef: {path: Textures/Tree.tga}
+      Color: [0.22, 0.82, 0.65, 1]
+      RaycastTarget: false
+  - EntityID: 230
+    TagComponent: {Tag: Solid Blue Image}
+    TransformComponent: {}
+    RectTransformComponent:
+      Parent: 200
+      SiblingOrder: 2
+      AnchorMin: [0, 0]
+      AnchorMax: [0, 0]
+      Pivot: [0, 0]
+      AnchoredPosition: [176, 44]
+      SizeDelta: [280, 104]
+    UIImageComponent:
+      Color: [0.15, 0.35, 0.65, 1]
+  - EntityID: 240
+    TagComponent: {Tag: Translucent Overlap}
+    TransformComponent: {}
+    RectTransformComponent:
+      Parent: 200
+      SiblingOrder: 3
+      AnchorMin: [0, 0]
+      AnchorMax: [0, 0]
+      Pivot: [0, 0]
+      AnchoredPosition: [368, 80]
+      SizeDelta: [232, 104]
+    UIImageComponent:
+      Color: [0.22, 0.82, 0.65, 0.6]
+  - EntityID: 250
+    TagComponent: {Tag: Bottom Anchored Bar}
+    TransformComponent: {}
+    RectTransformComponent:
+      Parent: 200
+      SiblingOrder: 4
+      AnchorMin: [0, 1]
+      AnchorMax: [1, 1]
+      Pivot: [0.5, 1]
+      AnchoredPosition: [0, -40]
+      SizeDelta: [-80, 64]
+    UIImageComponent:
+      Color: [0.22, 0.82, 0.65, 1]
+  - EntityID: 260
+    TagComponent: {Tag: Bar Child Accent}
+    TransformComponent: {}
+    RectTransformComponent:
+      Parent: 250
+      AnchorMin: [0, 0]
+      AnchorMax: [0, 1]
+      Pivot: [0, 0.5]
+      SizeDelta: [8, 0]
+    UIImageComponent:
+      Color: [0.62, 0.98, 0.83, 1]

@@ -20,6 +20,9 @@
 namespace Engine::Serialization
 {
     using REFLECT_SERIALIZE_TYPE = ComponentGroup<
+        UIImageComponent,
+        CanvasComponent,
+        RectTransformComponent,
         TagComponent,
         TransformComponent,
         CameraComponent,

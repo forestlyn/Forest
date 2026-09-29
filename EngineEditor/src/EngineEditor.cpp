@@ -97,18 +97,19 @@ namespace EngineEditor
 
                 if (m_SceneState == SceneState::Play) // Runtime update
                 {
-                    m_ActiveScene->OnUpdateRuntime(timestep);
+                    m_ActiveScene->OnUpdateRuntime(timestep, false);
                 }
                 else if (m_SceneState == SceneState::Simulate) // Simulate update
                 {
-                    m_ActiveScene->OnUpdateSimulate(timestep, m_EditorCamera.GetViewProjectionMatrix());
+                    m_ActiveScene->OnUpdateSimulate(timestep, m_EditorCamera.GetViewProjectionMatrix(), false);
                 }
                 else if (m_SceneState == SceneState::Edit) // Editor update
                 {
-                    m_ActiveScene->OnUpdateEditor(timestep, m_EditorCamera.GetViewProjectionMatrix());
+                    m_ActiveScene->OnUpdateEditor(timestep, m_EditorCamera.GetViewProjectionMatrix(), false);
                 }
 
                 OnLateRender();
+                m_ActiveScene->RenderUI();
 
                 auto mousePos = ImGui::GetMousePos();
 
@@ -519,7 +520,7 @@ namespace EngineEditor
     void EngineEditor::RenderGizmos()
     {
         Engine::Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity();
-        if (selectedEntity && ImGuizmo_operation != -1)
+        if (selectedEntity && !selectedEntity.HasComponent<Engine::RectTransformComponent>() && ImGuizmo_operation != -1)
         {
             ImGuizmo::SetDrawlist();
             float windowWidth = (float)ImGui::GetWindowWidth();
@@ -586,6 +587,7 @@ namespace EngineEditor
         glm::mat4 viewProj;
         if (m_SceneState == SceneState::Play)
         {
+            if (!m_ActiveScene->GetPrimaryCameraEntity()) return;
             viewProj = m_ActiveScene->GetPrimaryCameraViewProjectionMatrix();
         }
         else
@@ -624,7 +626,7 @@ namespace EngineEditor
 
         if (Engine::Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity())
         {
-            if (selectedEntity.HasComponent<Engine::TransformComponent>())
+            if (selectedEntity.HasComponent<Engine::TransformComponent>() && !selectedEntity.HasComponent<Engine::RectTransformComponent>())
             {
                 auto &tc = selectedEntity.GetComponent<Engine::TransformComponent>();
                 glm::mat4 transform = tc.GetTransform();

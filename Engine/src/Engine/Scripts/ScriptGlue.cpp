@@ -22,7 +22,7 @@ namespace Engine
         s_EntityHasComponentFuncs.clear();
         s_EntityAddComponentFuncs.clear();
         s_EntityRemoveComponentFuncs.clear();
-        RegisterComponent(AllComponents{});
+        RegisterComponent(ScriptableComponents{});
     }
 
     void ScriptGlue::RegisterFuncs()

@@ -7,6 +7,18 @@ namespace Engine::Renderer
     class RenderCommand
     {
     public:
+        inline static void BeginOverlay()
+        {
+            ENQUEUE_RENDER_COMMAND()
+            CurrentRendererAPI->BeginOverlay();
+            ENQUEUE_RENDER_COMMAND_END()
+        }
+        inline static void EndOverlay()
+        {
+            ENQUEUE_RENDER_COMMAND()
+            CurrentRendererAPI->EndOverlay();
+            ENQUEUE_RENDER_COMMAND_END()
+        }
         inline static void Init()
         {
             ENQUEUE_RENDER_COMMAND()

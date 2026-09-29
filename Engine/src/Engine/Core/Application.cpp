@@ -41,6 +41,7 @@ namespace Engine::Core
 		windowSpec.Title = m_Specification.Name;
 		windowSpec.Width = m_Specification.Width;
 		windowSpec.Height = m_Specification.Height;
+        windowSpec.Visible = m_Specification.WindowVisible;
 
 		InitRendererMemoryPool();
 		StartRenderThread();
@@ -235,7 +236,8 @@ namespace Engine::Core
 		else
 		{
 			m_Minimized = false;
-			Renderer::Renderer::SetViewport(0, 0, e.GetWidth(), e.GetHeight());
+            const auto [width, height] = m_Window->GetFramebufferSize();
+            Renderer::Renderer::SetViewport(0, 0, width, height);
 		}
 		return false;
 	}

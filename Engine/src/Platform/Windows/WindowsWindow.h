@@ -17,6 +17,7 @@ namespace Platform::Windows
 
         inline uint32_t GetWidth() const override { return m_Data.Width; }
         inline uint32_t GetHeight() const override { return m_Data.Height; }
+        std::pair<uint32_t, uint32_t> GetFramebufferSize() const override;
 
         // Window attributes
         void SetEventCallback(const EventCallbackFn &callback) override;
@@ -39,8 +40,8 @@ namespace Platform::Windows
         {
             std::string Title;
             uint32_t Width, Height;
-            bool VSync;
-            bool Fullscreen;
+            bool VSync = true;
+            bool Fullscreen = false;
             EventCallbackFn EventCallback;
         } m_Data;
     };

@@ -38,6 +38,7 @@ namespace Engine::Core
         bool EnableScriptDebugging = true;
         bool EnableScriptHotReload = true;
         bool RunInBackground = false;
+        bool WindowVisible = true;
         std::string EngineResourceDirectory;
         std::string UserDataDirectory;
         std::string CoreAssemblyPath = "resources/scripts/bin/Engine-ScriptCore.dll";

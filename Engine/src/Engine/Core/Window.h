@@ -13,6 +13,7 @@ namespace Engine::Core
         std::string Title;
         uint32_t Width;
         uint32_t Height;
+        bool Visible = true;
 
         WindowProps(const std::string &title = "Forest Engine",
                     uint32_t width = 1920,
@@ -33,6 +34,8 @@ namespace Engine::Core
 
         virtual uint32_t GetWidth() const = 0;
         virtual uint32_t GetHeight() const = 0;
+        // Framebuffer pixels may differ from client-area coordinates at high DPI.
+        virtual std::pair<uint32_t, uint32_t> GetFramebufferSize() const = 0;
 
         // Window attributes
         virtual void SetEventCallback(const EventCallbackFn &callback) = 0;

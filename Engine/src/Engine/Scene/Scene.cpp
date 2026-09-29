@@ -5,9 +5,11 @@
 #include "Engine/Scene/ScriptEntity.h"
 #include "Engine/Scripts/ScriptEngine.h"
 #include <glm/gtx/string_cast.hpp>
+#include <unordered_set>
+#include "Engine/UI/UIRenderer.h"
 namespace Engine
 {
-    void Scene::OnUpdateRuntime(Core::Timestep timestep)
+    void Scene::OnUpdateRuntime(Core::Timestep timestep, bool drawUI)
     {
         if (!m_IsPaused || m_StepFrames-- >= 0)
         {
@@ -33,11 +35,17 @@ namespace Engine
             }
 
             // Remove entities marked for deletion
-            DestroyEntities();
+            FlushPendingEntityDestruction();
 
             // Physics2D update
             StepPhysicsWorld(timestep);
         }
+        else
+        {
+            // UI callbacks can request deletion while game simulation is paused.
+            FlushPendingEntityDestruction();
+        }
+        Renderer::Renderer2D::ResetStats();
         // Render 2D
         {
 
@@ -61,37 +69,53 @@ namespace Engine
             if (!foundPrimary)
             {
                 m_CameraEntity = nullptr;
-                return;
             }
-
-            // Calaculate camera view projection matrix
-            glm::mat4 mainCameraViewProjection = glm::mat4(1.0f);
-            mainCameraViewProjection = GetPrimaryCameraViewProjectionMatrix();
-
-            RenderScene2D(mainCameraViewProjection);
+            else if (m_ViewportWidth && m_ViewportHeight)
+                RenderScene2D(GetPrimaryCameraViewProjectionMatrix());
         }
+        if (drawUI) RenderUI();
     }
 
-    void Scene::OnUpdateEditor(Engine::Core::Timestep timestep, const glm::mat4 &viewProjectionMatrix)
+    void Scene::OnUpdateEditor(Engine::Core::Timestep timestep, const glm::mat4 &viewProjectionMatrix, bool drawUI)
     {
         ENGINE_PROFILING_FUNC();
 
         // Remove entities marked for deletion
-        DestroyEntities();
+        FlushPendingEntityDestruction();
 
         // Update Editor Camera
+        Renderer::Renderer2D::ResetStats();
         RenderScene2D(viewProjectionMatrix);
+        if (drawUI) RenderUI();
     }
 
-    void Scene::OnUpdateSimulate(Core::Timestep timestep, const glm::mat4 &viewProjectionMatrix)
+    void Scene::OnUpdateSimulate(Core::Timestep timestep, const glm::mat4 &viewProjectionMatrix, bool drawUI)
     {
+        FlushPendingEntityDestruction();
         if (!m_IsPaused || m_StepFrames-- >= 0)
         {
             ENGINE_PROFILING_FUNC();
             // Update Editor Camera
             StepPhysicsWorld(timestep);
         }
+        Renderer::Renderer2D::ResetStats();
         RenderScene2D(viewProjectionMatrix);
+        if (drawUI) RenderUI();
+    }
+
+    void Scene::RenderUI()
+    {
+        if (!m_ViewportWidth || !m_ViewportHeight || m_Registry.view<CanvasComponent>().empty()) return;
+        const glm::vec2 viewport(m_ViewportWidth, m_ViewportHeight);
+        const auto layout = UI::CalculateLayout(m_Registry, viewport);
+        UI::RenderImages(m_Registry, layout, viewport);
+    }
+
+    bool Scene::HasValidCanvas() const
+    {
+        // Validate against a non-zero target even when the window is currently minimized.
+        // Disabled but structurally valid canvases can be enabled later by game logic.
+        return !UI::CalculateLayout(m_Registry, {1280.0f, 720.0f}).Rects.empty();
     }
 
     Entity Scene::CreateEntity(const std::string &name)
@@ -140,11 +164,10 @@ namespace Engine
 
     void Scene::SetViewportSize(uint32_t width, uint32_t height)
     {
-        if (width == 0 || height == 0)
-            return;
+        if (m_ViewportWidth == width && m_ViewportHeight == height) return;
         m_ViewportWidth = width;
         m_ViewportHeight = height;
-        RecalculateCameraProjections();
+        if (width && height) RecalculateCameraProjections();
     }
 
     Entity Scene::GetPrimaryCameraEntity()
@@ -334,6 +357,12 @@ namespace Engine
 
     void Scene::DuplicateEntity(Entity entity)
     {
+        if (!OwnsEntity(entity)) return;
+        if (entity.HasComponent<RectTransformComponent>())
+        {
+            DuplicateUISubtree(entity);
+            return;
+        }
         std::string name = entity.GetName();
         Entity newEntity = CreateEntity(name + "_Copy");
         CopyComponentIfExists(AllComponents{}, newEntity, entity);
@@ -471,8 +500,31 @@ namespace Engine
             }
         }
     }
-    void Scene::DestroyEntities()
+    void Scene::FlushPendingEntityDestruction()
     {
+        // Expand pending deletion to descendants before destroying anything. This also handles
+        // direct TagComponent::SetRemove calls from existing editor/script paths.
+        std::vector<uint64_t> stack;
+        for (auto e : m_Registry.view<IDComponent, TagComponent>())
+            if (m_Registry.get<TagComponent>(e).IsRemove()) stack.push_back(uint64_t(m_Registry.get<IDComponent>(e).ID));
+        if (stack.empty()) return;
+        std::unordered_set<uint64_t> pending;
+        std::unordered_map<uint64_t, std::vector<entt::entity>> children;
+        for (auto e : m_Registry.view<IDComponent, RectTransformComponent>())
+            children[uint64_t(m_Registry.get<RectTransformComponent>(e).Parent.uuid)].push_back(e);
+        while (!stack.empty())
+        {
+            uint64_t id = stack.back();
+            stack.pop_back();
+            if (!pending.insert(id).second) continue;
+            auto it = children.find(id);
+            if (it == children.end()) continue;
+            for (auto child : it->second)
+            {
+                if (m_Registry.all_of<TagComponent>(child)) m_Registry.get<TagComponent>(child).SetRemove(true);
+                stack.push_back(uint64_t(m_Registry.get<IDComponent>(child).ID));
+            }
+        }
         auto view = m_Registry.view<TagComponent>();
         std::vector<entt::entity> entitiesToRemove;
         for (auto entity : view)
@@ -507,7 +559,6 @@ namespace Engine
         ENGINE_PROFILING_FUNC();
 
         Renderer::Renderer2D::BeginScene(viewProjectionMatrix);
-        Renderer::Renderer2D::ResetStats();
         auto view = m_Registry.view<SpriteComponent, TransformComponent>();
         for (auto entity : view)
         {

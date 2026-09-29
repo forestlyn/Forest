@@ -30,6 +30,13 @@ namespace Platform::Windows
         Shutdown();
     }
 
+    std::pair<uint32_t, uint32_t> WindowsWindow::GetFramebufferSize() const
+    {
+        int width = 0, height = 0;
+        glfwGetFramebufferSize(m_Window, &width, &height);
+        return {static_cast<uint32_t>(std::max(0, width)), static_cast<uint32_t>(std::max(0, height))};
+    }
+
     void WindowsWindow::Init(const Engine::Core::WindowProps &props)
     {
         ENGINE_PROFILING_FUNC();
@@ -55,6 +62,7 @@ namespace Platform::Windows
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+            glfwWindowHint(GLFW_VISIBLE, props.Visible ? GLFW_TRUE : GLFW_FALSE);
             m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
             ENGINE_ASSERT(m_Window, "Failed to create GLFW window!");
             s_GLFWWindowCount++;

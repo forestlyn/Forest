@@ -6,6 +6,7 @@ namespace Engine
     class Entity
     {
     private:
+        friend class Scene;
         entt::entity m_EntityHandle{entt::null};
         Scene *m_Scene = nullptr;
 

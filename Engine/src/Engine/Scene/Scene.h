@@ -16,9 +16,12 @@ namespace Engine
         {
             LOG_INFO("Scene destroyed.");
         }
-        void OnUpdateRuntime(Core::Timestep timestep);
-        void OnUpdateEditor(Core::Timestep timestep, const glm::mat4 &viewProjectionMatrix);
-        void OnUpdateSimulate(Core::Timestep timestep, const glm::mat4 &viewProjectionMatrix);
+        void OnUpdateRuntime(Core::Timestep timestep, bool drawUI = true);
+        void OnUpdateEditor(Core::Timestep timestep, const glm::mat4 &viewProjectionMatrix, bool drawUI = true);
+        void OnUpdateSimulate(Core::Timestep timestep, const glm::mat4 &viewProjectionMatrix, bool drawUI = true);
+        // Editors can defer this until after their world-space debug overlays.
+        void RenderUI();
+        bool HasValidCanvas() const;
 
         // Create an entity with a specific name,will add TagComponent and TransformComponent by default
         Entity CreateEntity(const std::string &name = std::string());
@@ -63,6 +66,17 @@ namespace Engine
 
         void DuplicateEntity(Entity entity);
 
+        // UI relationships are scene-local. Reparenting preserves layout parameters, not screen position.
+        Entity CreateCanvas(const std::string &name = "Canvas");
+        Entity CreateUIEntity(Entity parent, const std::string &name = "UI Entity");
+        bool SetUIParent(Entity child, Entity parent, std::string *error = nullptr);
+        bool SetUISiblingOrder(Entity entity, int order);
+        Entity DuplicateUISubtree(Entity root);
+        // Deferred destruction, safe to request from script callbacks.
+        void DestroyEntity(Entity entity);
+        // Call only at a safe point with no active registry iteration.
+        void FlushPendingEntityDestruction();
+
     private:
         void RecalculateCameraProjections();
 
@@ -70,7 +84,7 @@ namespace Engine
         void DestroyPhysicsWorld();
         void StepPhysicsWorld(Core::Timestep timestep);
 
-        void DestroyEntities();
+        bool OwnsEntity(const Entity &entity) const;
 
         void RenderScene2D(glm::mat4 viewProjectionMatrix);
 

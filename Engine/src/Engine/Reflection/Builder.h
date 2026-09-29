@@ -162,9 +162,15 @@ namespace Engine
             using Owner = typename Traits::ClassType;
             using FieldT = typename Traits::FieldType;
 
-            static_assert(std::is_same_v<Owner, Class>, "Reflected member belongs to a different type");
-
-            m_Fields.push_back(MakeField<Class, FieldT, Member>(name));
+            static_assert(std::is_same_v<Owner, Class> || std::is_base_of_v<Owner, Class>,
+                          "Reflected member must belong to the type or one of its bases");
+            // Access through Class so inherited members also work with non-zero base offsets.
+            MetaField field;
+            field.name = name;
+            field.type = &Reflect<FieldT>();
+            field.get = [](void *obj) -> void * { return &(static_cast<Class *>(obj)->*Member); };
+            field.getConst = [](const void *obj) -> const void * { return &(static_cast<const Class *>(obj)->*Member); };
+            m_Fields.push_back(field);
             return FieldBuilder<Class>(m_Fields.back());
         }
 

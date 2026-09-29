@@ -21,8 +21,8 @@ namespace ForestRuntime
         bool hasCamera = false;
         for (auto entity : registry.view<Engine::CameraComponent, Engine::TransformComponent>())
             hasCamera |= registry.get<Engine::CameraComponent>(entity).Primary;
-        if (!hasCamera)
-            throw std::runtime_error("Startup scene has no primary camera");
+        if (!hasCamera && !m_Scene->HasValidCanvas())
+            throw std::runtime_error("Startup scene requires a primary camera or a valid UI Canvas");
 
         for (auto entity : registry.view<Engine::ScriptComponent>())
         {
@@ -33,8 +33,9 @@ namespace ForestRuntime
         }
 
         auto &app = Engine::Core::Application::Get();
-        m_Scene->SetViewportSize(app.GetWindowWidth(), app.GetWindowHeight());
-        Engine::Renderer::RenderCommand::SetViewport(0, 0, app.GetWindowWidth(), app.GetWindowHeight());
+        const auto [width, height] = app.GetWindow().GetFramebufferSize();
+        m_Scene->SetViewportSize(width, height);
+        Engine::Renderer::RenderCommand::SetViewport(0, 0, width, height);
         m_Scene->OnRuntimeStart();
         ENGINE_INFO("Runtime started: {}", m_ScenePath.string());
     }
@@ -51,6 +52,11 @@ namespace ForestRuntime
 
     void RuntimeLayer::OnUpdate(Engine::Core::Timestep timestep)
     {
+        // Query pixels each frame: monitor DPI changes need not change logical window size.
+        const auto [width, height] = Engine::Core::Application::Get().GetWindow().GetFramebufferSize();
+        m_Scene->SetViewportSize(width, height);
+        if (!width || !height) return;
+        Engine::Renderer::RenderCommand::SetViewport(0, 0, width, height);
         Engine::Renderer::RenderCommand::SetClearColor({0.08f, 0.08f, 0.1f, 1.0f});
         Engine::Renderer::RenderCommand::Clear();
         m_Scene->OnUpdateRuntime(timestep);
@@ -64,8 +70,12 @@ namespace ForestRuntime
         Engine::Event::EventDispatcher dispatcher(event);
         dispatcher.Dispatch<Engine::Event::WindowResizeEvent>([this](auto &resize)
         {
-            if (m_Scene && resize.GetWidth() && resize.GetHeight())
-                m_Scene->SetViewportSize(resize.GetWidth(), resize.GetHeight());
+            if (m_Scene)
+            {
+                const auto [width, height] = Engine::Core::Application::Get().GetWindow().GetFramebufferSize();
+                m_Scene->SetViewportSize(resize.GetWidth() && resize.GetHeight() ? width : 0,
+                                         resize.GetWidth() && resize.GetHeight() ? height : 0);
+            }
             return false;
         });
         return false;
