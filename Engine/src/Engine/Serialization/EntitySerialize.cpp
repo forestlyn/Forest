@@ -214,6 +214,13 @@ namespace Engine::Serialization
     }
 
     template <>
+    bool DeserializeComponentIfExists<RelationshipComponent>(const YAML::Node &, Entity &)
+    {
+        // SceneSerialize restores relationships in a second pass, after all UUIDs exist.
+        return true;
+    }
+
+    template <>
     bool DeserializeComponentIfExists<ScriptComponent>(const YAML::Node &entityNode, Entity &entity)
     {
         const char *componentName = Reflect<ScriptComponent>().name;

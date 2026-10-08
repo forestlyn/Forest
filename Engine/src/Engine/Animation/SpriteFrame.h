@@ -31,7 +31,7 @@ namespace Engine
 
     REFLECT_TYPE_BEGIN(SpriteFrame)
     REFLECT_FIELD(Name);
-    REFLECT_FIELD(TextureRef).Category(FieldCategory::AssetReference).Flags(PropertyFlags::Property_Transient).UIPROPERTY(UIProperty::Hidden);
+    REFLECT_FIELD(TextureRef).Category(FieldCategory::AssetReference).Flags(PropertyFlags::Property_Transient).UIProperty(UIProperty::Hidden);
     REFLECT_FIELD(UVMin);
     REFLECT_FIELD(UVMax);
     REFLECT_FIELD(Pivot);

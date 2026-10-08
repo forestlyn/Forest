@@ -24,12 +24,12 @@ namespace Engine
         BoxCollider2DComponent(const BoxCollider2DComponent &other) = default;
     };
 
-    REFLECT_TYPE_BEGIN(BoxCollider2DComponent)
+    REFLECT_COMPONENT_BEGIN(BoxCollider2DComponent)
     REFLECT_FIELD(Density);
     REFLECT_FIELD(Friction).UIRANGE(0.0f, 1.0f, 0.01f);
     REFLECT_FIELD(Restitution).UIRANGE(0.0f, 1.0f, 0.01f);
     REFLECT_FIELD(RestitutionThreshold).UIRANGE(0.0f, 1.0f, 0.01f);
     REFLECT_FIELD(Offset);
     REFLECT_FIELD(Size);
-    REFLECT_TYPE_END(BoxCollider2DComponent)
+    REFLECT_COMPONENT_END(BoxCollider2DComponent)
 } // namespace Engine

@@ -32,7 +32,8 @@ namespace Engine::Serialization
         Rigidbody2DComponent,
         BoxCollider2DComponent,
         CircleCollider2DComponent,
-        ScriptComponent>;
+        ScriptComponent,
+        RelationshipComponent>;
 
     template <typename T>
     concept IsSerializableComponent = IsInComponentGroup<T, REFLECT_SERIALIZE_TYPE>;

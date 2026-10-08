@@ -16,6 +16,7 @@ namespace EngineEditor
 {
     using REFLECT_UI_TYPE = Engine::ComponentGroup<
         Engine::TagComponent,
+        Engine::RectTransformComponent,
         Engine::TransformComponent,
         Engine::CameraComponent,
         Engine::SpriteComponent,
@@ -24,6 +25,7 @@ namespace EngineEditor
         Engine::Rigidbody2DComponent,
         Engine::BoxCollider2DComponent,
         Engine::CircleCollider2DComponent,
+        Engine::UIImageComponent,
         Engine::ScriptComponent>;
 
     template <typename T>
@@ -38,10 +40,10 @@ namespace EngineEditor
         static bool DrawVector3Control(const std::string &label, glm::vec3 &values, float resetValue = 0.0f, float columnWidth = 100.0f);
 
         template <typename T>
-        static void DrawComponent(const std::string &name, Engine::Entity entity, const std::function<void(T &)> &uiFunction, bool removeable = true);
+        static void DrawComponent(const std::string &name, Engine::Entity entity, const std::function<void(T &)> &uiFunction, bool removeable = true, bool canSetEnable = true);
 
         template <IsUIComponent T>
-        static void DrawComponent(const std::string &name, Engine::Entity entity, bool removeable = true, Engine::Ref<Engine::Scene> context = nullptr);
+        static void DrawComponent(const std::string &name, Engine::Entity entity, bool removeable = true, bool canSetEnable = true, Engine::Ref<Engine::Scene> context = nullptr);
 
         template <typename... T>
         static void DrawAddComponents(Engine::Entity entity)

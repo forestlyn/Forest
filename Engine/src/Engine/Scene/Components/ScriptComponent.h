@@ -10,8 +10,8 @@ namespace Engine
         std::string ScriptClassName;
     };
 
-    REFLECT_TYPE_BEGIN(ScriptComponent)
+    REFLECT_COMPONENT_BEGIN(ScriptComponent)
     REFLECT_FIELD(ScriptClassName);
-    REFLECT_TYPE_END(ScriptComponent)
+    REFLECT_COMPONENT_END(ScriptComponent)
 
 } // namespace Engine

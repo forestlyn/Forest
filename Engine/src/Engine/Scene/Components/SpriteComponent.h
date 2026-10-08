@@ -19,11 +19,11 @@ namespace Engine
         SpriteComponent(const glm::vec4 &color) : Color(color) {}
     };
 
-    REFLECT_TYPE_BEGIN(SpriteComponent)
+    REFLECT_COMPONENT_BEGIN(SpriteComponent)
     REFLECT_FIELD(Color).UIKIND(UIKind::UITYPE_Color);
     REFLECT_FIELD(TilingFactor);
     REFLECT_FIELD(UVMin);
     REFLECT_FIELD(UVMax);
     REFLECT_FIELD(TextureRef).Category(FieldCategory::AssetReference).UIKIND(UIKind::UITYPE_Texture2D);
-    REFLECT_TYPE_END(SpriteComponent)
+    REFLECT_COMPONENT_END(SpriteComponent)
 }

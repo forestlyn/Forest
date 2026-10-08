@@ -254,6 +254,12 @@ namespace Engine
         m_ScriptEngineData->SceneContext = scene;
     }
 
+    void ScriptEngine::ReleaseEntityInstance(Scene *scene, UUID entityID)
+    {
+        if (m_ScriptEngineData && m_ScriptEngineData->SceneContext == scene)
+            m_ScriptEngineData->EntityInstances.erase(entityID);
+    }
+
     void ScriptEngine::ReleaseSceneInstances(Scene *scene)
     {
         if (m_ScriptEngineData && m_ScriptEngineData->SceneContext == scene)

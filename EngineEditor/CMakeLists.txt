@@ -68,3 +68,12 @@ foreach(sample Sandbox TestProject)
         DEPENDS ForestRuntime
         VERBATIM)
 endforeach()
+# Hidden-window integration tests for the real Hierarchy panel and ImGui interactions.
+add_executable(HierarchyPanelTests EXCLUDE_FROM_ALL
+    tests/HierarchyPanelTests.cpp
+    src/Panels/SceneHierarchyPanel.cpp
+    src/Panels/UIUtils.cpp)
+target_link_libraries(HierarchyPanelTests PRIVATE Engine)
+target_include_directories(HierarchyPanelTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+set_target_properties(HierarchyPanelTests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/runtime/$<CONFIG>")
+add_dependencies(HierarchyPanelTests ForestRuntimeResources ScriptCore)

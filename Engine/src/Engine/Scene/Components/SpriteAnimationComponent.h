@@ -56,11 +56,11 @@ namespace Engine
         }
     };
 
-    REFLECT_TYPE_BEGIN(SpriteAnimationComponent)
+    REFLECT_COMPONENT_BEGIN(SpriteAnimationComponent)
     // REFLECT_FIELD(Animations);
-    REFLECT_FIELD(ElapsedTime).Flags(PropertyFlags::Property_Transient).UIPROPERTY(UIProperty::ReadOnly);
-    REFLECT_FIELD(CurrentFrameIndex).Flags(PropertyFlags::Property_Transient).UIPROPERTY(UIProperty::ReadOnly);
+    REFLECT_FIELD(ElapsedTime).Flags(PropertyFlags::Property_Transient).UIProperty(UIProperty::ReadOnly);
+    REFLECT_FIELD(CurrentFrameIndex).Flags(PropertyFlags::Property_Transient).UIProperty(UIProperty::ReadOnly);
     REFLECT_FIELD(SpeedMultiplier);
-    REFLECT_FIELD(IsPlaying).Flags(PropertyFlags::Property_Transient).UIPROPERTY(UIProperty::ReadOnly);
-    REFLECT_TYPE_END(SpriteAnimationComponent)
+    REFLECT_FIELD(IsPlaying).Flags(PropertyFlags::Property_Transient).UIProperty(UIProperty::ReadOnly);
+    REFLECT_COMPONENT_END(SpriteAnimationComponent)
 }

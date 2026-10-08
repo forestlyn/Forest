@@ -24,7 +24,7 @@ namespace Engine
         CircleCollider2DComponent(const CircleCollider2DComponent &) = default;
     };
 
-    REFLECT_TYPE_BEGIN(CircleCollider2DComponent)
+    REFLECT_COMPONENT_BEGIN(CircleCollider2DComponent)
     REFLECT_FIELD(Radius);
     REFLECT_FIELD(Offset);
     REFLECT_FIELD(Density);
@@ -32,5 +32,5 @@ namespace Engine
     REFLECT_FIELD(RollingResistance).UIRANGE(0.0f, 1.0f, 0.01f);
     REFLECT_FIELD(Restitution).UIRANGE(0.0f, 1.0f, 0.01f);
     REFLECT_FIELD(RestitutionThreshold).UIRANGE(0.0f, 1.0f, 0.01f);
-    REFLECT_TYPE_END(CircleCollider2DComponent)
+    REFLECT_COMPONENT_END(CircleCollider2DComponent)
 } // namespace Engine

@@ -79,7 +79,7 @@ namespace Engine
     REFLECT_ENUM_VALUE(Orthographic)
     REFLECT_ENUM_END(SceneCameraProjectionType)
 
-    REFLECT_TYPE_BEGIN(CameraComponent)
+    REFLECT_COMPONENT_BEGIN(CameraComponent)
     REFLECT_FIELD(ProjectionType).UI().TOOLTIP("Camera projection mode.");
     REFLECT_FIELD(Primary).UI().TOOLTIP("Primary scene camera.");
     REFLECT_FIELD(FixedAspectRatio).UI().TOOLTIP("Keep the camera aspect ratio fixed.");
@@ -92,5 +92,5 @@ namespace Engine
     REFLECT_FIELD(AspectRatio).UIRANGE(0.0f, 100.0f, 0.01f).TOOLTIP("Camera projection aspect ratio.");
     REFLECT_FIELD(FollowTarget).UI().TOOLTIP("Whether the camera should follow a target entity.");
     REFLECT_FIELD(TargetEntity).Category(FieldCategory::EntityReference).VISIBLEIF<&HasFollowTarget>().UI().TOOLTIP("The target entity for the camera to follow.");
-    REFLECT_TYPE_END(CameraComponent)
+    REFLECT_COMPONENT_END(CameraComponent)
 } // namespace Engine

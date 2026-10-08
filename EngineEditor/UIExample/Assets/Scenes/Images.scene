@@ -1,99 +1,217 @@
-Scene: UI Image Preview
+Scene: Untitled
 Entities:
   - EntityID: 100
-    TagComponent: {Tag: Screen Canvas}
-    TransformComponent: {}
+    UIImageComponent:
+      Enabled: true
+      TextureRef:
+        path: ""
+      Color: [0.035, 0.055, 0.08, 1]
+      RaycastTarget: false
     CanvasComponent:
+      Enabled: true
       ReferenceResolution: [1280, 720]
       ScaleMode: ScaleWithScreenSize
       MatchWidthOrHeight: 0.5
       SortOrder: 0
-    RectTransformComponent: {}
-    UIImageComponent:
-      Color: [0.035, 0.055, 0.08, 1]
-      RaycastTarget: false
-  - EntityID: 200
-    TagComponent: {Tag: Center Panel}
-    TransformComponent: {}
+      Enabled: true
     RectTransformComponent:
+      Enabled: true
+      AnchorMin: [0.5, 0.5]
+      AnchorMax: [0.5, 0.5]
+      AnchoredPosition: [0, 0]
+      SizeDelta: [100, 100]
+      Pivot: [0.5, 0.5]
+    TagComponent:
+      Enabled: true
+      Tag: Screen Canvas
+    TransformComponent:
+      Enabled: true
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Enabled: true
+      Parent: 0
+      SiblingOrder: 0
+  - EntityID: 200
+    UIImageComponent:
+      Enabled: true
+      TextureRef:
+        path: ""
+      Color: [0.09, 0.14, 0.19, 1]
+      RaycastTarget: true
+    RectTransformComponent:
+      Enabled: true
+      AnchorMin: [0.5, 0.5]
+      AnchorMax: [0.5, 0.5]
+      AnchoredPosition: [0, 0]
+      SizeDelta: [640, 400]
+      Pivot: [0.5, 0.5]
+    TagComponent:
+      Enabled: true
+      Tag: Center Panel
+    TransformComponent:
+      Enabled: true
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Enabled: true
       Parent: 100
       SiblingOrder: 0
-      SizeDelta: [640, 400]
-    UIImageComponent:
-      Color: [0.09, 0.14, 0.19, 1]
   - EntityID: 210
-    TagComponent: {Tag: Top Accent}
-    TransformComponent: {}
+    UIImageComponent:
+      Enabled: true
+      TextureRef:
+        path: ""
+      Color: [0.22, 0.82, 0.65, 1]
+      RaycastTarget: true
     RectTransformComponent:
-      Parent: 200
+      Enabled: true
       AnchorMin: [0, 0]
       AnchorMax: [1, 0]
-      Pivot: [0.5, 0]
+      AnchoredPosition: [0, 0]
       SizeDelta: [0, 4]
-    UIImageComponent:
-      Color: [0.22, 0.82, 0.65, 1]
-  - EntityID: 220
-    TagComponent: {Tag: Texture Image}
-    TransformComponent: {}
-    RectTransformComponent:
+      Pivot: [0.5, 0]
+    TagComponent:
+      Enabled: true
+      Tag: Top Accent
+    TransformComponent:
+      Enabled: true
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Enabled: true
       Parent: 200
-      SiblingOrder: 1
-      AnchorMin: [0, 0]
-      AnchorMax: [0, 0]
-      Pivot: [0, 0]
-      AnchoredPosition: [40, 44]
-      SizeDelta: [104, 104]
+      SiblingOrder: 0
+  - EntityID: 220
     UIImageComponent:
-      TextureRef: {path: Textures/Tree.tga}
+      Enabled: true
+      TextureRef:
+        path: Textures/Tree.tga
       Color: [0.22, 0.82, 0.65, 1]
       RaycastTarget: false
-  - EntityID: 230
-    TagComponent: {Tag: Solid Blue Image}
-    TransformComponent: {}
     RectTransformComponent:
-      Parent: 200
-      SiblingOrder: 2
+      Enabled: true
       AnchorMin: [0, 0]
       AnchorMax: [0, 0]
+      AnchoredPosition: [40, 44]
+      SizeDelta: [104, 104]
       Pivot: [0, 0]
+    TagComponent:
+      Enabled: true
+      Tag: Texture Image
+    TransformComponent:
+      Enabled: true
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Enabled: true
+      Parent: 200
+      SiblingOrder: 1
+  - EntityID: 230
+    UIImageComponent:
+      Enabled: true
+      TextureRef:
+        path: ""
+      Color: [0.15, 0.35, 0.65, 1]
+      RaycastTarget: true
+    RectTransformComponent:
+      Enabled: true
+      AnchorMin: [0, 0]
+      AnchorMax: [0, 0]
       AnchoredPosition: [176, 44]
       SizeDelta: [280, 104]
-    UIImageComponent:
-      Color: [0.15, 0.35, 0.65, 1]
-  - EntityID: 240
-    TagComponent: {Tag: Translucent Overlap}
-    TransformComponent: {}
-    RectTransformComponent:
+      Pivot: [0, 0]
+    TagComponent:
+      Enabled: true
+      Tag: Solid Blue Image
+    TransformComponent:
+      Enabled: true
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Enabled: true
       Parent: 200
-      SiblingOrder: 3
+      SiblingOrder: 2
+  - EntityID: 240
+    UIImageComponent:
+      Enabled: true
+      TextureRef:
+        path: ""
+      Color: [0.22, 0.82, 0.65, 0.6]
+      RaycastTarget: true
+    RectTransformComponent:
+      Enabled: true
       AnchorMin: [0, 0]
       AnchorMax: [0, 0]
-      Pivot: [0, 0]
       AnchoredPosition: [368, 80]
       SizeDelta: [232, 104]
-    UIImageComponent:
-      Color: [0.22, 0.82, 0.65, 0.6]
-  - EntityID: 250
-    TagComponent: {Tag: Bottom Anchored Bar}
-    TransformComponent: {}
-    RectTransformComponent:
+      Pivot: [0, 0]
+    TagComponent:
+      Enabled: true
+      Tag: Translucent Overlap
+    TransformComponent:
+      Enabled: true
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Enabled: true
       Parent: 200
-      SiblingOrder: 4
+      SiblingOrder: 3
+  - EntityID: 250
+    UIImageComponent:
+      Enabled: true
+      TextureRef:
+        path: ""
+      Color: [0.22, 0.82, 0.65, 1]
+      RaycastTarget: true
+    RectTransformComponent:
+      Enabled: true
       AnchorMin: [0, 1]
       AnchorMax: [1, 1]
-      Pivot: [0.5, 1]
       AnchoredPosition: [0, -40]
       SizeDelta: [-80, 64]
-    UIImageComponent:
-      Color: [0.22, 0.82, 0.65, 1]
+      Pivot: [0.5, 1]
+    TagComponent:
+      Enabled: true
+      Tag: Bottom Anchored Bar
+    TransformComponent:
+      Enabled: true
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Enabled: true
+      Parent: 200
+      SiblingOrder: 4
   - EntityID: 260
-    TagComponent: {Tag: Bar Child Accent}
-    TransformComponent: {}
+    UIImageComponent:
+      Enabled: true
+      TextureRef:
+        path: ""
+      Color: [0.62, 0.98, 0.83, 1]
+      RaycastTarget: true
     RectTransformComponent:
-      Parent: 250
+      Enabled: true
       AnchorMin: [0, 0]
       AnchorMax: [0, 1]
-      Pivot: [0, 0.5]
+      AnchoredPosition: [0, 0]
       SizeDelta: [8, 0]
-    UIImageComponent:
-      Color: [0.62, 0.98, 0.83, 1]
+      Pivot: [0, 0.5]
+    TagComponent:
+      Enabled: true
+      Tag: Bar Child Accent
+    TransformComponent:
+      Enabled: true
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Enabled: true
+      Parent: 250
+      SiblingOrder: 0

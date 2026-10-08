@@ -14,7 +14,7 @@ namespace Engine
         virtual ~ScriptEntity() = default;
 
         template <typename T>
-        T &GetComponent()
+        decltype(auto) GetComponent()
         {
             return m_Entity.GetComponent<T>();
         }

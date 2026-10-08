@@ -78,11 +78,11 @@ namespace Engine
         bool IsDirty() const { return dirty; }
     };
 
-    REFLECT_TYPE_BEGIN(TransformComponent)
+    REFLECT_COMPONENT_BEGIN(TransformComponent)
     REFLECT_FIELD(Position).ONCHANGED<&Self::MarkDirty>();
     REFLECT_FIELD(Rotation).ONCHANGED<&Self::MarkDirty>();
     REFLECT_FIELD(Scale).ONCHANGED<&Self::MarkDirty>();
-    REFLECT_FIELD(dirty).UI().UIPROPERTY(Engine::UIProperty::ReadOnly).FLAGS(PropertyFlags::Property_Transient);
-    REFLECT_TYPE_END(TransformComponent)
+    REFLECT_FIELD(dirty).UI().UIProperty(Engine::UIProperty::ReadOnly).FLAGS(PropertyFlags::Property_Transient);
+    REFLECT_COMPONENT_END(TransformComponent)
 
 }

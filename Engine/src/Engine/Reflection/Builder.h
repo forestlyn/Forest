@@ -98,7 +98,7 @@ namespace Engine
             return *this;
         }
 
-        FieldBuilder &UIPROPERTY(UIProperty uiProperty)
+        FieldBuilder &UIProperty(UIProperty uiProperty)
         {
             m_Field.ui.uiProperty = uiProperty;
             return *this;
@@ -168,8 +168,10 @@ namespace Engine
             MetaField field;
             field.name = name;
             field.type = &Reflect<FieldT>();
-            field.get = [](void *obj) -> void * { return &(static_cast<Class *>(obj)->*Member); };
-            field.getConst = [](const void *obj) -> const void * { return &(static_cast<const Class *>(obj)->*Member); };
+            field.get = [](void *obj) -> void *
+            { return &(static_cast<Class *>(obj)->*Member); };
+            field.getConst = [](const void *obj) -> const void *
+            { return &(static_cast<const Class *>(obj)->*Member); };
             m_Fields.push_back(field);
             return FieldBuilder<Class>(m_Fields.back());
         }

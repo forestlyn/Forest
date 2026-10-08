@@ -112,17 +112,45 @@ namespace Engine::Serialization
             return false;
         }
         auto entities = data["Entities"];
-        if (entities)
+        try
         {
-            for (auto entityNode : entities)
+            if (entities)
             {
-                uint64_t uuid = entityNode["EntityID"].as<uint64_t>();
-                Entity entity = m_Scene->CreateEntityWithID(UUID(uuid));
-                if (!DeserializeEntity(entityNode, entity))
+                for (auto entityNode : entities)
                 {
-                    LOG_ERROR("Failed to deserialize entity with ID: {}", uuid);
+                    uint64_t uuid = entityNode["EntityID"].as<uint64_t>();
+                    Entity entity = m_Scene->CreateEntityWithID(UUID(uuid));
+                    if (!entity || !DeserializeEntity(entityNode, entity))
+                    {
+                        LOG_ERROR("Failed to deserialize entity with ID: {}", uuid);
+                        return false;
+                    }
                 }
             }
+            if (entities)
+            {
+                for (auto entityNode : entities)
+                {
+                    auto entity = m_Scene->GetEntityByUUID(UUID(entityNode["EntityID"].as<uint64_t>()));
+                    // Explicit Relationship wins over legacy RectTransform fields.
+                    const auto relation = entityNode["RelationshipComponent"]
+                        ? entityNode["RelationshipComponent"] : entityNode["RectTransformComponent"];
+                    UUID parent(0);
+                    int order = 0;
+                    if (relation)
+                    {
+                        if (relation["Parent"]) parent = relation["Parent"].as<EntityRef>().uuid;
+                        if (relation["SiblingOrder"]) order = relation["SiblingOrder"].as<int>();
+                    }
+                    m_Scene->RestoreRelationship(entity, parent, order);
+                }
+            }
+            if (!m_Scene->RebuildHierarchyIndex()) return false;
+        }
+        catch (const YAML::Exception &error)
+        {
+            ENGINE_ERROR("Invalid scene data: {}", error.what());
+            return false;
         }
         // Resolve only after all UUIDs exist; YAML order is intentionally unrelated to hierarchy.
         // Bad UI subtrees remain editable in the scene but are excluded by BuildHierarchy/layout.

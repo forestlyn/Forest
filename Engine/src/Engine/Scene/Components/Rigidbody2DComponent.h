@@ -18,7 +18,7 @@ namespace Engine
         float AngularVelocity = 0.0f;
         bool FixedRotation = false;
 
-        b2BodyId RuntimeBodyId;
+        b2BodyId RuntimeBodyId{};
 
         Rigidbody2DComponent() = default;
         Rigidbody2DComponent(const Rigidbody2DComponent &other) = default;
@@ -30,10 +30,10 @@ namespace Engine
     REFLECT_ENUM_VALUE(Dynamic)
     REFLECT_ENUM_END(Rigidbody2DBodyType)
 
-    REFLECT_TYPE_BEGIN(Rigidbody2DComponent)
+    REFLECT_COMPONENT_BEGIN(Rigidbody2DComponent)
     REFLECT_FIELD(Type);
     REFLECT_FIELD(Velocity);
     REFLECT_FIELD(AngularVelocity);
     REFLECT_FIELD(FixedRotation);
-    REFLECT_TYPE_END(Rigidbody2DComponent)
+    REFLECT_COMPONENT_END(Rigidbody2DComponent)
 } // namespace Engine

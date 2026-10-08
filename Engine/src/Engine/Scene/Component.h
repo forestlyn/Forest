@@ -14,6 +14,7 @@
 #include "Components/CanvasComponent.h"
 #include "Components/RectTransformComponent.h"
 #include "Components/UIImageComponent.h"
+#include "Components/RelationshipComponent.h"
 
 namespace Engine
 {
@@ -52,7 +53,8 @@ namespace Engine
         CircleCollider2DComponent,
         ScriptComponent,
         SpriteAnimationComponent,
-        NativeScriptComponent>;
+        NativeScriptComponent,
+        RelationshipComponent>;
 
     // Only types that have a ScriptCore managed wrapper belong here.
     using ScriptableComponents = ComponentGroup<TransformComponent, Rigidbody2DComponent>;

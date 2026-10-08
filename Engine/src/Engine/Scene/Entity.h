@@ -17,19 +17,24 @@ namespace Engine
         template <typename T, typename... Args>
         T &AddComponent(Args &&...args)
         {
+            static_assert(!std::is_same_v<T, RelationshipComponent>, "Relationship is managed by Scene");
             return m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
         }
 
         template <typename T, typename... Args>
         T &AddOrReplaceComponent(Args &&...args)
         {
+            static_assert(!std::is_same_v<T, RelationshipComponent>, "Relationship is managed by Scene");
             return m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
         }
 
         template <typename T>
-        T &GetComponent()
+        decltype(auto) GetComponent()
         {
-            return m_Scene->m_Registry.get<T>(m_EntityHandle);
+            if constexpr (std::is_same_v<T, RelationshipComponent>)
+                return std::as_const(m_Scene->m_Registry.get<T>(m_EntityHandle));
+            else
+                return m_Scene->m_Registry.get<T>(m_EntityHandle);
         }
 
         template <typename T>
@@ -41,10 +46,11 @@ namespace Engine
         template <typename T>
         void RemoveComponent()
         {
+            static_assert(!std::is_same_v<T, RelationshipComponent>, "Relationship is managed by Scene");
             m_Scene->m_Registry.remove<T>(m_EntityHandle);
         }
 
-        operator bool() const { return m_EntityHandle != entt::null; }
+        operator bool() const { return m_Scene && m_Scene->m_Registry.valid(m_EntityHandle); }
         operator entt::entity() const { return m_EntityHandle; }
         bool operator==(const Entity &other) const
         {
@@ -58,5 +64,15 @@ namespace Engine
 
         UUID GetUUID() const;
         const std::string &GetName();
+
+        // RelationShip Related
+        Entity GetParent();
+        bool SetParent(Entity parent, std::string *error = nullptr);
+        bool Detach();
+        uint32_t GetSiblingIndex();
+        bool SetSiblingIndex(uint32_t index);
+        std::vector<Entity> GetChildren();
+        void Destroy();
+        void DestroyChildren();
     };
 }

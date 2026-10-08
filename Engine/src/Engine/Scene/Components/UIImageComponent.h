@@ -13,10 +13,9 @@ namespace Engine
         bool RaycastTarget = true;
     };
 
-    REFLECT_TYPE_BEGIN(UIImageComponent)
-        REFLECT_FIELD(TextureRef).Category(FieldCategory::AssetReference).UIKIND(UIKind::UITYPE_Texture2D);
-        REFLECT_FIELD(Color).UIKIND(UIKind::UITYPE_Color);
-        REFLECT_FIELD(RaycastTarget);
-        type.template Field<&Self::m_Enabled>("Enabled");
-    REFLECT_TYPE_END(UIImageComponent)
+    REFLECT_COMPONENT_BEGIN(UIImageComponent)
+    REFLECT_FIELD(TextureRef).Category(FieldCategory::AssetReference).UIKIND(UIKind::UITYPE_Texture2D);
+    REFLECT_FIELD(Color).UIKIND(UIKind::UITYPE_Color);
+    REFLECT_FIELD(RaycastTarget);
+    REFLECT_COMPONENT_END(UIImageComponent)
 }

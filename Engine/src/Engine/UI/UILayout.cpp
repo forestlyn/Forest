@@ -1,6 +1,7 @@
 #include "UILayout.h"
 #include "Engine/Scene/Components/CanvasComponent.h"
 #include "Engine/Scene/Components/RectTransformComponent.h"
+#include "Engine/Scene/Components/RelationshipComponent.h"
 #include "Engine/Scene/Components/IDComponent.h"
 #include <algorithm>
 #include <cmath>
@@ -42,16 +43,22 @@ namespace Engine::UI
                 result.Diagnostics.push_back({UUID(0), "UI node requires IDComponent"});
                 continue;
             }
-            const auto &rect = registry.get<RectTransformComponent>(e);
-            if (registry.all_of<CanvasComponent>(e) && uint64_t(rect.Parent.uuid) == 0)
+            if (!registry.all_of<RelationshipComponent>(e))
+            {
+                result.Diagnostics.push_back({UUID(id(e)), "UI node requires RelationshipComponent"});
+                continue;
+            }
+            const auto *relation = registry.try_get<RelationshipComponent>(e);
+            const UUID parent = relation ? relation->GetParent() : UUID(0);
+            if (registry.all_of<CanvasComponent>(e) && uint64_t(parent) == 0)
                 roots.push_back(e);
             else
-                children[uint64_t(rect.Parent.uuid)].push_back(e);
+                children[uint64_t(parent)].push_back(e);
         }
         const auto siblingLess = [&](entt::entity a, entt::entity b)
         {
-            int x = registry.get<RectTransformComponent>(a).SiblingOrder;
-            int y = registry.get<RectTransformComponent>(b).SiblingOrder;
+            int x = registry.get<RelationshipComponent>(a).GetSiblingOrder();
+            int y = registry.get<RelationshipComponent>(b).GetSiblingOrder();
             return x != y ? x < y : id(a) < id(b);
         };
         std::sort(roots.begin(), roots.end(), [&](auto a, auto b)
@@ -71,12 +78,13 @@ namespace Engine::UI
             auto [e, canvas] = stack.back();
             stack.pop_back();
             auto uuid = id(e);
-            const auto &rect = registry.get<RectTransformComponent>(e);
+            const auto *relation = registry.try_get<RelationshipComponent>(e);
+            const UUID parent = relation ? relation->GetParent() : UUID(0);
             if (uuid == 0 || duplicateIDs.contains(uuid) || visited.contains(uuid)) continue;
             // A nested Canvas and its subtree must never leak into the parent's draw list.
-            if (registry.all_of<CanvasComponent>(e) && uint64_t(rect.Parent.uuid) != 0) continue;
+            if (registry.all_of<CanvasComponent>(e) && uint64_t(parent) != 0) continue;
             visited.insert(uuid);
-            result.Nodes.push_back({e, UUID(uuid), rect.Parent.uuid, canvas});
+            result.Nodes.push_back({e, UUID(uuid), parent, canvas});
             auto found = children.find(uuid);
             if (found != children.end())
                 for (auto it = found->second.rbegin(); it != found->second.rend(); ++it)
@@ -85,11 +93,12 @@ namespace Engine::UI
         for (auto e : registry.view<IDComponent, RectTransformComponent>())
         {
             if (visited.contains(id(e))) continue;
-            const auto &rect = registry.get<RectTransformComponent>(e);
+            const auto *relation = registry.try_get<RelationshipComponent>(e);
+            const UUID parent = relation ? relation->GetParent() : UUID(0);
             std::string reason = "UI node has no valid root Canvas (cycle, orphan or invalid ancestor)";
             if (!id(e) || duplicateIDs.contains(id(e))) reason = "UI entity UUID is zero or duplicated";
-            else if (registry.all_of<CanvasComponent>(e) && uint64_t(rect.Parent.uuid)) reason = "Nested Canvas is not supported";
-            else if (uint64_t(rect.Parent.uuid) && !entities.contains(uint64_t(rect.Parent.uuid))) reason = "UI parent does not exist";
+            else if (registry.all_of<CanvasComponent>(e) && uint64_t(parent)) reason = "Nested Canvas is not supported";
+            else if (uint64_t(parent) && !entities.contains(uint64_t(parent))) reason = "UI parent does not exist";
             result.Diagnostics.push_back({UUID(id(e)), reason});
         }
         std::sort(result.Diagnostics.begin(), result.Diagnostics.end(), [](const auto &a, const auto &b)

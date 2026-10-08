@@ -107,6 +107,7 @@ namespace Engine
 
         static void SetActiveScene(Scene *scene);
         static void ReleaseSceneInstances(Scene *scene);
+        static void ReleaseEntityInstance(Scene *scene, UUID entityID);
 
         static void OnCreateEntity(Entity entity);
         static void ResolveScriptReferences(Entity entity);

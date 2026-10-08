@@ -7,6 +7,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <unordered_set>
 #include "Engine/UI/UIRenderer.h"
+#include "Engine/Scene/Components/RelationshipComponent.h"
 namespace Engine
 {
     void Scene::OnUpdateRuntime(Core::Timestep timestep, bool drawUI)
@@ -20,18 +21,19 @@ namespace Engine
                 for (auto e : view)
                 {
                     Entity entity = {e, this};
-                    ScriptEngine::OnUpdateEntity(entity, timestep);
+                    if (!IsPendingDestruction(entity)) ScriptEngine::OnUpdateEntity(entity, timestep);
                 }
 
                 m_Registry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent &nsc)
                                                               {
+                if (IsPendingDestruction(Entity(entity, this))) return;
                 if (!nsc.Instance)
                 {
                     nsc.Instance = nsc.Instantiate();
                     nsc.Instance->m_Entity = Entity(entity, this);
                     nsc.Instance->OnCreate();
                 }
-                nsc.Instance->OnUpdate(timestep); });
+                if (!IsPendingDestruction(Entity(entity, this))) nsc.Instance->OnUpdate(timestep); });
             }
 
             // Remove entities marked for deletion
@@ -73,7 +75,8 @@ namespace Engine
             else if (m_ViewportWidth && m_ViewportHeight)
                 RenderScene2D(GetPrimaryCameraViewProjectionMatrix());
         }
-        if (drawUI) RenderUI();
+        if (drawUI)
+            RenderUI();
     }
 
     void Scene::OnUpdateEditor(Engine::Core::Timestep timestep, const glm::mat4 &viewProjectionMatrix, bool drawUI)
@@ -86,7 +89,8 @@ namespace Engine
         // Update Editor Camera
         Renderer::Renderer2D::ResetStats();
         RenderScene2D(viewProjectionMatrix);
-        if (drawUI) RenderUI();
+        if (drawUI)
+            RenderUI();
     }
 
     void Scene::OnUpdateSimulate(Core::Timestep timestep, const glm::mat4 &viewProjectionMatrix, bool drawUI)
@@ -100,12 +104,14 @@ namespace Engine
         }
         Renderer::Renderer2D::ResetStats();
         RenderScene2D(viewProjectionMatrix);
-        if (drawUI) RenderUI();
+        if (drawUI)
+            RenderUI();
     }
 
     void Scene::RenderUI()
     {
-        if (!m_ViewportWidth || !m_ViewportHeight || m_Registry.view<CanvasComponent>().empty()) return;
+        if (!m_ViewportWidth || !m_ViewportHeight || m_Registry.view<CanvasComponent>().empty())
+            return;
         const glm::vec2 viewport(m_ViewportWidth, m_ViewportHeight);
         const auto layout = UI::CalculateLayout(m_Registry, viewport);
         UI::RenderImages(m_Registry, layout, viewport);
@@ -125,16 +131,21 @@ namespace Engine
         entity.AddComponent<IDComponent>();
         entity.AddComponent<TagComponent>(name);
         entity.AddComponent<TransformComponent>();
+        m_Registry.emplace<RelationshipComponent>(entityHandle);
         m_EntityMap[entity.GetUUID()] = entityHandle;
+        InsertChild(UUID(0), entity.GetUUID());
         return entity;
     }
 
     Entity Scene::CreateEntityWithID(UUID uuid)
     {
+        if (uint64_t(uuid) == 0 || m_EntityMap.contains(uuid)) return {};
         entt::entity entityHandle = m_Registry.create();
         Entity entity = Entity(entityHandle, this);
         entity.AddComponent<IDComponent>(uuid);
+        m_Registry.emplace<RelationshipComponent>(entityHandle);
         m_EntityMap[uuid] = entityHandle;
+        InsertChild(UUID(0), uuid);
         return entity;
     }
 
@@ -164,10 +175,12 @@ namespace Engine
 
     void Scene::SetViewportSize(uint32_t width, uint32_t height)
     {
-        if (m_ViewportWidth == width && m_ViewportHeight == height) return;
+        if (m_ViewportWidth == width && m_ViewportHeight == height)
+            return;
         m_ViewportWidth = width;
         m_ViewportHeight = height;
-        if (width && height) RecalculateCameraProjections();
+        if (width && height)
+            RecalculateCameraProjections();
     }
 
     Entity Scene::GetPrimaryCameraEntity()
@@ -324,48 +337,26 @@ namespace Engine
         for (auto e : view)
         {
             UUID uuid = other->m_Registry.get<IDComponent>(e).ID;
-            std::string name = other->m_Registry.get<TagComponent>(e).Tag;
             Entity newEntity = newScene->CreateEntityWithID(uuid);
-            newEntity.AddComponent<TagComponent>(name);
+            if (auto tag = other->m_Registry.try_get<TagComponent>(e))
+                newEntity.AddComponent<TagComponent>(*tag);
             entityMap[uuid] = (entt::entity)newEntity;
         }
 
         // Copy all components
         CopyComponent(AllComponents{}, newScene->m_Registry, other->m_Registry, entityMap);
-
+        newScene->RebuildHierarchyIndex();
+        for (auto e : newScene->m_Registry.view<NativeScriptComponent>())
+            newScene->m_Registry.get<NativeScriptComponent>(e).Instance = nullptr;
+        for (auto e : newScene->m_Registry.view<Rigidbody2DComponent>())
+            newScene->m_Registry.get<Rigidbody2DComponent>(e).RuntimeBodyId = {};
+        newScene->m_PendingDestruction = other->m_PendingDestruction;
         return newScene;
-    }
-
-    template <typename... T>
-    static void CopyComponentIfExists(Entity dst, Entity src)
-    {
-        ([&]<typename T>()
-         {
-            if (src.HasComponent<T>())
-            {
-                T &srcComponent = src.GetComponent<T>();
-                dst.AddOrReplaceComponent<T>(srcComponent);
-            } }.template operator()<T>(),
-         ...);
-    }
-
-    template <typename... T>
-    static void CopyComponentIfExists(ComponentGroup<T...> group, Entity dst, Entity src)
-    {
-        CopyComponentIfExists<T...>(dst, src);
     }
 
     void Scene::DuplicateEntity(Entity entity)
     {
-        if (!OwnsEntity(entity)) return;
-        if (entity.HasComponent<RectTransformComponent>())
-        {
-            DuplicateUISubtree(entity);
-            return;
-        }
-        std::string name = entity.GetName();
-        Entity newEntity = CreateEntity(name + "_Copy");
-        CopyComponentIfExists(AllComponents{}, newEntity, entity);
+        DuplicateSubtree(entity);
     }
 
     void Scene::RecalculateCameraProjections()
@@ -435,7 +426,10 @@ namespace Engine
     void Scene::DestroyPhysicsWorld()
     {
         ENGINE_INFO("Destroying physics world");
-        b2DestroyWorld(worldId);
+        if (b2World_IsValid(worldId)) b2DestroyWorld(worldId);
+        worldId = {};
+        for (auto e : m_Registry.view<Rigidbody2DComponent>())
+            m_Registry.get<Rigidbody2DComponent>(e).RuntimeBodyId = {};
     }
     void Scene::StepPhysicsWorld(Core::Timestep timestep)
     {
@@ -451,7 +445,7 @@ namespace Engine
                 auto &rigidbody2D = view.get<Rigidbody2DComponent>(entity);
                 auto &transform = view.get<TransformComponent>(entity);
 
-                if (!transform.IsDirty())
+                if (!b2Body_IsValid(rigidbody2D.RuntimeBodyId) || !transform.IsDirty())
                     continue;
 
                 const glm::vec3 transformPosition = transform.GetPosition();
@@ -491,6 +485,7 @@ namespace Engine
                     auto &rigidbody2D = view.get<Rigidbody2DComponent>(entity);
                     auto &transform = view.get<TransformComponent>(entity);
 
+                    if (!b2Body_IsValid(rigidbody2D.RuntimeBodyId)) continue;
                     b2Vec2 position = b2Body_GetPosition(rigidbody2D.RuntimeBodyId);
                     float angle = b2Rot_GetAngle(b2Body_GetRotation(rigidbody2D.RuntimeBodyId));
 
@@ -500,60 +495,6 @@ namespace Engine
             }
         }
     }
-    void Scene::FlushPendingEntityDestruction()
-    {
-        // Expand pending deletion to descendants before destroying anything. This also handles
-        // direct TagComponent::SetRemove calls from existing editor/script paths.
-        std::vector<uint64_t> stack;
-        for (auto e : m_Registry.view<IDComponent, TagComponent>())
-            if (m_Registry.get<TagComponent>(e).IsRemove()) stack.push_back(uint64_t(m_Registry.get<IDComponent>(e).ID));
-        if (stack.empty()) return;
-        std::unordered_set<uint64_t> pending;
-        std::unordered_map<uint64_t, std::vector<entt::entity>> children;
-        for (auto e : m_Registry.view<IDComponent, RectTransformComponent>())
-            children[uint64_t(m_Registry.get<RectTransformComponent>(e).Parent.uuid)].push_back(e);
-        while (!stack.empty())
-        {
-            uint64_t id = stack.back();
-            stack.pop_back();
-            if (!pending.insert(id).second) continue;
-            auto it = children.find(id);
-            if (it == children.end()) continue;
-            for (auto child : it->second)
-            {
-                if (m_Registry.all_of<TagComponent>(child)) m_Registry.get<TagComponent>(child).SetRemove(true);
-                stack.push_back(uint64_t(m_Registry.get<IDComponent>(child).ID));
-            }
-        }
-        auto view = m_Registry.view<TagComponent>();
-        std::vector<entt::entity> entitiesToRemove;
-        for (auto entity : view)
-        {
-            if (view.get<TagComponent>(entity).IsRemove())
-            {
-                ENGINE_INFO("Entity {} marked for deletion", view.get<TagComponent>(entity).Tag);
-                entitiesToRemove.push_back(entity);
-            }
-        }
-
-        for (auto entity : entitiesToRemove)
-        {
-            Entity e{entity, this};
-            ENGINE_INFO("Really Removing entity {}", e.GetComponent<TagComponent>().Tag);
-            if (e.HasComponent<NativeScriptComponent>())
-            {
-                auto &nsc = e.GetComponent<NativeScriptComponent>();
-                if (nsc.Instance)
-                {
-                    nsc.Instance->OnDestroy();
-                    nsc.Destroy(&nsc);
-                }
-            }
-            m_EntityMap.erase(e.GetUUID());
-            m_Registry.destroy(entity);
-        }
-    }
-
     void Scene::RenderScene2D(glm::mat4 viewProjectionMatrix)
     {
         ENGINE_PROFILING_FUNC();

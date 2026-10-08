@@ -81,7 +81,7 @@ namespace Engine
                     MakeField<glm::vec3, float, &glm::vec3::x>("x"),
                     MakeField<glm::vec3, float, &glm::vec3::y>("y"),
                     MakeField<glm::vec3, float, &glm::vec3::z>("z"),
-                };
+            };
             static const MetaType t{"float3", MetaKind::Float3, sizeof(glm::vec3), &fields};
             return t;
         }
@@ -98,7 +98,7 @@ namespace Engine
                     MakeField<glm::vec4, float, &glm::vec4::y>("y"),
                     MakeField<glm::vec4, float, &glm::vec4::z>("z"),
                     MakeField<glm::vec4, float, &glm::vec4::w>("w"),
-                };
+            };
             static const MetaType t{"float4", MetaKind::Float4, sizeof(glm::vec4), &fields};
             return t;
         }
@@ -110,6 +110,26 @@ namespace Engine
         static const MetaType &Get()
         {
             static const MetaType t{"int", MetaKind::Int, sizeof(int), nullptr};
+            return t;
+        }
+    };
+
+    template <>
+    struct MetaResolver<uint32_t>
+    {
+        static const MetaType &Get()
+        {
+            static const MetaType t{"uint32_t", MetaKind::UInt32, sizeof(uint32_t), nullptr};
+            return t;
+        }
+    };
+
+    template <>
+    struct MetaResolver<int64_t>
+    {
+        static const MetaType &Get()
+        {
+            static const MetaType t{"int64_t", MetaKind::Int64, sizeof(int64_t), nullptr};
             return t;
         }
     };
@@ -148,7 +168,7 @@ namespace Engine
                     MakeField<glm::ivec3, int, &glm::ivec3::x>("x"),
                     MakeField<glm::ivec3, int, &glm::ivec3::y>("y"),
                     MakeField<glm::ivec3, int, &glm::ivec3::z>("z"),
-                };
+            };
             static const MetaType t{"int3", MetaKind::Int3, sizeof(glm::ivec3), &fields};
             return t;
         }
@@ -165,7 +185,7 @@ namespace Engine
                     MakeField<glm::ivec4, int, &glm::ivec4::y>("y"),
                     MakeField<glm::ivec4, int, &glm::ivec4::z>("z"),
                     MakeField<glm::ivec4, int, &glm::ivec4::w>("w"),
-                };
+            };
             static const MetaType t{"int4", MetaKind::Int4, sizeof(glm::ivec4), &fields};
             return t;
         }

@@ -13,7 +13,10 @@ namespace Engine
             static const std::vector<MetaField> fields = BuildFields<Self>([](auto &type) {
 
 #define REFLECT_FIELD(Member) \
-    type.Field<&Self::Member>(#Member)
+    type.template Field<&Self::Member>(#Member)
+
+#define REFLECT_FIELD_NAMED(Member, Name) \
+    type.template Field<&Self::Member>(Name)
 
 #define REFLECT_TYPE_END(Type)                                               \
     });                                                                      \
@@ -22,6 +25,13 @@ namespace Engine
     }                                                                        \
     }                                                                        \
     ;
+
+#define REFLECT_COMPONENT_BEGIN(Type) \
+    REFLECT_TYPE_BEGIN(Type)          \
+    REFLECT_FIELD_NAMED(m_Enabled, "Enabled").UIProperty(Engine::UIProperty::Hidden);
+
+#define REFLECT_COMPONENT_END(Type) \
+    REFLECT_TYPE_END(Type)
 
 #define REFLECT_ENUM_BEGIN(EnumType) \
     template <>                      \

@@ -16,9 +16,9 @@ namespace Engine
         CircleComponent(const CircleComponent &other) = default;
     };
 
-    REFLECT_TYPE_BEGIN(CircleComponent)
+    REFLECT_COMPONENT_BEGIN(CircleComponent)
     REFLECT_FIELD(Color).UIKIND(UIKind::UITYPE_Color);
     REFLECT_FIELD(Thickness);
     REFLECT_FIELD(Fade);
-    REFLECT_TYPE_END(CircleComponent)
+    REFLECT_COMPONENT_END(CircleComponent)
 }

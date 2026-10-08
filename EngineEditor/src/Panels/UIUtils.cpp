@@ -890,7 +890,7 @@ namespace EngineEditor
     }
 
     template <typename T>
-    void UIUtils::DrawComponent(const std::string &name, Engine::Entity entity, const std::function<void(T &)> &uiFunction, bool removeable)
+    void UIUtils::DrawComponent(const std::string &name, Engine::Entity entity, const std::function<void(T &)> &uiFunction, bool removeable, bool canSetEnable)
     {
         ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_SpanAvailWidth;
         if (!entity.HasComponent<T>())
@@ -902,7 +902,18 @@ namespace EngineEditor
         ImVec2 contentRegion = ImGui::GetContentRegionAvail();
         float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
 
-        bool opened = ImGui::TreeNodeEx(name.c_str(), treeNodeFlags);
+        bool opened = ImGui::TreeNodeEx("##node", treeNodeFlags);
+        if (canSetEnable)
+        {
+            ImGui::SameLine();
+            bool enabled = component.IsEnabled();
+            if (ImGui::Checkbox("##Enabled", &enabled))
+            {
+                component.SetEnabled(enabled);
+            }
+        }
+        ImGui::SameLine();
+        ImGui::TextUnformatted(name.c_str());
         if (removeable)
         {
             ImGui::SameLine(contentRegion.x - lineHeight * 0.5f);
@@ -935,7 +946,7 @@ namespace EngineEditor
     }
 
     template <IsUIComponent T>
-    void UIUtils::DrawComponent(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context)
+    void UIUtils::DrawComponent(const std::string &name, Engine::Entity entity, bool removeable, bool canSetEnable, Engine::Ref<Engine::Scene> context)
     {
         ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_SpanAvailWidth;
         if (!entity.HasComponent<T>())
@@ -948,7 +959,18 @@ namespace EngineEditor
         float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
 
         ImGui::PushID(name.c_str());
-        bool opened = ImGui::TreeNodeEx(name.c_str(), treeNodeFlags);
+        bool opened = ImGui::TreeNodeEx("##node", treeNodeFlags);
+        if (canSetEnable)
+        {
+            ImGui::SameLine();
+            bool enabled = component.IsEnabled();
+            if (ImGui::Checkbox("##Enabled", &enabled))
+            {
+                component.SetEnabled(enabled);
+            }
+        }
+        ImGui::SameLine();
+        ImGui::TextUnformatted(name.c_str());
         if (removeable)
         {
             ImGui::SameLine(contentRegion.x - lineHeight * 0.5f);
@@ -981,13 +1003,15 @@ namespace EngineEditor
     }
 
     // Explicit template instantiations
-    template void UIUtils::DrawComponent<Engine::TransformComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
-    template void UIUtils::DrawComponent<Engine::SpriteComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
-    template void UIUtils::DrawComponent<Engine::SpriteAnimationComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
-    template void UIUtils::DrawComponent<Engine::CameraComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
-    template void UIUtils::DrawComponent<Engine::Rigidbody2DComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
-    template void UIUtils::DrawComponent<Engine::BoxCollider2DComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
-    template void UIUtils::DrawComponent<Engine::CircleComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
-    template void UIUtils::DrawComponent<Engine::CircleCollider2DComponent>(const std::string &name, Engine::Entity entity, bool removeable, Engine::Ref<Engine::Scene> context);
-    template void UIUtils::DrawComponent<Engine::ScriptComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::ScriptComponent &)> &uiFunction, bool removeable);
+    template void UIUtils::DrawComponent<Engine::RectTransformComponent>(const std::string &name, Engine::Entity entity, bool removeable, bool canSetEnable, Engine::Ref<Engine::Scene> context);
+    template void UIUtils::DrawComponent<Engine::TransformComponent>(const std::string &name, Engine::Entity entity, bool removeable, bool canSetEnable, Engine::Ref<Engine::Scene> context);
+    template void UIUtils::DrawComponent<Engine::SpriteComponent>(const std::string &name, Engine::Entity entity, bool removeable, bool canSetEnable, Engine::Ref<Engine::Scene> context);
+    template void UIUtils::DrawComponent<Engine::SpriteAnimationComponent>(const std::string &name, Engine::Entity entity, bool removeable, bool canSetEnable, Engine::Ref<Engine::Scene> context);
+    template void UIUtils::DrawComponent<Engine::CameraComponent>(const std::string &name, Engine::Entity entity, bool removeable, bool canSetEnable, Engine::Ref<Engine::Scene> context);
+    template void UIUtils::DrawComponent<Engine::Rigidbody2DComponent>(const std::string &name, Engine::Entity entity, bool removeable, bool canSetEnable, Engine::Ref<Engine::Scene> context);
+    template void UIUtils::DrawComponent<Engine::BoxCollider2DComponent>(const std::string &name, Engine::Entity entity, bool removeable, bool canSetEnable, Engine::Ref<Engine::Scene> context);
+    template void UIUtils::DrawComponent<Engine::CircleComponent>(const std::string &name, Engine::Entity entity, bool removeable, bool canSetEnable, Engine::Ref<Engine::Scene> context);
+    template void UIUtils::DrawComponent<Engine::CircleCollider2DComponent>(const std::string &name, Engine::Entity entity, bool removeable, bool canSetEnable, Engine::Ref<Engine::Scene> context);
+    template void UIUtils::DrawComponent<Engine::UIImageComponent>(const std::string &name, Engine::Entity entity, bool removeable, bool canSetEnable, Engine::Ref<Engine::Scene> context);
+    template void UIUtils::DrawComponent<Engine::ScriptComponent>(const std::string &name, Engine::Entity entity, const std::function<void(Engine::ScriptComponent &)> &uiFunction, bool removeable, bool canSetEnable);
 }

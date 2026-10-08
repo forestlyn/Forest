@@ -103,7 +103,7 @@ namespace
         auto e = scene.CreateUIEntity(parent, "Image");
         auto &rect = e.GetComponent<RectTransformComponent>();
         rect.AnchorMin = rect.AnchorMax = rect.Pivot = {0, 0};
-        rect.AnchoredPosition = position; rect.SizeDelta = size; rect.SiblingOrder = order;
+        rect.AnchoredPosition = position; rect.SizeDelta = size; scene.SetSiblingOrder(e, order);
         e.AddComponent<UIImageComponent>().Color = color;
         return e;
     }
@@ -301,7 +301,8 @@ int main(int argc, char **argv)
         {
             Check(bool(Project::Load(fs::absolute(argv[2]))), "example project load");
             auto example = CreateRef<Scene>();
-            Check(Serialization::SceneSerialize(example).Deserialize(Project::GetActiveProjectStartScene().string()), "example scene load");
+            // The project's selected startup scene is editable; this test targets the UI fixture.
+            Check(Serialization::SceneSerialize(example).Deserialize(Project::GetActiveProjectAssetPath("Scenes/Images.scene").string()), "example scene load");
             Check(example->HasValidCanvas(), "example is a valid camera-free UI scene");
             target.Reset(1280,720); example->SetViewportSize(1280,720);
             example->OnUpdateEditor(0.0f, glm::mat4(1));
