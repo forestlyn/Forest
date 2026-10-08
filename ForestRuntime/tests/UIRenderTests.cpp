@@ -5,6 +5,10 @@
 #include "Engine/Renderer/Renderer2D.h"
 #include "Engine/Serialization/SceneSerialize.h"
 #include "Engine/Project/Project.h"
+#include "Engine/Scripts/ScriptEngine.h"
+#include <mono/metadata/object.h>
+#include <mono/metadata/class.h>
+#include <mono/metadata/appdomain.h>
 #include "../src/RuntimeLayer.h"
 #include <glad/glad.h>
 #include <fstream>
@@ -17,6 +21,39 @@ namespace fs = std::filesystem;
 namespace
 {
     void Check(bool condition, const char *message) { if (!condition) throw std::runtime_error(message); }
+    void ManagedTransformSafety()
+    {
+        auto scene = CreateRef<Scene>();
+        auto ui = scene->CreateCanvas();
+        auto world = scene->CreateEntity("World");
+        ScriptEngine::SetActiveScene(scene.get());
+        auto *image = ScriptEngine::GetCoreAssemblyImage();
+        auto *entityClass = mono_class_from_name(image, "Engine", "Entity");
+        auto *transformClass = mono_class_from_name(image, "Engine", "TransformComponent");
+        auto *componentClass = mono_class_from_name(image, "Engine", "Component");
+        auto *getter = mono_class_get_method_from_name(transformClass, "get_Position", 0);
+        auto *bind = mono_class_get_method_from_name(componentClass, "set_Entity", 1);
+        auto *idField = mono_class_get_field_from_name(entityClass, "ID");
+        Check(getter && bind && idField, "managed binding metadata");
+        for (auto entity : {world, ui})
+        {
+            auto *wrapper = mono_object_new(mono_domain_get(), transformClass);
+            const auto handle = mono_gchandle_new(wrapper, false);
+            auto *managedEntity = mono_object_new(mono_domain_get(), entityClass);
+            auto id = uint64_t(entity.GetUUID());
+            mono_field_set_value(managedEntity, idField, &id);
+            void *args[]{managedEntity};
+            MonoObject *exception = nullptr;
+            mono_runtime_invoke(bind, mono_gchandle_get_target(handle), args, &exception);
+            Check(!exception, "managed component entity binding");
+            mono_runtime_invoke(getter, mono_gchandle_get_target(handle), nullptr, &exception);
+            if (entity == world) Check(!exception, "ordinary managed Transform remains usable");
+            else Check(exception && std::string(mono_class_get_name(mono_object_get_class(exception))) == "InvalidOperationException", "UI Transform access throws managed error instead of native assertion");
+            mono_gchandle_free(handle);
+        }
+        ScriptEngine::ReleaseSceneInstances(scene.get());
+    }
+
     void CheckGL(const char *stage)
     {
         GLenum error = GL_NO_ERROR;
@@ -279,6 +316,7 @@ int main(int argc, char **argv)
             ENGINE_WARN("Pre-UI renderer initialization OpenGL error: {}", error);
         ENQUEUE_RENDER_COMMAND_END()
         app.FlushRendererCommands();
+        ManagedTransformSafety();
         Target target;
         Composition(target, output);
         CheckGL("Composition");
@@ -304,6 +342,8 @@ int main(int argc, char **argv)
             // The project's selected startup scene is editable; this test targets the UI fixture.
             Check(Serialization::SceneSerialize(example).Deserialize(Project::GetActiveProjectAssetPath("Scenes/Images.scene").string()), "example scene load");
             Check(example->HasValidCanvas(), "example is a valid camera-free UI scene");
+            for (auto entity : example->GetRegistry().view<RectTransformComponent>())
+                Check(!example->GetRegistry().all_of<TransformComponent>(entity), "Images.scene contains only RectTransform");
             target.Reset(1280,720); example->SetViewportSize(1280,720);
             example->OnUpdateEditor(0.0f, glm::mat4(1));
             target.Save(output / "example-1280x720.ppm");

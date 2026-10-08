@@ -41,10 +41,10 @@ namespace Engine
     concept IsInComponentGroup = IsInComponentGroupHelper<T, Group>::value;
 
     using AllComponents = ComponentGroup<
-        UIImageComponent,
-        CanvasComponent,
         RectTransformComponent,
         TransformComponent,
+        UIImageComponent,
+        CanvasComponent,
         CameraComponent,
         SpriteComponent,
         CircleComponent,
@@ -55,6 +55,10 @@ namespace Engine
         SpriteAnimationComponent,
         NativeScriptComponent,
         RelationshipComponent>;
+
+    using WorldTransformComponents = ComponentGroup<CameraComponent, SpriteComponent, CircleComponent,
+        SpriteAnimationComponent, Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent>;
+    using RectTransformComponents = ComponentGroup<CanvasComponent, UIImageComponent>;
 
     // Only types that have a ScriptCore managed wrapper belong here.
     using ScriptableComponents = ComponentGroup<TransformComponent, Rigidbody2DComponent>;
@@ -67,5 +71,6 @@ namespace Engine
         CircleComponent,
         Rigidbody2DComponent,
         BoxCollider2DComponent,
-        CircleCollider2DComponent>;
+        CircleCollider2DComponent,
+        UIImageComponent>;
 }

@@ -8,10 +8,10 @@ namespace Engine
         internal extern static bool HasComponent(ulong entityID, Type componentType);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void AddComponent(ulong entityID, Type componentType);
+        internal extern static bool AddComponent(ulong entityID, Type componentType);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RemoveComponent(ulong entityID, Type componentType);
+        internal extern static bool RemoveComponent(ulong entityID, Type componentType);
     }
 
     public class Component

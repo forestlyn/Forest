@@ -50,7 +50,7 @@ namespace EngineEditor
         {
             ([&]<typename T>()
              {
-                if (!entity.HasComponent<T>())
+                if (!entity.HasComponent<T>() && entity.CanAddComponent<T>())
                 {
                     if (ImGui::MenuItem(typeid(T).name()))
                     {

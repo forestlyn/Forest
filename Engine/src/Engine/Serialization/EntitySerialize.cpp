@@ -258,10 +258,19 @@ namespace Engine::Serialization
 
     bool DeserializeEntity(const YAML::Node &entityNode, Entity &entity)
     {
-        if (!DeserializeComponents(entityNode, entity, REFLECT_SERIALIZE_TYPE{}))
+        try
         {
+            if (entityNode["RectTransformComponent"] && entityNode["TransformComponent"])
+            {
+                ENGINE_ERROR("Entity {} cannot contain both TransformComponent and RectTransformComponent", uint64_t(entity.GetUUID()));
+                return false;
+            }
+            return DeserializeComponents(entityNode, entity, REFLECT_SERIALIZE_TYPE{});
+        }
+        catch (const std::exception &error)
+        {
+            ENGINE_ERROR("Invalid components on entity {}: {}", uint64_t(entity.GetUUID()), error.what());
             return false;
         }
-        return true;
     }
 } // namespace Engine::Serialization

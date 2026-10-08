@@ -183,7 +183,7 @@ namespace Engine
         std::unordered_map<UUID, Entity> copies;
         for (auto source : nodes)
         {
-            auto copy = CreateEntity(source.HasComponent<TagComponent>() ? source.GetName() + "_Copy" : "Copy");
+            auto copy = CreateEntityBase(source.HasComponent<TagComponent>() ? source.GetName() + "_Copy" : "Copy");
             [&]<typename... T>(ComponentGroup<T...>)
             {
                 ([&]

@@ -126,11 +126,17 @@ namespace Engine
 
     Entity Scene::CreateEntity(const std::string &name)
     {
+        auto entity = CreateEntityBase(name);
+        entity.AddComponent<TransformComponent>();
+        return entity;
+    }
+
+    Entity Scene::CreateEntityBase(const std::string &name)
+    {
         entt::entity entityHandle = m_Registry.create();
         auto entity = Entity(entityHandle, this);
         entity.AddComponent<IDComponent>();
         entity.AddComponent<TagComponent>(name);
-        entity.AddComponent<TransformComponent>();
         m_Registry.emplace<RelationshipComponent>(entityHandle);
         m_EntityMap[entity.GetUUID()] = entityHandle;
         InsertChild(UUID(0), entity.GetUUID());

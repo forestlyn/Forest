@@ -44,7 +44,6 @@ namespace
     {
         auto entity = scene.CreateEntityWithID(UUID(id));
         entity.AddComponent<TagComponent>("UI");
-        entity.AddComponent<TransformComponent>();
         entity.AddComponent<RectTransformComponent>();
         if (parent) Check(scene.SetParent(entity, scene.GetEntityByUUID(UUID(parent))), "fixed entity parent");
         if (canvas)
@@ -151,7 +150,7 @@ namespace
         a.RemoveComponent<CanvasComponent>();
         ForceParent(scene, a, other.GetUUID()); // restore the original index-consistent relationship
         auto brokenCanvas = scene.CreateEntity("BrokenCanvas");
-        brokenCanvas.AddComponent<CanvasComponent>();
+        scene.GetRegistry().emplace<CanvasComponent>(brokenCanvas); // malformed input diagnostic
         Check(!UI::BuildHierarchy(scene.GetRegistry()).Diagnostics.empty(), "canvas requires rect");
         scene.DestroyEntity(b);
         Check(!scene.CreateUIEntity(b), "cannot parent to pending deletion");
@@ -325,6 +324,64 @@ namespace
         Check(!Serialization::SceneSerialize(duplicate).Deserialize(migratedPath.string()), "reject duplicate UUID load");
     }
 
+    void ExclusiveTransforms(const std::filesystem::path &directory)
+    {
+        auto scene = CreateRef<Scene>();
+        auto world = scene->CreateEntity("World");
+        auto canvas = scene->CreateCanvas();
+        auto image = scene->CreateUIEntity(canvas);
+        image.AddComponent<UIImageComponent>();
+        Check(world.HasComponent<TransformComponent>() && !world.HasComponent<RectTransformComponent>(), "world has only Transform");
+        Check(!canvas.HasComponent<TransformComponent>() && !image.HasComponent<TransformComponent>(), "UI has only RectTransform");
+        const auto rejected = [](auto operation)
+        {
+            try { operation(); } catch (const std::logic_error &) { return true; }
+            return false;
+        };
+        Check(rejected([&] { image.AddComponent<TransformComponent>(); }), "cannot add world transform to UI");
+        Check(rejected([&] { world.AddComponent<RectTransformComponent>(); }), "cannot add RectTransform to world entity");
+        Check(rejected([&] { image.AddOrReplaceComponent<TransformComponent>(); }), "replace cannot bypass exclusivity");
+        Check(rejected([&] { world.AddOrReplaceComponent<RectTransformComponent>(); }), "reverse replace cannot bypass exclusivity");
+        Check(rejected([&] { image.AddComponent<Rigidbody2DComponent>(); }), "UI rejects physics");
+        Check(rejected([&] { world.AddComponent<UIImageComponent>(); }), "world rejects UI graphic");
+        Check(rejected([&] { image.RemoveComponent<RectTransformComponent>(); }), "UI dependency guards removal");
+        world.AddComponent<SpriteComponent>();
+        Check(rejected([&] { world.RemoveComponent<TransformComponent>(); }), "world dependency guards removal");
+        Check(!image.CanAddComponent<CameraComponent>() && image.CanAddComponent<UIImageComponent>(), "editor eligibility uses same rules");
+        auto copy = scene->DuplicateSubtree(canvas);
+        Check(copy && !copy.HasComponent<TransformComponent>() && !copy.GetChildren()[0].HasComponent<TransformComponent>(), "UI subtree copy preserves exclusivity");
+        auto worldCopy = scene->DuplicateSubtree(world);
+        Check(worldCopy.HasComponent<TransformComponent>() && !worldCopy.HasComponent<RectTransformComponent>(), "world copy retains Transform");
+        auto cloned = Scene::Copy(scene);
+        Check(!cloned->GetEntityByUUID(image.GetUUID()).HasComponent<TransformComponent>(), "scene copy preserves UI component set");
+        const auto file = directory / "exclusive.scene";
+        Serialization::SceneSerialize(scene).Serialize(file.string());
+        auto loaded = CreateRef<Scene>();
+        Check(Serialization::SceneSerialize(loaded).Deserialize(file.string()), "exclusive round trip");
+        Check(!loaded->GetEntityByUUID(image.GetUUID()).HasComponent<TransformComponent>(), "reload does not inject Transform");
+        for (const auto &node : YAML::LoadFile(file.string())["Entities"])
+            Check(!(node["TransformComponent"] && node["RectTransformComponent"]), "only one serialized transform");
+        const auto legacy = directory / "dual-transform.scene";
+        const std::string prefix = "Scene: Legacy\nEntities:\n  - EntityID: 1\n    TagComponent: {Tag: UI}\n    CanvasComponent: {}\n    RectTransformComponent: {}\n";
+        std::ofstream(legacy) << prefix << "    TransformComponent: {}\n";
+        auto dualTransform = CreateRef<Scene>();
+        Check(!Serialization::SceneSerialize(dualTransform).Deserialize(legacy.string()), "dual transforms rejected even with default values");
+        for (const std::string extra : {
+            "    TransformComponent: {Position: [1, 0, 0]}\n",
+            "    TransformComponent: {Rotation: [0, 0, 30]}\n",
+            "    TransformComponent: {Scale: [2, 2, 1]}\n",
+            "    TransformComponent: {Enabled: false}\n",
+            "    TransformComponent: {}\n    Rigidbody2DComponent: {}\n",
+            "    Rigidbody2DComponent: {}\n"})
+        {
+            std::ofstream(legacy) << prefix << extra;
+            auto conflict = CreateRef<Scene>();
+            Check(!Serialization::SceneSerialize(conflict).Deserialize(legacy.string()), "conflicting or missing world transform rejected");
+        }
+        const auto *fields = Reflect<CanvasComponent>().fields;
+        Check(std::count_if(fields->begin(), fields->end(), [](const auto &field) { return std::string_view(field.name) == "Enabled"; }) == 1, "Canvas Enabled registered once");
+    }
+
     void PersistenceTests(const std::filesystem::path &directory)
     {
         auto scene = CreateRef<Scene>();
@@ -381,6 +438,7 @@ int main(int argc, char **argv)
         PersistenceTests(directory);
         GeneralHierarchy();
         RelationshipPersistence(directory);
+        ExclusiveTransforms(directory);
         ENGINE_INFO("PASS: UI layout, scaling, hierarchy, ordering, copy, deletion and scene persistence");
         return 0;
     }

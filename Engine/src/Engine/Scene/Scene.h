@@ -91,6 +91,7 @@ namespace Engine
         void FlushPendingEntityDestruction();
 
     private:
+        Entity CreateEntityBase(const std::string &name);
         void RecalculateCameraProjections();
 
         void SetupPhysicsWorld();

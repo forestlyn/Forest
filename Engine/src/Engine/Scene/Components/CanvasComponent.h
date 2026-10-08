@@ -27,6 +27,5 @@ namespace Engine
     REFLECT_FIELD(ScaleMode);
     REFLECT_FIELD(MatchWidthOrHeight).UIRANGE(0.0f, 1.0f, 0.01f);
     REFLECT_FIELD(SortOrder);
-    type.template Field<&Self::m_Enabled>("Enabled");
     REFLECT_COMPONENT_END(CanvasComponent)
 }

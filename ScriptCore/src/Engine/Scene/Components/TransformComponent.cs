@@ -5,17 +5,17 @@ namespace Engine
     public class TransformComponentInternalCalls
     {
         [MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.InternalCall)]
-        internal extern static void SetPosition(ulong entityID, ref Vector3 position);
+        internal extern static bool SetPosition(ulong entityID, ref Vector3 position);
         [MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.InternalCall)]
-        internal extern static void GetPosition(ulong entityID, out Vector3 position);
+        internal extern static bool GetPosition(ulong entityID, out Vector3 position);
         [MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.InternalCall)]
-        internal extern static void SetRotation(ulong entityID, ref Vector3 rotation);
+        internal extern static bool SetRotation(ulong entityID, ref Vector3 rotation);
         [MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.InternalCall)]
-        internal extern static void GetRotation(ulong entityID, out Vector3 rotation);
+        internal extern static bool GetRotation(ulong entityID, out Vector3 rotation);
         [MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.InternalCall)]
-        internal extern static void SetScale(ulong entityID, ref Vector3 scale);
+        internal extern static bool SetScale(ulong entityID, ref Vector3 scale);
         [MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.InternalCall)]
-        internal extern static void GetScale(ulong entityID, out Vector3 scale);
+        internal extern static bool GetScale(ulong entityID, out Vector3 scale);
     }
 
 
@@ -25,32 +25,38 @@ namespace Engine
         {
             get
             {
-                TransformComponentInternalCalls.GetPosition(Entity.ID, out Vector3 position);
+                EnsureAvailable(TransformComponentInternalCalls.GetPosition(Entity.ID, out Vector3 position));
                 return position;
             }
-            set => TransformComponentInternalCalls.SetPosition(Entity.ID, ref value);
+            set => EnsureAvailable(TransformComponentInternalCalls.SetPosition(Entity.ID, ref value));
         }
 
         public Vector3 Rotation
         {
             get
             {
-                TransformComponentInternalCalls.GetRotation(Entity.ID, out Vector3 rotation);
+                EnsureAvailable(TransformComponentInternalCalls.GetRotation(Entity.ID, out Vector3 rotation));
                 return rotation;
             }
-            set => TransformComponentInternalCalls.SetRotation(Entity.ID, ref value);
+            set => EnsureAvailable(TransformComponentInternalCalls.SetRotation(Entity.ID, ref value));
         }
 
         public Vector3 Scale
         {
             get
             {
-                TransformComponentInternalCalls.GetScale(Entity.ID, out Vector3 scale);
+                EnsureAvailable(TransformComponentInternalCalls.GetScale(Entity.ID, out Vector3 scale));
                 return scale;
             }
-            set => TransformComponentInternalCalls.SetScale(Entity.ID, ref value);
+            set => EnsureAvailable(TransformComponentInternalCalls.SetScale(Entity.ID, ref value));
         }
 
+
+        private static void EnsureAvailable(bool available)
+        {
+            if (!available)
+                throw new System.InvalidOperationException("Entity no longer has a TransformComponent. UI entities use RectTransform.");
+        }
 
         public TransformComponent()
         {

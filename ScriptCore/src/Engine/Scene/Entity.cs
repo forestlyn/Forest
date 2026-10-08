@@ -32,7 +32,8 @@ namespace Engine
 
         public T AddComponent<T>() where T : Component, new()
         {
-            ComponentInternalCalls.AddComponent(ID, typeof(T));
+            if (!ComponentInternalCalls.AddComponent(ID, typeof(T)))
+                throw new System.InvalidOperationException("Cannot add component: invalid entity, transform conflict or component dependency.");
             T component = new T();
             component.Entity = this;
             return component;
@@ -40,7 +41,8 @@ namespace Engine
 
         public void RemoveComponent<T>() where T : Component, new()
         {
-            ComponentInternalCalls.RemoveComponent(ID, typeof(T));
+            if (!ComponentInternalCalls.RemoveComponent(ID, typeof(T)))
+                throw new System.InvalidOperationException("Cannot remove component: invalid entity, transform conflict or component dependency.");
         }
 
         public T GetComponent<T>() where T : Component, new()

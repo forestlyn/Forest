@@ -1,5 +1,6 @@
 #pragma once
 #include <entt.hpp>
+#include <stdexcept>
 #include "Engine/Scene/Scene.h"
 namespace Engine
 {
@@ -14,10 +15,40 @@ namespace Engine
         Entity() = default;
         Entity(entt::entity handle, Scene *scene);
 
+        template <typename T>
+        bool CanAddComponent()
+        {
+            if (!*this) return false;
+            if constexpr (std::is_same_v<T, RelationshipComponent>) return false;
+            if constexpr (std::is_same_v<T, TransformComponent>) return !HasComponent<RectTransformComponent>();
+            if constexpr (std::is_same_v<T, RectTransformComponent>) return !HasComponent<TransformComponent>();
+            if constexpr (IsInComponentGroup<T, WorldTransformComponents>) return HasComponent<TransformComponent>();
+            if constexpr (IsInComponentGroup<T, RectTransformComponents>) return HasComponent<RectTransformComponent>();
+            return true;
+        }
+
+        template <typename T>
+        bool CanRemoveComponent()
+        {
+            if (!*this) return false;
+            if constexpr (std::is_same_v<T, RelationshipComponent>) return false;
+            const auto hasAny = [&]<typename... C>(ComponentGroup<C...>) { return (HasComponent<C>() || ...); };
+            if constexpr (std::is_same_v<T, TransformComponent>) return !hasAny(WorldTransformComponents{});
+            if constexpr (std::is_same_v<T, RectTransformComponent>)
+            {
+                if (hasAny(RectTransformComponents{})) return false;
+                for (auto child : GetChildren())
+                    if (child.HasComponent<RectTransformComponent>()) return false;
+            }
+            return true;
+        }
+
         template <typename T, typename... Args>
         T &AddComponent(Args &&...args)
         {
             static_assert(!std::is_same_v<T, RelationshipComponent>, "Relationship is managed by Scene");
+            if (!CanAddComponent<T>() || HasComponent<T>())
+                throw std::logic_error("Cannot add component: duplicate, conflicting transform or missing transform dependency");
             return m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
         }
 
@@ -25,6 +56,8 @@ namespace Engine
         T &AddOrReplaceComponent(Args &&...args)
         {
             static_assert(!std::is_same_v<T, RelationshipComponent>, "Relationship is managed by Scene");
+            if (!CanAddComponent<T>())
+                throw std::logic_error("Cannot replace component: conflicting transform or missing transform dependency");
             return m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
         }
 
@@ -47,6 +80,8 @@ namespace Engine
         void RemoveComponent()
         {
             static_assert(!std::is_same_v<T, RelationshipComponent>, "Relationship is managed by Scene");
+            if (!CanRemoveComponent<T>())
+                throw std::logic_error("Cannot remove a transform required by components or UI children");
             m_Scene->m_Registry.remove<T>(m_EntityHandle);
         }
 

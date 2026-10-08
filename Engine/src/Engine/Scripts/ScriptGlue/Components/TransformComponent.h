@@ -1,64 +1,63 @@
+#pragma once
 #include "Engine/Scene/Scene.h"
 #include "Engine/Scene/Entity.h"
-#include "Engine/pcheader.h"
+#include "Engine/Scripts/ScriptEngine.h"
 namespace Engine
 {
-    static void GetPosition(UUID entityID, glm::vec3 *outPosition)
+    static TransformComponent *FindScriptTransform(UUID entityID)
     {
-        Scene *scene = ScriptEngine::GetSceneContext();
-        ENGINE_ASSERT(scene);
-        Entity entity = scene->GetEntityByUUID(entityID);
-        ENGINE_ASSERT(entity);
-
-        *outPosition = entity.GetComponent<TransformComponent>().GetPosition();
+        auto *scene = ScriptEngine::GetSceneContext();
+        if (!scene) return nullptr;
+        auto entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<TransformComponent>()) return nullptr;
+        return &entity.GetComponent<TransformComponent>();
     }
-
-    static void SetPosition(UUID entityID, glm::vec3 *position)
+    static bool GetPosition(UUID entityID, glm::vec3 *value)
     {
-        Scene *scene = ScriptEngine::GetSceneContext();
-        ENGINE_ASSERT(scene);
-        Entity entity = scene->GetEntityByUUID(entityID);
-        ENGINE_ASSERT(entity);
-        entity.GetComponent<TransformComponent>().SetPosition(*position);
+        if (!value) return false;
+        *value = glm::vec3(0);
+        auto *transform = FindScriptTransform(entityID);
+        if (!transform) return false;
+        *value = transform->GetPosition();
+        return true;
     }
-
-    static void GetRotation(UUID entityID, glm::vec3 *outRotation)
+    static bool SetPosition(UUID entityID, glm::vec3 *value)
     {
-        Scene *scene = ScriptEngine::GetSceneContext();
-        ENGINE_ASSERT(scene);
-        Entity entity = scene->GetEntityByUUID(entityID);
-        ENGINE_ASSERT(entity);
-
-        *outRotation = entity.GetComponent<TransformComponent>().GetRotation();
+        auto *transform = FindScriptTransform(entityID);
+        if (!transform || !value) return false;
+        transform->SetPosition(*value);
+        return true;
     }
-
-    static void SetRotation(UUID entityID, glm::vec3 *rotation)
+    static bool GetRotation(UUID entityID, glm::vec3 *value)
     {
-        Scene *scene = ScriptEngine::GetSceneContext();
-        ENGINE_ASSERT(scene);
-        Entity entity = scene->GetEntityByUUID(entityID);
-        ENGINE_ASSERT(entity);
-
-        entity.GetComponent<TransformComponent>().SetRotation(*rotation);
+        if (!value) return false;
+        *value = glm::vec3(0);
+        auto *transform = FindScriptTransform(entityID);
+        if (!transform) return false;
+        *value = transform->GetRotation();
+        return true;
     }
-
-    static void GetScale(UUID entityID, glm::vec3 *outScale)
+    static bool SetRotation(UUID entityID, glm::vec3 *value)
     {
-        Scene *scene = ScriptEngine::GetSceneContext();
-        ENGINE_ASSERT(scene);
-        Entity entity = scene->GetEntityByUUID(entityID);
-        ENGINE_ASSERT(entity);
-
-        *outScale = entity.GetComponent<TransformComponent>().GetScale();
+        auto *transform = FindScriptTransform(entityID);
+        if (!transform || !value) return false;
+        transform->SetRotation(*value);
+        return true;
     }
-
-    static void SetScale(UUID entityID, glm::vec3 *scale)
+    static bool GetScale(UUID entityID, glm::vec3 *value)
     {
-        Scene *scene = ScriptEngine::GetSceneContext();
-        ENGINE_ASSERT(scene);
-        Entity entity = scene->GetEntityByUUID(entityID);
-        ENGINE_ASSERT(entity);
-
-        entity.GetComponent<TransformComponent>().SetScale(*scale);
+        if (!value) return false;
+        *value = glm::vec3(1);
+        auto *transform = FindScriptTransform(entityID);
+        if (!transform) return false;
+        *value = transform->GetScale();
+        return true;
+    }
+    static bool SetScale(UUID entityID, glm::vec3 *value)
+    {
+        auto *transform = FindScriptTransform(entityID);
+        if (!transform || !value) return false;
+        transform->SetScale(*value);
+        return true;
     }
 }

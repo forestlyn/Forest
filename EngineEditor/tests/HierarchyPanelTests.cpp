@@ -135,7 +135,7 @@ int main(int argc, char **argv)
             auto canvas = panel.GetSelectedEntity();
             Access::Queue(panel, Action::CreateChild, canvas.GetUUID()); Access::Apply(panel);
             auto ui = panel.GetSelectedEntity();
-            Check(ui.HasComponent<RectTransformComponent>() && ui.GetParent() == canvas, "UI child creation");
+            Check(ui.HasComponent<RectTransformComponent>() && !ui.HasComponent<TransformComponent>() && !canvas.HasComponent<TransformComponent>() && ui.GetParent() == canvas, "UI child creation");
             Access::Queue(panel, Action::Reparent, ui.GetUUID(), a.GetUUID()); Access::Apply(panel);
             Check(ui.GetParent() == canvas && Access::HasError(panel), "UI cannot attach to world entity");
             Access::Queue(panel, Action::Detach, ui.GetUUID()); Access::Apply(panel);

@@ -520,7 +520,7 @@ namespace EngineEditor
     void EngineEditor::RenderGizmos()
     {
         Engine::Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity();
-        if (selectedEntity && !selectedEntity.HasComponent<Engine::RectTransformComponent>() && ImGuizmo_operation != -1)
+        if (selectedEntity && selectedEntity.HasComponent<Engine::TransformComponent>() && !selectedEntity.HasComponent<Engine::RectTransformComponent>() && ImGuizmo_operation != -1)
         {
             ImGuizmo::SetDrawlist();
             float windowWidth = (float)ImGui::GetWindowWidth();

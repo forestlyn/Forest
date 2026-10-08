@@ -5,9 +5,9 @@ namespace Engine
 {
     Entity Scene::CreateCanvas(const std::string &name)
     {
-        auto entity = CreateEntity(name);
-        entity.AddComponent<CanvasComponent>();
+        auto entity = CreateEntityBase(name);
         entity.AddComponent<RectTransformComponent>();
+        entity.AddComponent<CanvasComponent>();
         return entity;
     }
 
@@ -23,7 +23,7 @@ namespace Engine
             cursor = GetParent(cursor);
         }
         if (!cursor) return {};
-        auto entity = CreateEntity(name);
+        auto entity = CreateEntityBase(name);
         entity.AddComponent<RectTransformComponent>();
         if (!SetParent(entity, parent))
         {

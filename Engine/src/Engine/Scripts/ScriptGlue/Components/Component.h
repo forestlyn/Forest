@@ -20,37 +20,55 @@ namespace Engine
     static bool HasComponent(UUID entityID, MonoReflectionType *componentType)
     {
         Scene *scene = ScriptEngine::GetSceneContext();
-        ENGINE_ASSERT(scene);
+        if (!scene || !componentType) return false;
         Entity entity = scene->GetEntityByUUID(entityID);
-        ENGINE_ASSERT(entity);
+        if (!entity) return false;
 
         std::string managedTypeName = GetManagedTypeName(mono_reflection_type_get_type(componentType));
-        ENGINE_ASSERT(s_EntityHasComponentFuncs.find(managedTypeName) != s_EntityHasComponentFuncs.end());
+        if (!s_EntityHasComponentFuncs.contains(managedTypeName)) return false;
         return s_EntityHasComponentFuncs.at(managedTypeName)(entity);
     }
 
-    static void RemoveComponent(UUID entityID, MonoReflectionType *componentType)
+    static bool RemoveComponent(UUID entityID, MonoReflectionType *componentType)
     {
         Scene *scene = ScriptEngine::GetSceneContext();
-        ENGINE_ASSERT(scene);
+        if (!scene || !componentType) return false;
         Entity entity = scene->GetEntityByUUID(entityID);
-        ENGINE_ASSERT(entity);
+        if (!entity) return false;
 
         std::string managedTypeName = GetManagedTypeName(mono_reflection_type_get_type(componentType));
-        ENGINE_ASSERT(s_EntityHasComponentFuncs.find(managedTypeName) != s_EntityHasComponentFuncs.end());
-        s_EntityRemoveComponentFuncs.at(managedTypeName)(entity);
+        if (!s_EntityHasComponentFuncs.contains(managedTypeName)) return false;
+        try
+        {
+            s_EntityRemoveComponentFuncs.at(managedTypeName)(entity);
+            return true;
+        }
+        catch (const std::exception &error)
+        {
+            ENGINE_ERROR("RemoveComponent rejected: {}", error.what());
+            return false;
+        }
     }
 
-    static void AddComponent(UUID entityID, MonoReflectionType *componentType)
+    static bool AddComponent(UUID entityID, MonoReflectionType *componentType)
     {
         Scene *scene = ScriptEngine::GetSceneContext();
-        ENGINE_ASSERT(scene);
+        if (!scene || !componentType) return false;
         Entity entity = scene->GetEntityByUUID(entityID);
-        ENGINE_ASSERT(entity);
+        if (!entity) return false;
 
         std::string managedTypeName = GetManagedTypeName(mono_reflection_type_get_type(componentType));
-        ENGINE_ASSERT(s_EntityHasComponentFuncs.find(managedTypeName) != s_EntityHasComponentFuncs.end());
-        s_EntityAddComponentFuncs.at(managedTypeName)(entity);
+        if (!s_EntityHasComponentFuncs.contains(managedTypeName)) return false;
+        try
+        {
+            s_EntityAddComponentFuncs.at(managedTypeName)(entity);
+            return true;
+        }
+        catch (const std::exception &error)
+        {
+            ENGINE_ERROR("AddComponent rejected: {}", error.what());
+            return false;
+        }
     }
 
     template <typename... Component>
